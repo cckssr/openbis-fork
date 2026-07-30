@@ -245,7 +245,7 @@ public class RemoteFileTest
         Set<IMetadataEntry> entryList = new LinkedHashSet<>();
         List<IType> types = schemaFacade.getTypes();
 
-        for (var type : types)
+        for (IType type : types)
         {
             entryList.addAll(schemaFacade.getEntries(type.getId()));
 
@@ -260,7 +260,6 @@ public class RemoteFileTest
                 "/DEFAULT/DEFAULT/SCHEMA_CREATIVEWORK_SCICAT_PUBLISHEDDATA_7EB141D3-11F1-47A6-9D0E-76F8832ED1B2"));
         Assert.assertFalse(iFileInfos.isEmpty());
 
-        System.out.println("lol");
 
     }
 

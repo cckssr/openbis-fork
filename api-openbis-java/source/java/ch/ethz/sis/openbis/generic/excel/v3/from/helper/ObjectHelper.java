@@ -324,8 +324,7 @@ public class ObjectHelper extends BasicImportHelper
     {
 
         return accumulator.values().stream().collect(Collectors.toMap(
-                x -> new SampleIdentifier(x.getSpace().getCode(), getExperimentCode(x),
-                        x.getCode()), x -> x));
+                Sample::getIdentifier, x -> x));
     }
 
     private String getIdentifier(Sample sample)

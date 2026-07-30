@@ -428,11 +428,21 @@ public class Mapper
 
         List<MapResult.RoCrateFile> files = new ArrayList<>();
 
-        for (Map.Entry<ObjectIdentifier, List<IFileInfo>> entityIdToFiles : openBisModel.getFiles()
+        Map<ObjectIdentifier, List<IFileInfo>> entityToFiles = new LinkedHashMap<>();
+        for (ObjectIdentifier key : openBisModel.getEntities().keySet())
+        {
+
+            List<IFileInfo> fileInfos = new ArrayList<>();
+            fileInfos.addAll(openBisModel.getFiles().getOrDefault(key, new ArrayList<>()));
+            fileInfos.addAll(openBisModel.getImageFiles().getOrDefault(key, new ArrayList<>()));
+            entityToFiles.put(key, fileInfos);
+        }
+
+        for (Map.Entry<ObjectIdentifier, List<IFileInfo>> entityIdToFiles : entityToFiles
                 .entrySet())
         {
 
-            List<String> identifiersToWrite = new ArrayList<>();
+            Set<String> identifiersToWrite = new LinkedHashSet<>();
 
             Stream<IFileInfo> fileInfoStream = Stream.concat(entityIdToFiles.getValue().stream(),
                     openBisModel.getImageFiles().getOrDefault(entityIdToFiles.getKey(), new ArrayList<>())
@@ -457,7 +467,8 @@ public class Mapper
                 // workaround until we remove experiments
                 metadataEntry = idToMetadataEntryMap.get(new ExperimentIdentifier(entityIdToFiles.getKey().toString()));
             }
-            metadataEntry.getReferences().put(Constants.PROPERTY_ID_FILES, identifiersToWrite);
+            metadataEntry.getReferences()
+                    .put(Constants.PROPERTY_ID_FILES, identifiersToWrite.stream().toList());
 
         }
 

@@ -53,6 +53,11 @@ public class ImageExtractor
     static String getUpdatedPath(String a)
     {
         String prefix = "xlsx/miscellaneous/file-service/eln-lims/";
+        if (a.startsWith(prefix))
+        {
+            return a;
+        }
+
         if (a.startsWith("file-service/eln-lims/"))
         {
             // This means it's an openBIS import, we don't have to rename potential naming collisions

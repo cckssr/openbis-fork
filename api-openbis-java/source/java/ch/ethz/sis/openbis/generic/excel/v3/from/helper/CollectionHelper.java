@@ -205,8 +205,8 @@ public class CollectionHelper extends BasicImportHelper
     public Map<ObjectIdentifier, AbstractEntityPropertyHolder> getResult()
     {
         return accumulator.values().stream().collect(Collectors.toMap(
-                x -> new ExperimentIdentifier(x.getProject().getCode(),
-                        x.getProject().getSpace().getCode(), x.getCode()), x -> x));
+                x -> new ExperimentIdentifier(x.getProject().getSpace().getCode(),
+                        x.getProject().getCode(), x.getCode()), x -> x));
     }
 
 }

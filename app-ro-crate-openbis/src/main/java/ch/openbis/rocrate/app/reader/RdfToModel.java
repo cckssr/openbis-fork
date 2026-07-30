@@ -938,7 +938,6 @@ public class RdfToModel
                         .map(x -> x.getCode())
                         .collect(Collectors.toSet());
 
-        myRes.stream().collect(Collectors.toMap(x -> x.filePath(), x -> x));
         Map<String, String> images = new LinkedHashMap<>();
 
         for (Map.Entry<String, Serializable> entry : sample.getProperties().entrySet())
@@ -1026,7 +1025,8 @@ public class RdfToModel
     private static boolean isImageMatch(IFileInfo x, Map<String, String> images)
     {
         return images.keySet().stream()
-                .anyMatch(y -> x.filePath().endsWith(y.replace("file-service/eln-lims", "")));
+                .anyMatch(y -> x.filePath().endsWith(
+                        y.replace("file-service/eln-lims", "").replace("xlsx/miscellaneous/", "")));
     }
 
     private static void mapSpaces(String fallbackSpaceCode, String fallbackProjectCode,

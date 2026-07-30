@@ -70,7 +70,7 @@ public class OpenBisStructureHelper
             Experiment experiment = idsToCollections.get(experimentIdentifier);
 
             return new Structure(
-                    new SampleIdentifier(space.getCode(), project.getCode(), experiment.getCode(),
+                    new SampleIdentifier("/" + space.getCode() + "/" + project.getCode() + "/" +
                             sampleToResolve.getLeft().getCode()), space, project, experiment);
 
         }

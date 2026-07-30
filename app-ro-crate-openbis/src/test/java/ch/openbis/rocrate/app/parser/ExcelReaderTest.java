@@ -42,14 +42,14 @@ public class ExcelReaderTest extends TestCase
         assertEquals(1, result.getEntities().values().stream().filter(x -> x instanceof Experiment)
                 .count());
         AbstractEntityPropertyHolder sample1 =
-                result.getEntities().get(new SampleIdentifier("/JOHN/JOHN:ENTRY1"));
+                result.getEntities().get(new SampleIdentifier("/JOHN/JOHN/ENTRY1"));
         assertEquals("Title A", sample1.getProperties().get("NAME"));
         assertEquals(
                 "<html> <head></head> <body>  <h2>Title A</h2>  <p>Content A</p> </body></html>",
                 sample1.getProperties().get("DOCUMENT").toString().replaceAll("\n", ""));
 
         AbstractEntityPropertyHolder sample2 =
-                result.getEntities().get(new SampleIdentifier("/JOHN/JOHN:ENTRY2"));
+                result.getEntities().get(new SampleIdentifier("/JOHN/JOHN/ENTRY2"));
         assertEquals("Title B", sample2.getProperties().get("NAME"));
         assertEquals(
                 "<html> <head></head> <body>  <h2>Title B</h2>  <p>Content B</p> </body></html>",
