@@ -32,7 +32,7 @@ class RoCrateClient:
 
     def __init__(self, url, token, verify=True):
         self._ro_crate_url = url
-        if url is not None and not url.endswith("/open-api/ro-crate"):
+        if url is not None and not url.endswith("/open-api/ro-crate") and url.startswith("http:"):
             self._ro_crate_url = url + "/open-api/ro-crate"
         self.token = token
         self._verify = verify
