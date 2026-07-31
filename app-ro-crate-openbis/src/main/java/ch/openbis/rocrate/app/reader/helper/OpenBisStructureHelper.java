@@ -14,7 +14,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -47,6 +49,14 @@ public class OpenBisStructureHelper
 
                 Experiment experiment = new Experiment();
                 experiment.setIdentifier(experimentIdentifier);
+                experiment.setCode(collectionCode);
+                experiment.setProject(projects.get(
+                        new ProjectIdentifier(fallbackSpaceCode, fallbacbProjectCode)));
+                {
+                    Map<String, Serializable> properties = new LinkedHashMap<>();
+                    properties.put("NAME", collectionCode);
+
+                }
                 idsToCollections.put(experimentIdentifier, experiment);
                 ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
                 experimentFetchOptions.withType();
