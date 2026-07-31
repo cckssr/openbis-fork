@@ -14,7 +14,7 @@
 #
 from tabulate import tabulate
 
-from .utils import VERBOSE
+from .utils import log_info
 
 
 class SemanticAnnotation:
@@ -107,8 +107,7 @@ class SemanticAnnotation:
         self._isNew = False
         self.permId = response[0]["permId"]
 
-        if VERBOSE:
-            print("Semantic annotation successfully created.")
+        log_info("Semantic annotation successfully created.")
 
     def _update(self):
 
@@ -140,15 +139,13 @@ class SemanticAnnotation:
         }
 
         self._openbis._post_request(self._openbis.as_v3, request)
-        if VERBOSE:
-            print("Semantic annotation successfully updated.")
+        log_info("Semantic annotation successfully updated.")
 
     def delete(self, reason):
         self._openbis.delete_entity(
             entity="SemanticAnnotation", id=self.permId, reason=reason
         )
-        if VERBOSE:
-            print("Semantic annotation successfully deleted.")
+        log_info("Semantic annotation successfully deleted.")
 
     def _repr_html_(self):
         attrs = [

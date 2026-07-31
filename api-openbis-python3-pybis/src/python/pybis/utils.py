@@ -16,13 +16,38 @@ import math
 import re
 from datetime import datetime
 
+
+LOG_NONE = 0
+LOG_ERROR = 1
+LOG_WARNING = 2
+LOG_INFO = 3
+LOG_DEBUG = 4
+
+LOG_LEVEL = LOG_INFO
+
 # display messages when in a interactive context (IPython or Jupyter)
 try:
     get_ipython()
 except Exception:
-    VERBOSE = False
-else:
-    VERBOSE = True
+    LOG_LEVEL = LOG_WARNING
+
+
+def _log(message, level):
+    if LOG_LEVEL >= level:
+        print(message)
+
+def log_error(message):
+    _log(message, LOG_ERROR)
+
+def log_warning(message):
+    _log(message, LOG_WARNING)
+
+def log_info(message):
+    _log(message, LOG_INFO)
+
+def log_debug(message):
+    _log("[DEBUG] " + message, LOG_DEBUG)
+
 
 
 def parse_jackson(input_json):

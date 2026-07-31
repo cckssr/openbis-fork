@@ -19,6 +19,7 @@ import base64
 import json
 
 from .spreadsheet import Spreadsheet
+from .utils import log_error, log_warning
 
 
 def is_of_openbis_supported_date_format(value):
@@ -96,7 +97,7 @@ class PropertyReformatter:
             return value
         timestamp = pd.to_datetime(value)
         result = timestamp.strftime(PropertyReformatter.LONG_DATETIME_FORMAT)
-        print(
+        log_warning(
             f'WARNING: "{value}" is not of any OpenBis supported datetime formats. Reformatting to "{result}"')
         return result
 
@@ -127,7 +128,7 @@ class PropertyReformatter:
             result = json.loads(json_str)
             return Spreadsheet.from_dict(result)
         except ValueError as e:
-            print(f"Could not decode spreadsheet property: {e}")
+            log_error(f"Could not decode spreadsheet property: {e}")
             return rawValue
 
 

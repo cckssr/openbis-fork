@@ -26,11 +26,12 @@ from .openbis_object import OpenBisObject
 from .semantic_annotation import SemanticAnnotation
 from .things import Things
 from .utils import (
+    log_info,
+    log_error,
     format_timestamp,
     extract_code,
     extract_data_type,
     extract_name,
-    VERBOSE,
     nvl,
 )
 
@@ -231,18 +232,16 @@ class EntityType:
             self.openbis._post_request(self.openbis.as_v3, request)
         except ValueError as exc:
             if "already assigned" in str(exc):
-                if VERBOSE:
-                    print(
-                        f"Property {property_type.permId} already assigned to {self.permId}"
-                    )
+                log_info(
+                    f"Property {property_type.permId} already assigned to {self.permId}"
+                )
                 return
             else:
                 raise ValueError(exc)
 
         new_data = self._get_method(self.permId, only_data=True)
         self._set_entity_data(new_data)
-        if VERBOSE:
-            print(f"Property {property_type.permId} assigned to {self.permId}")
+        log_info(f"Property {property_type.permId} assigned to {self.permId}")
 
     def revoke_property(self, prop, force=False):
         if isinstance(prop, str):
@@ -263,8 +262,7 @@ class EntityType:
         if not resp:
             new_data = self._get_method(self.permId, only_data=True)
             self._set_entity_data(new_data)
-            if VERBOSE:
-                print(f"Property {property_type} revoked from {self.permId}")
+            log_info(f"Property {property_type} revoked from {self.permId}")
 
     def _get_request_for_pa(self, items, item_action, force=False):
 

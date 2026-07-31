@@ -16,7 +16,7 @@ from pandas import DataFrame
 
 from .openbis_object import OpenBisObject
 from .things import Things
-from .utils import VERBOSE, extract_permid, extract_nested_permid, format_timestamp
+from .utils import log_info, extract_permid, extract_nested_permid, format_timestamp
 
 
 class Group(
@@ -102,12 +102,10 @@ class Group(
 
         try:
             self.openbis.assign_role(role=role, group=self, **kwargs)
-            if VERBOSE:
-                print(f"Role {role} successfully assigned to group {self.code}")
+            log_info(f"Role {role} successfully assigned to group {self.code}")
         except ValueError as e:
             if "exists" in str(e):
-                if VERBOSE:
-                    print(f"Role {role} already assigned to group {self.code}")
+                log_info(f"Role {role} already assigned to group {self.code}")
             else:
                 raise ValueError(str(e))
 
@@ -133,26 +131,23 @@ class Group(
             querystr = " & ".join(f'{key} == "{value}"' for key, value in query.items())
             roles = self.get_roles().df
             if len(roles) == 0:
-                if VERBOSE:
-                    print(
-                        f"Role {role} has already been revoked from group {self.code}"
-                    )
+                log_info(
+                    f"Role {role} has already been revoked from group {self.code}"
+                )
                 return
             techId = roles.query(querystr)["techId"].values[0]
 
         # finally delete the role assignment
         ra = self.openbis.get_role_assignment(techId)
         ra.delete(reason)
-        if VERBOSE:
-            print(f"Role {role} successfully revoked from group {self.code}")
+        log_info(f"Role {role} successfully revoked from group {self.code}")
         return
 
     def save(self):
         if self.is_new:
             request = self._new_attrs()
             resp = self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE:
-                print("Group successfully created.")
+            log_info("Group successfully created.")
             # re-fetch group from openBIS
             new_data = self.openbis.get_group(resp[0]["permId"], only_data=True)
             self._set_data(new_data)
@@ -161,8 +156,7 @@ class Group(
         else:
             request = self._up_attrs()
             self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE:
-                print("Group successfully updated.")
+            log_info("Group successfully updated.")
             # re-fetch group from openBIS
             new_data = self.openbis.get_group(self.permId, only_data=True)
             self._set_data(new_data)

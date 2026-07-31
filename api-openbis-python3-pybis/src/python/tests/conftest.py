@@ -20,6 +20,10 @@ from pybis import Openbis
 from pybis import AfsClient
 from pybis.ro_crate import RoCrateClient
 
+import pybis.utils as pybis_utils
+pybis_utils.LOG_LEVEL = pybis_utils.LOG_DEBUG
+
+
 openbis_url = "http://localhost:8080"
 openbis_afs_url = "http://localhost:8085"
 openbis_ro_crate_url = "http://localhost:8086"

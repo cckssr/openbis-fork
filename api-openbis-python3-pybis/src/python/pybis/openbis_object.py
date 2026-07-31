@@ -22,7 +22,7 @@ from .definitions import (
 )
 from .property import PropertyHolder
 from .property_reformatter import PropertyReformatter
-from .utils import VERBOSE
+from .utils import log_info, log_error
 
 
 class OpenBisObject:
@@ -201,13 +201,11 @@ class OpenBisObject:
         deletion_id = self.openbis.delete_openbis_entity(
             entity=self._entity, objectId=self.data["permId"], reason=reason
         )
-        if VERBOSE:
-            print(f"{self._entity} {self.permId} successfully deleted.")
+        log_info(f"{self._entity} {self.permId} successfully deleted.")
 
         if permanently:
             self.openbis.confirm_deletions([deletion_id])
-            if VERBOSE:
-                print(f"{self._entity} {self.permId} successfully deleted permanently.")
+            log_info(f"{self._entity} {self.permId} successfully deleted permanently.")
 
     def _get_single_item_method(self):
         single_item_method = None
@@ -260,8 +258,7 @@ class OpenBisObject:
 
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
-            if VERBOSE:
-                print(f"{self.entity} successfully created.")
+            log_info(f"{self.entity} successfully created.")
             new_entity_data = get_single_item(resp[0]["permId"], only_data=True)
             self._set_data(new_entity_data)
             return self
@@ -287,8 +284,7 @@ class OpenBisObject:
                 request["params"][1][0]["properties"] = props
 
             resp = self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE:
-                print(f"{self.entity} successfully updated.")
+            log_info(f"{self.entity} successfully updated.")
             new_entity_data = get_single_item(
                 self.permId, only_data=True, use_cache=False
             )
@@ -452,8 +448,7 @@ class Transaction:
                         resp = entity.openbis._post_request(
                             entity.openbis.as_v3, batch_request
                         )
-                        if VERBOSE:
-                            print(f"{i+1} {entity_type}(s) {mode}d.")
+                        log_info(f"{i+1} {entity_type}(s) {mode}d.")
 
                         # mark every sample as not being new anymore
                         # and add the permId attribute received by the response
@@ -470,6 +465,5 @@ class Transaction:
                                 ] = resp_item
 
                     except ValueError as err:
-                        if VERBOSE:
-                            print(f"ERROR: {mode} of {i+1} {entity_type}(s) FAILED")
+                        log_error(f"ERROR: {mode} of {i+1} {entity_type}(s) FAILED")
                         raise ValueError(err)

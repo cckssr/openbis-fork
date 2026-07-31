@@ -44,7 +44,9 @@ from .fast_download import FastDownload
 from .openbis_object import OpenBisObject
 from .things import Things
 from .utils import (
-    VERBOSE,
+    log_info,
+    log_warning,
+    log_error,
     parse_jackson,
     extract_permid,
     extract_code,
@@ -315,14 +317,12 @@ class DataSet(
         # create symlink
         if os.path.exists(sftp_source_path):
             target_dir_path.symlink_to(sftp_source_path, target_is_directory=True)
-            if VERBOSE:
-                print(f"Symlink created: {target_dir} --> {sftp_source_path}")
+            log_info(f"Symlink created: {target_dir} --> {sftp_source_path}")
 
             return str(target_dir_path.absolute())
         elif os.path.exists(sftp_source_path_with_default):
             target_dir_path.symlink_to(sftp_source_path_with_default, target_is_directory=True)
-            if VERBOSE:
-                print(f"Symlink created: {target_dir} --> {sftp_source_path_with_default}")
+            log_info(f"Symlink created: {target_dir} --> {sftp_source_path_with_default}")
 
             return str(target_dir_path.absolute())
         else:
@@ -446,13 +446,11 @@ class DataSet(
 
     def archive(self, remove_from_data_store=True):
         self.openbis.archive_datasets(self.permId, remove_from_data_store=remove_from_data_store)
-        if VERBOSE:
-            print(f"DataSet {self.permId} archived")
+        log_info(f"DataSet {self.permId} archived")
 
     def unarchive(self):
         self.openbis.unarchive_datasets(self.permId)
-        if VERBOSE:
-            print(f"DataSet {self.permId} unarchived")
+        log_info(f"DataSet {self.permId} unarchived")
 
     def set_properties(self, properties):
         """expects a dictionary of property names and their values.
@@ -674,8 +672,7 @@ class DataSet(
             if wait_until_finished:
                 queue.join()
 
-            if VERBOSE:
-                print(f"Files downloaded to: {os.path.join(final_destination)}")
+            log_info(f"Files downloaded to: {os.path.join(final_destination)}")
             return final_destination
 
     def _download_link(
@@ -740,10 +737,9 @@ class DataSet(
             if wait_until_finished:
                 queue.join()
 
-            if VERBOSE:
-                print(
-                    "Files downloaded to: %s" % os.path.join(destination, self.permId)
-                )
+            log_info(
+                "Files downloaded to: %s" % os.path.join(destination, self.permId)
+            )
             return destination, queue.files_with_wrong_length
 
     @property
@@ -837,7 +833,7 @@ class DataSet(
         By default, all directories and their containing files are listed recursively. You can
         turn off this option by setting recursive=False.
         """
-        print("This method is deprecated. Consider using get_files() instead")
+        log_warning("This method is deprecated. Consider using get_files() instead")
         request = {
             "method": "listFilesForDataSet",
             "params": [
@@ -973,8 +969,7 @@ class DataSet(
 
                 resp = self.openbis._post_request(self.openbis.as_v3, request)
 
-                if VERBOSE:
-                    print("DataSet successfully created.")
+                log_info("DataSet successfully created.")
                 new_dataset_data = self.openbis.get_dataset(
                     resp[0]["permId"], only_data=True
                 )
@@ -996,8 +991,7 @@ class DataSet(
                         del request['params'][1][0]['metaData']
 
             self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE:
-                print("DataSet successfully updated.")
+            log_info("DataSet successfully updated.")
 
     def _upload_v1(self, permId, datastores):
         # for uploading phyiscal data, we first upload it to the session workspace
@@ -1019,20 +1013,18 @@ class DataSet(
             permId = resp["rows"][0][2]["value"]
             if permId is None or permId == "":
                 self.__dict__["is_new"] = False
-                if VERBOSE:
-                    print(
-                        "DataSet successfully created. Because you connected to an openBIS version older than 16.05.04, you cannot update the object."
-                    )
+                log_info(
+                    "DataSet successfully created. Because you connected to an openBIS version older than 16.05.04, you cannot update the object."
+                )
             else:
                 new_dataset_data = self.openbis.get_dataset(
                     permId, only_data=True
                 )
                 self._set_data(new_dataset_data)
-                if VERBOSE:
-                    print("DataSet successfully created.")
+                log_info("DataSet successfully created.")
                 return self
         else:
-            print(json.dumps(request))
+            log_error(json.dumps(request))
             raise ValueError(
                 "Error while creating the DataSet: "
                 + resp["rows"][0][1]["value"]
@@ -1101,20 +1093,18 @@ class DataSet(
             permId = resp["permId"]
             if permId is None or permId == "":
                 self.__dict__["is_new"] = False
-                if VERBOSE:
-                    print(
-                        "DataSet successfully created. Because you connected to an openBIS version older than 16.05.04, you cannot update the object."
-                    )
+                log_info(
+                    "DataSet successfully created. Because you connected to an openBIS version older than 16.05.04, you cannot update the object."
+                )
             else:
                 new_dataset_data = self.openbis.get_dataset(
                     permId, only_data=True
                 )
                 self._set_data(new_dataset_data)
-                if VERBOSE:
-                    print("DataSet successfully created.")
+                log_info("DataSet successfully created.")
                 return self
         else:
-            print(json.dumps(request))
+            log_error(json.dumps(request))
             raise ValueError(
                 "Error while creating the DataSet: "
                 + resp["rows"][0][1]["value"]
@@ -1694,15 +1684,15 @@ class DataSetDownloadQueue:
                     if self.collect_files_with_wrong_length:
                         self.files_with_wrong_length.append(filename)
                     else:
-                        print(
+                        log_warning(
                             f"WARNING! File {filename_dest} has the wrong length: Expected: {int(file_size)} Actual size: {actual_file_size}"
                         )
-                        print(
+                        log_warning(
                             "REASON: The connection has been silently dropped upstreams.",
                             "Please check the http timeout settings of the openBIS datastore server",
                         )
             except Exception as err:
-                print(f"ERROR while writing file {filename_dest}: {err}")
+                log_error(f"ERROR while writing file {filename_dest}: {err}")
 
             finally:
                 self.download_queue.task_done()

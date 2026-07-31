@@ -15,7 +15,7 @@
 from .attribute import AttrHolder
 from .definitions import openbis_definitions, get_type_for_entity, get_method_for_entity
 from .openbis_object import OpenBisObject
-from .utils import VERBOSE
+from .utils import log_info
 
 
 class Vocabulary(
@@ -92,8 +92,7 @@ class Vocabulary(
             ],
         }
         resp = self.openbis._post_request(self.openbis.as_v3, request)
-        if VERBOSE:
-            print(f"{self.entity} {self.code} successfully deleted.")
+        log_info(f"{self.entity} {self.code} successfully deleted.")
 
     def save(self):
         terms = self._terms or []
@@ -106,8 +105,7 @@ class Vocabulary(
                 request["params"][1][0]["terms"] = terms
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
-            if VERBOSE:
-                print("Vocabulary successfully created.")
+            log_info("Vocabulary successfully created.")
             data = self.openbis.get_vocabulary(resp[0]["permId"], only_data=True)
             self._set_data(data)
             return self
@@ -126,8 +124,7 @@ class Vocabulary(
             if terms:
                 request["params"][1][0]["terms"] = terms
             self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE:
-                print("Vocabulary successfully updated.")
+            log_info("Vocabulary successfully updated.")
             data = self.openbis.get_vocabulary(self.code, only_data=True)
             self._set_data(data)
 
@@ -249,8 +246,7 @@ class VocabularyTerm(OpenBisObject):
             request = self._new_attrs()
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
-            if VERBOSE:
-                print("Vocabulary Term successfully created.")
+            log_info("Vocabulary Term successfully created.")
             data = self.openbis.get_term(
                 code=resp[0]["code"],
                 vocabularyCode=resp[0]["vocabularyCode"],
@@ -262,8 +258,7 @@ class VocabularyTerm(OpenBisObject):
         else:
             request = self._up_attrs()
             self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE:
-                print("Vocabulary Term successfully updated.")
+            log_info("Vocabulary Term successfully updated.")
             data = self.openbis.get_term(
                 code=self.code, vocabularyCode=self.vocabularyCode, only_data=True
             )
@@ -273,5 +268,4 @@ class VocabularyTerm(OpenBisObject):
         self.openbis.delete_openbis_entity(
             entity="vocabularyTerm", objectId=self.data["permId"], reason=reason
         )
-        if VERBOSE:
-            print("VocabularyTerm successfully deleted.")
+        log_info("VocabularyTerm successfully deleted.")

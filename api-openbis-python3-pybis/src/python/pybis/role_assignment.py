@@ -14,7 +14,7 @@
 #
 from .attribute import AttrHolder
 from .openbis_object import OpenBisObject
-from .utils import VERBOSE
+from .utils import log_info
 
 
 class RoleAssignment(OpenBisObject):
@@ -45,7 +45,6 @@ class RoleAssignment(OpenBisObject):
         self.openbis.delete_openbis_entity(
             entity="roleAssignment", objectId=self._id, reason=reason
         )
-        if VERBOSE:
-            print(
-                f"RoleAssignment role={self.role}, roleLevel={self.roleLevel} successfully deleted."
-            )
+        log_info(
+            f"RoleAssignment role={self.role}, roleLevel={self.roleLevel} successfully deleted."
+        )

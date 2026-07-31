@@ -129,6 +129,9 @@ class PropertyHolder:
         """This special method allows a PropertyHolder object
         to check the attributes that are assigned to that object
         """
+        if name is not None:
+            name = name.lower()
+
         if name not in self._property_names:
             raise KeyError(
                 f"No such property: «{name}». Allowed properties are: {', '.join(self._property_names.keys())}"

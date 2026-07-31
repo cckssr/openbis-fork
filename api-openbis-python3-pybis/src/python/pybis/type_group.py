@@ -12,10 +12,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-from .openbis_object import OpenBisObject
-from .things import Things
-from .utils import VERBOSE, extract_permid, extract_nested_permid, format_timestamp
-from .definitions import openbis_definitions, get_type_for_entity, get_method_for_entity
 
 import copy
 
@@ -29,10 +25,11 @@ from .definitions import (
 from .openbis_object import OpenBisObject
 from .things import Things
 from .utils import (
+    log_info,
+    log_error,
     format_timestamp,
     extract_code,
     extract_person,
-    VERBOSE,
     nvl,
 )
 
@@ -172,8 +169,7 @@ class TypeGroup(
             ],
         }
         resp = self.openbis._post_request(self.openbis.as_v3, request)
-        if VERBOSE:
-            print(f"{self.entity} {self.code} successfully deleted.")
+        log_info(f"{self.entity} {self.code} successfully deleted.")
 
 
     def save(self):
@@ -181,8 +177,7 @@ class TypeGroup(
             request = self._new_attrs("createTypeGroups")
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
-            if VERBOSE:
-                print("Type group successfully created.")
+            log_info("Type group successfully created.")
             data = self.openbis.get_type_group(resp[0]["permId"], only_data=True)
             self._set_data(data)
             return self
@@ -199,8 +194,7 @@ class TypeGroup(
                 "@type": "as.dto.common.update.FieldUpdateValue",
             }
             self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE:
-                print("Type group successfully updated.")
+            log_info("Type group successfully updated.")
             # re-fetch type group from openBIS
             new_data = self.openbis.get_type_group(self.code, only_data=True)
             self._set_data(new_data)

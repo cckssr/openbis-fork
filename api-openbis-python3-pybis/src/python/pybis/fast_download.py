@@ -29,8 +29,7 @@ REQUEST_RETRIES_COUNT = 3
 DOWNLOAD_RETRIES_COUNT = 3
 FAST_DOWNLOAD_PROTOCOL_VERSION = 2
 
-VERBOSE = True
-
+from .utils import log_debug, log_error
 
 def make_fileserver_body_params(server_information, **params):
     """create a proper pam of key-values for fileserver request"""
@@ -77,7 +76,7 @@ def post_request(session, full_url, verify_certificates, request, parse_response
         if parse_response is True:
             resp = resp.json()
             if "error" in resp:
-                print(json.dumps(resp))
+                log_error(json.dumps(resp))
                 raise ValueError(resp["error"]["message"])
         return resp
     else:
@@ -90,10 +89,10 @@ def queue_chunks(session, base_url, download_session_id, chunks, verify_certific
                                                 method='queue',
                                                 downloadSessionId=download_session_id,
                                                 ranges=comma_separated_items(chunks))
+    log_debug("Queue chunk request: %s" % queue_request)
     response = post_request(session, base_url, verify_certificates, queue_request,
                             parse_response=False)
-    if VERBOSE:
-        print("QUEUE_CHUNK", response)
+    log_debug("Queue chunk response: %s" % response)
     if response.ok is False:
         raise ValueError(
             "error during queueing for download! Message:" + response["error"]["message"])
@@ -226,12 +225,11 @@ class DownloadThread(Thread):
         retry_counter = 0
         while self.counter.should_continue():
             try:
+                log_debug("Download request: %s" % download_params)
                 download_response = self.session.post(self.download_url,
                                                       data=json.dumps(download_params), stream=True,
                                                       verify=self.verify_certificates)
-                if VERBOSE:
-                    print("DOWNLOAD_PARAMS", download_params)
-                    print("DOWNLOAD_RESPONSE", download_response)
+                log_debug("Download response: %s" % download_response)
                 if download_response.ok is True:
                     data = deserialize_chunk(download_response.content)
                     if data['invalid'] is True:
@@ -340,14 +338,14 @@ class FastDownload:
             raise ValueError("Your session expired, please log in again")
 
         # Step 1 - request DSS Facade to create fast download session in fileserver
-
+        fast_download_request = self._create_fast_download_session_request()
+        log_debug("Create fast download request: %s" % fast_download_request)
         create_fast_download_response = \
             post_request(self.session, self.dss_facade_url, self.verify_certificates,
-                         self._create_fast_download_session_request())['result']
+                         fast_download_request)['result']
         download_url = create_fast_download_response['downloadUrl']
         user_session_id = create_fast_download_response['fileTransferUserSessionId']
-        if VERBOSE:
-            print("CREATE_FAST_DOWNLOAD", create_fast_download_response)
+        log_debug("Create fast download response: %s" % create_fast_download_response)
 
         # Step 2 - Request fileserver to start the download session
 
@@ -362,20 +360,17 @@ class FastDownload:
                                                            userSessionId=user_session_id,
                                                            downloadItemIds=download_item_ids,
                                                            wishedNumberOfStreams=self.wished_number_of_streams)
-
+        log_debug("Start download session request: %s" % start_session_params)
         start_download_session = post_request(self.session, download_url,
                                               self.verify_certificates,
                                               start_session_params)
-        if VERBOSE:
-            print("START_DOWNLOAD_SESSION", start_download_session)
+        log_debug("Start download session response: %s" % start_download_session)
         download_session_id = start_download_session['downloadSessionId']
 
 
         # Step 3 - Put files into fileserver download queue
 
         ranges = start_download_session['ranges']
-        if VERBOSE:
-            print("RANGES", ranges)
         self._queue_all_files(download_url, download_session_id, ranges)
 
         # Step 4 & 5 - Download files in chunks and close connection
@@ -466,13 +461,13 @@ class FastDownload:
                     break
                 else:
                     if counter >= DOWNLOAD_RETRIES_COUNT:
-                        print(f"Reached maximum retry count:{counter}. Aborting.")
+                        log_error(f"Reached maximum retry count:{counter}. Aborting.")
                         exception_list += [
                             ValueError(f"Reached maximum retry count:{counter}. Aborting.")]
                         break
                     exceptions = [stream.exc for stream in streams if stream.exc is not None]
                     if exceptions:
-                        print(f"Download failed with message: {exceptions[0]}")
+                        log_error(f"Download failed with message: {exceptions[0]}")
                         exception_list += exceptions
                         break
                     counter += 1
@@ -485,10 +480,8 @@ class FastDownload:
             finish_download_session_params = make_fileserver_body_params(self.server_information,
                 method='finishDownloadSession',
                 downloadSessionId=download_session_id)
-
+            log_debug("Finish request: %s" % finish_download_session_params)
             response = self.session.post(download_url,
                               data=json.dumps(finish_download_session_params),
                               verify=self.verify_certificates)
-            if VERBOSE:
-                print("FINISH_PARAMS", finish_download_session_params)
-                print("FINISH", response)
+            log_debug("Finish response: %s" % response)

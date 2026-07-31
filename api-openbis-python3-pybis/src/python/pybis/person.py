@@ -20,7 +20,9 @@ from .attribute import AttrHolder
 from .openbis_object import OpenBisObject
 from .things import Things
 from .utils import (
-    VERBOSE,
+    log_info,
+    log_warning,
+    log_error,
     extract_code,
     extract_id,
     extract_nested_identifier,
@@ -108,12 +110,10 @@ class Person(OpenBisObject):
     def assign_role(self, role, **kwargs):
         try:
             self.openbis.assign_role(role=role, person=self, **kwargs)
-            if VERBOSE:
-                print(f"Role {role} successfully assigned to person {self.userId}")
+            log_info(f"Role {role} successfully assigned to person {self.userId}")
         except ValueError as e:
             if "exists" in str(e):
-                if VERBOSE:
-                    print(f"Role {role} already assigned to person {self.userId}")
+                log_info(f"Role {role} already assigned to person {self.userId}")
             else:
                 raise ValueError(str(e))
 
@@ -145,18 +145,16 @@ class Person(OpenBisObject):
             querystr = " & ".join(f'{key} == "{value}"' for key, value in query.items())
             roles = self.get_roles().df
             if len(roles) == 0:
-                if VERBOSE:
-                    print(
-                        f"Role {role} has already been revoked from person {self.code}"
-                    )
+                log_info(
+                    f"Role {role} has already been revoked from person {self.code}"
+                )
                 return
             techId = roles.query(querystr)["techId"].values[0]
 
         # finally delete the role assignment
         ra = self.openbis.get_role_assignment(techId)
         ra.delete(reason)
-        if VERBOSE:
-            print(f"Role {role} successfully revoked from person {self.code}")
+        log_info(f"Role {role} successfully revoked from person {self.code}")
         return
 
     def __str__(self):
@@ -169,8 +167,7 @@ class Person(OpenBisObject):
         if self.is_new:
             request = self._new_attrs()
             resp = self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE:
-                print("Person successfully created.")
+            log_info("Person successfully created.")
             new_person_data = self.openbis.get_person(resp[0]["permId"], only_data=True)
             self._set_data(new_person_data)
             return self
@@ -178,7 +175,6 @@ class Person(OpenBisObject):
         else:
             request = self._up_attrs()
             self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE:
-                print("Person successfully updated.")
+            log_info("Person successfully updated.")
             new_person_data = self.openbis.get_person(self.permId, only_data=True)
             self._set_data(new_person_data)

@@ -69,7 +69,10 @@ from .space import Space
 from .tag import Tag
 from .things import Things
 from .utils import (
-    VERBOSE,
+    log_info,
+    log_debug,
+    log_error,
+    log_warning,
     extract_attr,
     extract_code,
     extract_deletion,
@@ -98,18 +101,9 @@ from .afs.afs_client import AfsClient
 
 # import the various openBIS entities
 
-LOG_NONE = 0
-LOG_SEVERE = 1
-LOG_ERROR = 2
-LOG_WARNING = 3
-LOG_INFO = 4
-LOG_ENTRY = 5
-LOG_PARM = 6
-LOG_DEBUG = 7
 PYBIS_FOLDER = Path.home() / ".pybis"
 CONFIG_FILENAME = ".pybis.json"
 
-DEBUG_LEVEL = LOG_NONE
 
 
 def now():
@@ -1283,8 +1277,7 @@ class Openbis:
             for param in request["params"]:
                 assign_jackson_ids(param)
 
-        if DEBUG_LEVEL >= LOG_DEBUG:
-            print(json.dumps(request))
+        log_debug(json.dumps(request))
         try:
             resp = requests.post(
                 full_url, json.dumps(request), verify=self.verify_certificates
@@ -1300,7 +1293,7 @@ class Openbis:
         if resp.ok:
             resp = resp.json()
             if "error" in resp:
-                print(json.dumps(request))
+                log_error(json.dumps(request))
                 raise ValueError(resp["error"]["message"])
             elif "result" in resp:
                 return resp["result"]
@@ -1402,8 +1395,7 @@ class Openbis:
                 f"could not unmount mountpoint: {full_mountpoint_path} Please try to unmount manually"
             )
         else:
-            if VERBOSE:
-                print(f"Successfully unmounted {full_mountpoint_path}")
+            log_info(f"Successfully unmounted {full_mountpoint_path}")
             self.mountpoint = None
 
     def is_mounted(self, mountpoint=None):
@@ -1490,8 +1482,7 @@ class Openbis:
 
         """
         if self.is_mounted():
-            if VERBOSE:
-                print(f"openBIS dataStore is already mounted on {self.mountpoint}")
+            log_info(f"openBIS dataStore is already mounted on {self.mountpoint}")
             return
 
         def check_sshfs_is_installed():
@@ -1536,7 +1527,7 @@ class Openbis:
         if not os.path.exists(full_mountpoint_path):
             os.makedirs(full_mountpoint_path)
 
-        print("full_mountpoint_path: ", full_mountpoint_path)
+        log_info("full_mountpoint_path: %s" % full_mountpoint_path)
 
         from sys import platform
 
@@ -1578,12 +1569,11 @@ class Openbis:
         result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         if result.returncode == 0:
-            if VERBOSE:
-                print(f"Mounted successfully to {full_mountpoint_path}")
+            log_info(f"Mounted successfully to {full_mountpoint_path}")
             self.mountpoint = full_mountpoint_path
             return self.mountpoint
         else:
-            print("SSHFS Error:", result.stderr)
+            log_error("SSHFS Error: %s" % result.stderr)
             raise OSError("mount failed, exit status: ", result.returncode)
 
     def get_server_information(self):
@@ -5452,7 +5442,7 @@ class Openbis:
 
         resp = self._post_request(self.as_v3, request)
         if resp is not None:
-            print(resp)
+            log_debug("Delete type group response: %s" % resp)
             return resp
 
     def get_type_group(self, type_group_id, only_data=False):
@@ -5550,7 +5540,7 @@ class Openbis:
 
         resp = self._post_request(self.as_v3, request)
         if resp is not None:
-            print(resp)
+            log_debug("Search type group response: %s" % resp)
             return resp
 
 
@@ -5579,7 +5569,7 @@ class Openbis:
 
         resp = self._post_request(self.as_v3, request)
         if resp is not None:
-            print(resp)
+            log_debug("New Type Group assignment response: %s" % resp)
             return resp
         else:
             raise ValueError("Could not get the server information")
@@ -5616,7 +5606,7 @@ class Openbis:
 
         resp = self._post_request(self.as_v3, request)
         if resp is not None:
-            print(resp)
+            log_debug("Delete Type Group Assignment response: %s" % resp)
             return resp
 
 
@@ -5661,7 +5651,7 @@ class Openbis:
 
         resp = self._post_request(self.as_v3, request)
         if resp is not None:
-            print(resp)
+            log_debug("Get Type Group Assignment response: %s" % resp)
             return resp
 
     def search_type_group_assignment(self, type_group, sample_type):
@@ -5717,7 +5707,7 @@ class Openbis:
 
         resp = self._post_request(self.as_v3, request)
         if resp is not None:
-            print(resp)
+            log_debug("Search Type Group Assignment response: %s" % resp)
             return resp
 
     def request_archiving(self, permIds):
