@@ -17,22 +17,43 @@ package ch.ethz.sis.afsserver.startup;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.List;
 
 import ch.ethz.sis.afsserver.server.Server;
 import ch.ethz.sis.shared.exception.ThrowableReason;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
 
 public class Main
 {
 
+    private static Logger logger = null;
+
+    private static void log(Object message) {
+        if (logger == null) {
+            try {
+                logger = LogManager.getLogger(Main.class);
+            } catch (Exception ex) {
+                // Logging not initialized
+            }
+        }
+
+        if (logger != null) {
+            logger.info(String.valueOf(message));
+        } else {
+            System.out.println(message);
+        }
+    }
+
     public static void main(String[] args) throws Exception
     {
         try
         {
-            System.out.println("Current Working Directory: " + (new File("")).getCanonicalPath());
-            System.out.println("Configuration Location: " + (new File(args[0])).getCanonicalPath());
+            log("Current Working Directory: " + (new File("")).getCanonicalPath());
+            log("Configuration Location: " + (new File(args[0])).getCanonicalPath());
 
             Configuration configuration =
                     new Configuration(List.of(AtomicFileSystemServerParameter.class), args[0]);
@@ -43,12 +64,12 @@ public class Main
         {
             if (e.getCause() instanceof ThrowableReason)
             {
-                System.out.println(((ThrowableReason) e.getCause()).getReason());
+                log(((ThrowableReason) e.getCause()).getReason());
             }
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
-            System.out.println(sw);
+            log(sw);
             throw e;
         }
     }
