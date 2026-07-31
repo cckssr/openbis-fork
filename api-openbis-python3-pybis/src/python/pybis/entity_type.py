@@ -56,6 +56,16 @@ class EntityType:
         if data is not None and "propertyAssignments" in data:
             pas = data["propertyAssignments"]
         self.__dict__["_propertyAssignments"] = pas
+        if self.data is not None and "propertyAssignments" in self.data:
+            self.data['propertyAssignments'] = pas
+
+        if data is not None and '@type' in data:
+            if data['@type'] == 'as.dto.sample.SampleType':
+                self.openbis._object_cache(entity='sampleType', code=self.permId, value=self)
+            elif data['@type'] == 'as.dto.experiment.ExperimentType':
+                self.openbis._object_cache(entity='experimentType', code=self.permId, value=self)
+            elif data['@type'] == 'as.dto.dataset.DataSetType':
+                self.openbis._object_cache(entity='dataSetType', code=self.permId, value=self)
 
     def __str__(self):
 
