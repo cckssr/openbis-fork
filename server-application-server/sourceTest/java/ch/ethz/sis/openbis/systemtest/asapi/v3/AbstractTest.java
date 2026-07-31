@@ -41,10 +41,7 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
 import org.apache.commons.lang3.time.DateUtils;
-import ch.ethz.sis.shared.log.standard.core.Level;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.NativeQuery;
@@ -113,6 +110,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.id.PersonalAccessTokenPermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.update.PersonalAccessTokenUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
@@ -144,6 +142,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.create.TagCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
@@ -155,10 +154,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.ObjectNotFoundException;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.UnauthorizedObjectAccessException;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.IGeneralInformationService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
@@ -171,7 +173,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.systemtest.SystemTestCase;
-import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
 import junit.framework.Assert;
 
 /**
@@ -359,7 +360,6 @@ public class AbstractTest extends SystemTestCase
             }
         });
     }
-
 
     protected void assertPhysicalDataNotFetched(final DataSet dataSet)
     {
@@ -624,7 +624,6 @@ public class AbstractTest extends SystemTestCase
             }
         });
     }
-
 
     protected void assertSummaryNotFetched(final OperationExecution execution)
     {
@@ -1274,7 +1273,6 @@ public class AbstractTest extends SystemTestCase
         assertEquals(dataSets.size(), permIds.length);
     }
 
-
     protected void assertExperimentsRemoved(Long... ids)
     {
         List<ExperimentPE> experiments = daoFactory.getExperimentDAO().listByIDs(Arrays.asList(ids));
@@ -1617,6 +1615,37 @@ public class AbstractTest extends SystemTestCase
         return v3api.createDataSetTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
+    protected PersonPermId createUser(final String sessionToken, final String userId)
+    {
+        final PersonCreation creation = new PersonCreation();
+        creation.setUserId(userId);
+        return v3api.createPersons(sessionToken, List.of(creation)).get(0);
+    }
+
+    protected void createRoleAssignment(final String sessionToken, final IPersonId userId, final Role role, final ISpaceId spaceId, final IProjectId projectId)
+    {
+        final RoleAssignmentCreation creation = new RoleAssignmentCreation();
+        creation.setUserId(userId);
+        creation.setRole(role);
+        creation.setSpaceId(spaceId);
+        creation.setProjectId(projectId);
+        v3api.createRoleAssignments(sessionToken, List.of(creation));
+    }
+
+    protected SpacePermId createSpace(final String sessionToken, final String code)
+    {
+        final SpaceCreation creation = new SpaceCreation();
+        creation.setCode(code);
+        return v3api.createSpaces(sessionToken, List.of(creation)).get(0);
+    }
+
+    protected ProjectPermId createProject(final String sessionToken, final String code, final ISpaceId spaceId)
+    {
+        final ProjectCreation creation = new ProjectCreation();
+        creation.setSpaceId(spaceId);
+        creation.setCode(code);
+        return v3api.createProjects(sessionToken, List.of(creation)).get(0);
+    }
 
     protected SamplePermId createSample(final String sessionToken, final String code, final ISpaceId spaceId, final IExperimentId experimentId,
             final EntityTypePermId sampleTypePermId)
@@ -1625,6 +1654,17 @@ public class AbstractTest extends SystemTestCase
         creation.setCode(code);
         creation.setSpaceId(spaceId);
         creation.setExperimentId(experimentId);
+        creation.setTypeId(sampleTypePermId);
+        return v3api.createSamples(sessionToken, List.of(creation)).get(0);
+    }
+
+    protected SamplePermId createSample(final String sessionToken, final String code, final ISpaceId spaceId, final IProjectId projectId,
+            final EntityTypePermId sampleTypePermId)
+    {
+        final SampleCreation creation = new SampleCreation();
+        creation.setCode(code);
+        creation.setSpaceId(spaceId);
+        creation.setProjectId(projectId);
         creation.setTypeId(sampleTypePermId);
         return v3api.createSamples(sessionToken, List.of(creation)).get(0);
     }

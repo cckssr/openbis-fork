@@ -89,7 +89,7 @@ public class UpdateHomeSpaceExecutor
     }
 
     @Override
-    protected void update(IOperationContext context, PersonPE entity, SpacePE related)
+    protected void update(IOperationContext context, PersonPE entity, PersonUpdate update, SpacePE related)
     {
         entity.setHomeSpace(related);
     }

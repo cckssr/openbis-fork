@@ -93,7 +93,7 @@ public class UpdateExperimentProjectExecutor extends AbstractUpdateEntityToOneRe
     }
 
     @Override
-    protected void update(IOperationContext context, ExperimentPE entity, ProjectPE related)
+    protected void update(IOperationContext context, ExperimentPE entity, ExperimentUpdate update, ProjectPE related)
     {
         if (related == null)
         {

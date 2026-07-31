@@ -15,21 +15,25 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.UnauthorizedObjectAccessException;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractUpdateEntityToOneRelationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.IMapProjectByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space.IMapSpaceByIdExecutor;
-import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SimpleSpaceValidator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 
@@ -41,8 +45,13 @@ public class UpdateSampleSpaceExecutor extends AbstractUpdateEntityToOneRelation
         IUpdateSampleSpaceExecutor
 {
 
+    private static final String PROJECTS_MAP_ATTRIBUTE = UpdateSampleSpaceExecutor.class.getName() + "-projects-map";
+
     @Autowired
     private IMapSpaceByIdExecutor mapSpaceByIdExecutor;
+
+    @Autowired
+    private IMapProjectByIdExecutor mapProjectByIdExecutor;
 
     @Override
     protected String getRelationName()
@@ -74,18 +83,46 @@ public class UpdateSampleSpaceExecutor extends AbstractUpdateEntityToOneRelation
         return mapSpaceByIdExecutor.map(context, relatedIds);
     }
 
-    @Override
-    protected void check(IOperationContext context, SamplePE entity, ISpaceId relatedId, SpacePE related)
+    @Override public void update(final IOperationContext context, final MapBatch<SampleUpdate, SamplePE> batch)
     {
-        if (false == new SimpleSpaceValidator().doValidation(context.getSession().tryGetPerson(), related))
+        try
         {
-            throw new UnauthorizedObjectAccessException(relatedId);
+            // load all necessary projects at once instead of loading them separately for each updated sample
+            final Map<IProjectId, ProjectPE> projectsMap = loadProjects(context, batch);
+            context.setAttribute(PROJECTS_MAP_ATTRIBUTE, projectsMap);
+
+            super.update(context, batch);
+        } finally
+        {
+            context.setAttribute(PROJECTS_MAP_ATTRIBUTE, null);
         }
     }
 
-    @Override
-    protected void update(IOperationContext context, SamplePE entity, SpacePE related)
+    private Map<IProjectId, ProjectPE> loadProjects(final IOperationContext context, final MapBatch<SampleUpdate, SamplePE> batch)
     {
+        Set<IProjectId> projectIds = new HashSet<>();
+
+        for (SampleUpdate update : batch.getObjects().keySet())
+        {
+            if (update.getProjectId() != null && update.getProjectId().isModified() && update.getProjectId().getValue() != null)
+            {
+                projectIds.add(update.getProjectId().getValue());
+            }
+        }
+
+        return mapProjectByIdExecutor.map(context, projectIds);
+    }
+
+    @Override
+    protected void check(IOperationContext context, SamplePE entity, ISpaceId relatedId, SpacePE related)
+    {
+        // checks are done in the update method
+    }
+
+    @Override protected void update(final IOperationContext context, final SamplePE entity, final SampleUpdate update, final SpacePE related)
+    {
+        Map<IProjectId, ProjectPE> projectsMap = (Map<IProjectId, ProjectPE>) context.getAttribute(PROJECTS_MAP_ATTRIBUTE);
+
         if (related == null)
         {
             relationshipService.shareSample(context.getSession(), entity);
@@ -96,7 +133,22 @@ public class UpdateSampleSpaceExecutor extends AbstractUpdateEntityToOneRelation
                 relationshipService.unshareSample(context.getSession(), entity, related);
             } else
             {
-                relationshipService.assignSampleToSpace(context.getSession(), entity, related);
+                if (update.getProjectId() != null && update.getProjectId().isModified() && update.getProjectId().getValue() != null)
+                {
+                    ProjectPE projectPE = projectsMap.get(update.getProjectId().getValue());
+
+                    if (projectPE != null && related.equals(projectPE.getSpace()))
+                    {
+                        relationshipService.assignSampleToProject(context.getSession(), entity, projectPE);
+                        entity.setSpace(related);
+                    } else
+                    {
+                        relationshipService.assignSampleToSpace(context.getSession(), entity, related);
+                    }
+                } else
+                {
+                    relationshipService.assignSampleToSpace(context.getSession(), entity, related);
+                }
             }
         }
     }

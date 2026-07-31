@@ -82,7 +82,7 @@ public class UpdateQueryDatabaseExecutor extends AbstractUpdateEntityToOneRelati
     }
 
     @Override
-    protected void update(IOperationContext context, QueryPE entity, DatabaseDefinition related)
+    protected void update(IOperationContext context, QueryPE entity, QueryUpdate update, DatabaseDefinition related)
     {
         entity.setQueryDatabaseKey(related.getKey());
     }

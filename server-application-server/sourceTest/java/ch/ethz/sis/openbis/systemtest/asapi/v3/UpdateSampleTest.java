@@ -18,18 +18,21 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionContainsOnly;
 import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionSize;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -38,6 +41,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCrea
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.id.AttachmentFileName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.Relationship;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
@@ -51,8 +55,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifi
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
@@ -72,6 +78,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
@@ -364,14 +371,14 @@ public class UpdateSampleTest extends AbstractSampleTest
         update.setSampleId(new SamplePermId("200902091250077-1060"));
         update.setSpaceId(spaceId);
 
-        assertUnauthorizedObjectAccessException(new IDelegatedAction()
+        assertAuthorizationFailureException(new IDelegatedAction()
         {
             @Override
             public void execute()
             {
                 v3api.updateSamples(sessionToken, Arrays.asList(update));
             }
-        }, spaceId, patternContains("updating relation sample-space (1/1)", toDblQuotes("'identifier' : '/TEST-SPACE/NOE/CP-TEST-4'")));
+        }, patternContains("updating relation sample-space (1/1)", toDblQuotes("'identifier' : '/TEST-SPACE/NOE/CP-TEST-4'")));
     }
 
     @Test
@@ -793,7 +800,6 @@ public class UpdateSampleTest extends AbstractSampleTest
         assertEquals(sample.getProperties(), expectedProperties);
     }
 
-
     @Test
     public void testUpdateWithSpreadsheetProperty()
     {
@@ -809,7 +815,6 @@ public class UpdateSampleTest extends AbstractSampleTest
                 new VocabularyPermId("ORGANISM"), "TYPE2-" + System.currentTimeMillis(),
                 false, metaData);
         EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType1, propertyType2, propertyType3);
-
 
         SampleCreation creation = new SampleCreation();
         creation.setCode("SAMPLE");
@@ -864,7 +869,7 @@ public class UpdateSampleTest extends AbstractSampleTest
 
         Spreadsheet spreadsheet = sample.getSpreadsheetProperty(propertyType1.getPermId());
         assertEquals(spreadsheet.getVersion(), mySpreadsheetAfter.getVersion());
-        for(int i=1;i<=spreadsheet.getColumnCount();i++)
+        for (int i = 1; i <= spreadsheet.getColumnCount(); i++)
         {
             assertEquals(spreadsheet.column(i).getHeader(), mySpreadsheetAfter.column(i).getHeader());
             assertEquals(spreadsheet.column(i).getWidth(), mySpreadsheetAfter.column(i).getWidth());
@@ -873,7 +878,7 @@ public class UpdateSampleTest extends AbstractSampleTest
         assertNull(sample.getSpreadsheetProperty(propertyType2.getPermId()));
 
         spreadsheet = sample.getSpreadsheetProperty(propertyType3.getPermId());
-        for(int i=1;i<=spreadsheet.getColumnCount();i++)
+        for (int i = 1; i <= spreadsheet.getColumnCount(); i++)
         {
             assertEquals(spreadsheet.column(i).getHeader(), mySpreadsheetBefore.column(i).getHeader());
             assertEquals(spreadsheet.column(i).getWidth(), mySpreadsheetBefore.column(i).getWidth());
@@ -881,7 +886,6 @@ public class UpdateSampleTest extends AbstractSampleTest
         }
         assertEquals(spreadsheet.getVersion(), mySpreadsheetBefore.getVersion());
     }
-
 
     @Test
     public void testUpdateWithUnknownPropertyOfTypeSample()
@@ -1518,7 +1522,8 @@ public class UpdateSampleTest extends AbstractSampleTest
         options.withParents();
         options.withChildren();
         Map<ISampleId, Sample> foundAnnotationsParent = v3api.getSamples(sessionToken, ids, options);
-        Map<String, String> annotationsParentBefore = foundAnnotationsParent.get(ids.get(1)).getChildrenRelationships().values().iterator().next().getChildAnnotations();
+        Map<String, String> annotationsParentBefore =
+                foundAnnotationsParent.get(ids.get(1)).getChildrenRelationships().values().iterator().next().getChildAnnotations();
 
         // Update child, add annotation on the parent relationship
         SampleUpdate updateChild = new SampleUpdate();
@@ -1528,14 +1533,16 @@ public class UpdateSampleTest extends AbstractSampleTest
         v3api.updateSamples(sessionToken, Arrays.asList(updateChild));
 
         Map<ISampleId, Sample> foundAnnotationsChild = v3api.getSamples(sessionToken, ids, options);
-        Map<String, String> annotationsParentAfter = foundAnnotationsChild.get(ids.get(1)).getChildrenRelationships().values().iterator().next().getChildAnnotations();
+        Map<String, String> annotationsParentAfter =
+                foundAnnotationsChild.get(ids.get(1)).getChildrenRelationships().values().iterator().next().getChildAnnotations();
 
         // Annotations should persist in one direction
         assertEquals(annotationsParentBefore, annotationsParentAfter);
         //
 
         // And if we update parent again
-        Map<String, String> annotationsChildBefore = foundAnnotationsChild.get(ids.get(0)).getParentsRelationships().values().iterator().next().getChildAnnotations();
+        Map<String, String> annotationsChildBefore =
+                foundAnnotationsChild.get(ids.get(0)).getParentsRelationships().values().iterator().next().getChildAnnotations();
 
         SampleUpdate updateParentB = new SampleUpdate();
         updateParentB.setSampleId(ids.get(1));
@@ -1544,11 +1551,11 @@ public class UpdateSampleTest extends AbstractSampleTest
         Map<ISampleId, Sample> foundAnnotationsParentB = v3api.getSamples(sessionToken, ids, options);
 
         // Annotations should persist in the other direction
-        Map<String, String> annotationsChildAfter = foundAnnotationsParentB.get(ids.get(0)).getParentsRelationships().values().iterator().next().getChildAnnotations();
+        Map<String, String> annotationsChildAfter =
+                foundAnnotationsParentB.get(ids.get(0)).getParentsRelationships().values().iterator().next().getChildAnnotations();
 
         assertEquals(annotationsChildBefore, annotationsChildAfter);
     }
-
 
     @Test
     public void testUpdateParentAnnotations()
@@ -2854,6 +2861,296 @@ public class UpdateSampleTest extends AbstractSampleTest
                 assertAnyAuthorizationException(() -> v3api.updateSamples(params.userSessionToken, Collections.singletonList(sampleUpdate)));
             }
         });
+    }
+
+    @Test
+    public void testUpdateSpaceAndProject()
+    {
+        final String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        EntityTypePermId sampleType = createASampleType(adminSessionToken, false);
+
+        // space
+        SpacePermId space1 = createSpace(adminSessionToken, "SPACE_1_" + UUID.randomUUID());
+        SpacePermId space2 = createSpace(adminSessionToken, "SPACE_2_" + UUID.randomUUID());
+
+        // projects
+        ProjectPermId project11 = createProject(adminSessionToken, "PROJECT_11_" + UUID.randomUUID(), space1);
+        ProjectPermId project12 = createProject(adminSessionToken, "PROJECT_12_" + UUID.randomUUID(), space1);
+        ProjectPermId project21 = createProject(adminSessionToken, "PROJECT_21_" + UUID.randomUUID(), space2);
+
+        // users
+        PersonPermId instanceAdmin = new PersonPermId(TEST_USER);
+
+        PersonPermId space1Admin = createUser(adminSessionToken, "space_1_admin_" + UUID.randomUUID());
+        createRoleAssignment(adminSessionToken, space1Admin, Role.ADMIN, space1, null);
+
+        PersonPermId space2Admin = createUser(adminSessionToken, "space_2_admin_" + UUID.randomUUID());
+        createRoleAssignment(adminSessionToken, space2Admin, Role.ADMIN, space2, null);
+
+        PersonPermId space1AndSpace2Admin = createUser(adminSessionToken, "space_1_and_space_2_admin_" + UUID.randomUUID());
+        createRoleAssignment(adminSessionToken, space1AndSpace2Admin, Role.ADMIN, space1, null);
+        createRoleAssignment(adminSessionToken, space1AndSpace2Admin, Role.ADMIN, space2, null);
+
+        PersonPermId project11Admin = createUser(adminSessionToken, "project_11_admin_" + UUID.randomUUID() + "_pa_on");
+        createRoleAssignment(adminSessionToken, project11Admin, Role.ADMIN, null, project11);
+
+        PersonPermId project12Admin = createUser(adminSessionToken, "project_12_admin_" + UUID.randomUUID() + "_pa_on");
+        createRoleAssignment(adminSessionToken, project12Admin, Role.ADMIN, null, project12);
+
+        PersonPermId project11AndProject12Admin = createUser(adminSessionToken, "project_11_and_project_12_admin_" + UUID.randomUUID() + "_pa_on");
+        createRoleAssignment(adminSessionToken, project11AndProject12Admin, Role.ADMIN, null, project11);
+        createRoleAssignment(adminSessionToken, project11AndProject12Admin, Role.ADMIN, null, project12);
+
+        PersonPermId project11AndProject21Admin = createUser(adminSessionToken, "project_11_and_project_21_admin_" + UUID.randomUUID() + "_pa_on");
+        createRoleAssignment(adminSessionToken, project11AndProject21Admin, Role.ADMIN, null, project11);
+        createRoleAssignment(adminSessionToken, project11AndProject21Admin, Role.ADMIN, null, project21);
+
+        PersonPermId project21Admin = createUser(adminSessionToken, "project_21_admin_" + UUID.randomUUID() + "_pa_on");
+        createRoleAssignment(adminSessionToken, project21Admin, Role.ADMIN, null, project21);
+
+        // sample creations
+        Function<String, SamplePermId> sampleSpaceNullProjectNull =
+                (sessionToken) -> createSample(adminSessionToken, "SAMPLE_SPACE_NULL_PROJECT_NULL_" + UUID.randomUUID(), null, (IProjectId) null,
+                        sampleType);
+        Function<String, SamplePermId> sampleSpace1ProjectNull =
+                (sessionToken) -> createSample(adminSessionToken, "SAMPLE_SPACE_1_PROJECT_NULL_" + UUID.randomUUID(), space1, (IProjectId) null,
+                        sampleType);
+        Function<String, SamplePermId> sampleSpace1Project11 =
+                (sessionToken) -> createSample(adminSessionToken, "SAMPLE_SPACE_1_PROJECT_11_" + UUID.randomUUID(), space1, project11,
+                        sampleType);
+
+        // sample updates
+        Supplier<SampleUpdate> setSpaceNullProjectNull = () -> updateSampleSpaceAndProject(null, null);
+        Supplier<SampleUpdate> setSpaceNullProject11 = () -> updateSampleSpaceAndProject(null, project11);
+        Supplier<SampleUpdate> setSpace1ProjectNull = () -> updateSampleSpaceAndProject(space1, null);
+        Supplier<SampleUpdate> setSpace1Project11 = () -> updateSampleSpaceAndProject(space1, project11);
+        Supplier<SampleUpdate> setSpace1Project12 = () -> updateSampleSpaceAndProject(space1, project12);
+        Supplier<SampleUpdate> setSpace1Project21 = () -> updateSampleSpaceAndProject(space1, project21);
+        Supplier<SampleUpdate> setSpace2ProjectNull = () -> updateSampleSpaceAndProject(space2, null);
+        Supplier<SampleUpdate> setSpace2Project11 = () -> updateSampleSpaceAndProject(space2, project11);
+        Supplier<SampleUpdate> setSpace2Project21 = () -> updateSampleSpaceAndProject(space2, project21);
+        Supplier<SampleUpdate> setSpace2 = () -> updateSampleSpace(space2);
+        Supplier<SampleUpdate> setProject11 = () -> updateSampleProject(project11);
+
+        Object[][] combinations = new Object[][] {
+                // 0. sample(null, null) -> sample(null, null)
+                new Object[] { sampleSpaceNullProjectNull, setSpaceNullProjectNull, List.of(instanceAdmin),
+                        List.of(space1Admin, project11Admin) },
+                // 1. sample(null, null) -> sample(null, project11)
+                new Object[] { sampleSpaceNullProjectNull, setSpaceNullProject11, List.of(),
+                        List.of(instanceAdmin, space1Admin, project11Admin) },
+                // 2. sample(null, null) -> sample(space1, null)
+                new Object[] { sampleSpaceNullProjectNull, setSpace1ProjectNull, List.of(instanceAdmin),
+                        List.of(space1Admin, project11Admin) },
+                // 3. sample(null, null) -> sample(space1, project11)
+                new Object[] { sampleSpaceNullProjectNull, setSpace1Project11, List.of(instanceAdmin),
+                        List.of(space1Admin, project11Admin) },
+                // 4. sample(null, null) -> sample(space1, project21)
+                new Object[] { sampleSpaceNullProjectNull, setSpace1Project21, List.of(),
+                        List.of(instanceAdmin, space1Admin, project21Admin) },
+
+                // 5. sample(space1, null) -> sample(null, null)
+                new Object[] { sampleSpace1ProjectNull, setSpaceNullProjectNull, List.of(instanceAdmin),
+                        List.of(space1Admin, project11Admin) },
+                // 6. sample(space1, null) -> sample(null, project11)
+                new Object[] { sampleSpace1ProjectNull, setSpaceNullProject11, List.of(),
+                        List.of(instanceAdmin, space1Admin, project11Admin) },
+                // 7. sample(space1, null) -> sample(space1, project11)
+                new Object[] { sampleSpace1ProjectNull, setSpace1Project11, List.of(instanceAdmin, space1Admin),
+                        List.of(project11Admin) },
+                // 8. sample(space1, null) -> sample(space1, project21)
+                new Object[] { sampleSpace1ProjectNull, setSpace1Project21, List.of(),
+                        List.of(instanceAdmin, space1Admin, project21Admin) },
+                // 9. sample(space1, null) -> sample(space2, null)
+                new Object[] { sampleSpace1ProjectNull, setSpace2ProjectNull, List.of(instanceAdmin, space1AndSpace2Admin),
+                        List.of(space1Admin, space2Admin, project11Admin, project21Admin) },
+                // 10. sample(space1, null) -> sample(space2, project11)
+                new Object[] { sampleSpace1ProjectNull, setSpace2Project11, List.of(),
+                        List.of(instanceAdmin, space1Admin, space2Admin, space1AndSpace2Admin, project11Admin) },
+                // 11. sample(space1, null) -> sample(space2, project21)
+                new Object[] { sampleSpace1ProjectNull, setSpace2Project21, List.of(instanceAdmin, space1AndSpace2Admin),
+                        List.of(space1Admin, space2Admin, project21Admin) },
+
+                // 12. sample(space1, project11) -> sample(null, null)
+                new Object[] { sampleSpace1Project11, setSpaceNullProjectNull, List.of(instanceAdmin),
+                        List.of(space1Admin, project11Admin) },
+                // 13. sample(space1, project11) -> sample(null, project11)
+                new Object[] { sampleSpace1Project11, setSpaceNullProject11, List.of(),
+                        List.of(instanceAdmin, space1Admin, project11Admin) },
+                // 14. sample(space1, project11) -> sample(undefined, project11)
+                new Object[] { sampleSpace1Project11, setProject11, List.of(instanceAdmin, space1Admin, project11Admin),
+                        List.of() },
+                // 15. sample(space1, project11) -> sample(space1, null)
+                new Object[] { sampleSpace1Project11, setSpace1ProjectNull, List.of(instanceAdmin, space1Admin),
+                        List.of(project11Admin) },
+                // 16. sample(space1, project11) -> sample(space1, project12)
+                new Object[] { sampleSpace1Project11, setSpace1Project12, List.of(instanceAdmin, space1Admin, project11AndProject12Admin),
+                        List.of(space2Admin, project11Admin, project12Admin) },
+                // 17. sample(space1, project11) -> sample(space1, project21)
+                new Object[] { sampleSpace1Project11, setSpace1Project21, List.of(),
+                        List.of(instanceAdmin, space1Admin, project11Admin, project12Admin) },
+                // 18. sample(space1, project11) -> sample(space2, null)
+                new Object[] { sampleSpace1Project11, setSpace2ProjectNull, List.of(instanceAdmin, space1AndSpace2Admin),
+                        List.of(space1Admin, space2Admin, project11Admin) },
+                // 19. sample(space1, project11) -> sample(space2, undefined)
+                new Object[] { sampleSpace1Project11, setSpace2, List.of(),
+                        List.of(instanceAdmin, space1AndSpace2Admin, space1Admin, space2Admin, project11Admin) },
+                // 20. sample(space1, project11) -> sample(space2, project11)
+                new Object[] { sampleSpace1Project11, setSpace2Project11, List.of(),
+                        List.of(instanceAdmin, space1Admin, space2Admin, space1AndSpace2Admin, project11Admin) },
+                // 21. sample(space1, project11) -> sample(space2, project21)
+                new Object[] { sampleSpace1Project11, setSpace2Project21, List.of(instanceAdmin, space1AndSpace2Admin, project11AndProject21Admin),
+                        List.of(space1Admin, space2Admin, project11Admin, project21Admin) },
+        };
+
+        List<Object[]> results = new LinkedList<Object[]>();
+
+        for (int index = 0; index < combinations.length; index++)
+        {
+            logger.info("Combination started: " + index);
+
+            Object[] combination = combinations[index];
+            Function<String, SamplePermId> sampleCreation = (Function<String, SamplePermId>) combination[0];
+            Supplier<SampleUpdate> sampleUpdateSupplier = (Supplier<SampleUpdate>) combination[1];
+            List<PersonPermId> allowedUsers = (List<PersonPermId>) combination[2];
+            List<PersonPermId> disallowedUsers = (List<PersonPermId>) combination[3];
+
+            for (PersonPermId allowedUser : allowedUsers)
+            {
+                String sampleCode = null;
+                SampleUpdate sampleUpdate = null;
+
+                try
+                {
+                    // create sample with the admin user
+                    ISampleId sampleId = sampleCreation.apply(adminSessionToken);
+
+                    SampleFetchOptions fetchOptions = new SampleFetchOptions();
+                    fetchOptions.withSpace();
+                    fetchOptions.withProject();
+
+                    Sample sample = v3api.getSamples(adminSessionToken, List.of(sampleId), fetchOptions).get(sampleId);
+                    assertNotNull(sample);
+                    sampleCode = sample.getCode();
+
+                    // update the sample with a user that should be allowed to do it
+                    String userSessionToken = v3api.login(allowedUser.getPermId(), PASSWORD);
+
+                    sampleUpdate = sampleUpdateSupplier.get();
+                    sampleUpdate.setSampleId(sampleId);
+                    v3api.updateSamples(userSessionToken, List.of(sampleUpdate));
+
+                    // check if sample after update has space and project correctly set
+                    Sample sampleAfterUpdate = v3api.getSamples(adminSessionToken, List.of(sampleId), fetchOptions).get(sampleId);
+                    assertNotNull(sampleAfterUpdate);
+
+                    ISpaceId originalSpaceId = sample.getSpace() != null ? sample.getSpace().getPermId() : null;
+                    IProjectId originalProjectId = sample.getProject() != null ? sample.getProject().getPermId() : null;
+                    ISpaceId afterUpdateSpaceId = sampleAfterUpdate.getSpace() != null ? sampleAfterUpdate.getSpace().getPermId() : null;
+                    IProjectId afterUpdateProjectId = sampleAfterUpdate.getProject() != null ? sampleAfterUpdate.getProject().getPermId() : null;
+                    ISpaceId expectedSpaceId = sampleUpdate.getSpaceId().isModified() ? sampleUpdate.getSpaceId().getValue() : originalSpaceId;
+                    IProjectId expectedProjectId =
+                            sampleUpdate.getProjectId().isModified() ? sampleUpdate.getProjectId().getValue() : originalProjectId;
+
+                    assertEquals(afterUpdateSpaceId, expectedSpaceId);
+                    assertEquals(afterUpdateProjectId, expectedProjectId);
+
+                    logger.info("Combination successfully finished: " + index);
+                    results.add(new Object[] { index, sampleCode, allowedUser, sampleUpdate, null });
+                } catch (Throwable t)
+                {
+                    logger.info("Combination failed: " + index, t);
+                    results.add(new Object[] { index, sampleCode, allowedUser, sampleUpdate, t });
+                }
+            }
+
+            for (PersonPermId disallowedUser : disallowedUsers)
+            {
+                String sampleCode = null;
+                SampleUpdate sampleUpdate = null;
+
+                try
+                {
+                    // create sample with the admin user
+                    ISampleId sampleId = sampleCreation.apply(adminSessionToken);
+
+                    Sample sample = v3api.getSamples(adminSessionToken, List.of(sampleId), new SampleFetchOptions()).get(sampleId);
+                    assertNotNull(sample);
+                    sampleCode = sample.getCode();
+
+                    // try to update the sample with a user that shouldn't be allowed to do it
+                    String userSessionToken = v3api.login(disallowedUser.getPermId(), PASSWORD);
+                    sampleUpdate = sampleUpdateSupplier.get();
+                    sampleUpdate.setSampleId(sampleId);
+                    try
+                    {
+                        v3api.updateSamples(userSessionToken, List.of(sampleUpdate));
+                        fail();
+                    } catch (Exception e)
+                    {
+                        logger.info("Combination successfully finished: " + index);
+                        results.add(new Object[] { index, sampleCode, disallowedUser, sampleUpdate, null });
+                        // expected
+                    }
+                } catch (Throwable t)
+                {
+                    logger.info("Combination failed: " + index, t);
+                    results.add(new Object[] { index, sampleCode, disallowedUser, sampleUpdate, t });
+                }
+            }
+        }
+
+        StringBuilder message = new StringBuilder("Test results:\n");
+        boolean error = false;
+
+        for (Object[] result : results)
+        {
+            Integer index = (Integer) result[0];
+            String sampleCode = (String) result[1];
+            IPersonId userId = (IPersonId) result[2];
+            SampleUpdate sampleUpdate = (SampleUpdate) result[3];
+            Throwable throwable = (Throwable) result[4];
+
+            message.append(throwable != null ? "(ERROR)" : "(OK)").append(" index=").append(index).append(", sample=").append(sampleCode)
+                    .append(", user=").append(userId).append(", space=").append(sampleUpdate.getSpaceId().getValue())
+                    .append(", project=" + sampleUpdate.getProjectId().getValue()).append("\n");
+
+            if (throwable != null)
+            {
+                error = true;
+            }
+        }
+
+        if (error)
+        {
+            throw new RuntimeException(message.toString());
+        } else
+        {
+            logger.info(message.toString());
+        }
+    }
+
+    private SampleUpdate updateSampleSpace(ISpaceId spaceId)
+    {
+        SampleUpdate update = new SampleUpdate();
+        update.setSpaceId(spaceId);
+        return update;
+    }
+
+    private SampleUpdate updateSampleProject(IProjectId projectId)
+    {
+        SampleUpdate update = new SampleUpdate();
+        update.setProjectId(projectId);
+        return update;
+    }
+
+    private SampleUpdate updateSampleSpaceAndProject(ISpaceId spaceId, IProjectId projectId)
+    {
+        SampleUpdate update = new SampleUpdate();
+        update.setSpaceId(spaceId);
+        update.setProjectId(projectId);
+        return update;
     }
 
     @Test(dataProvider = USER_ROLES_PROVIDER)

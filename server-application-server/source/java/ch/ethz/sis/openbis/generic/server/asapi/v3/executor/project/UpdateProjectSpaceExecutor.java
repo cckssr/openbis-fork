@@ -110,7 +110,7 @@ public class UpdateProjectSpaceExecutor extends AbstractUpdateEntityToOneRelatio
     }
 
     @Override
-    protected void update(IOperationContext context, ProjectPE entity, SpacePE related)
+    protected void update(IOperationContext context, ProjectPE entity, ProjectUpdate update, SpacePE related)
     {
         if (related == null)
         {

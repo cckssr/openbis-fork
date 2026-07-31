@@ -98,7 +98,7 @@ public class UpdateSampleExperimentExecutor extends
     }
 
     @Override
-    protected void update(IOperationContext context, SamplePE entity, ExperimentPE related)
+    protected void update(IOperationContext context, SamplePE entity, SampleUpdate update, ExperimentPE related)
     {
         if (related == null)
         {

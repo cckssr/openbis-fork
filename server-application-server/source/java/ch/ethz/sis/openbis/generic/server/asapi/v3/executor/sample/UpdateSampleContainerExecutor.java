@@ -87,7 +87,7 @@ public class UpdateSampleContainerExecutor extends AbstractUpdateEntityToOneRela
     }
 
     @Override
-    protected void update(IOperationContext context, SamplePE entity, SamplePE related)
+    protected void update(IOperationContext context, SamplePE entity, SampleUpdate update, SamplePE related)
     {
         if (related == null)
         {

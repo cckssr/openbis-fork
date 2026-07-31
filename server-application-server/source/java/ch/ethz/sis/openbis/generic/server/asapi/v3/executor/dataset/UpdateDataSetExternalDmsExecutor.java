@@ -110,7 +110,7 @@ public class UpdateDataSetExternalDmsExecutor extends
     }
 
     @Override
-    protected void update(IOperationContext context, DataPE entity, ExternalDataManagementSystemPE related)
+    protected void update(IOperationContext context, DataPE entity, DataSetUpdate update, ExternalDataManagementSystemPE related)
     {
         if (entity instanceof LinkDataPE)
         {

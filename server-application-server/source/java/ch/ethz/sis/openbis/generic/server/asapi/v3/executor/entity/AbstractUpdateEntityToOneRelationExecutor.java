@@ -102,7 +102,7 @@ public abstract class AbstractUpdateEntityToOneRelationExecutor<ENTITY_UPDATE ex
                             if (currentlyRelated != null)
                             {
                                 check(context, entity, getRelatedId(currentlyRelated), currentlyRelated);
-                                update(context, entity, null);
+                                update(context, entity, update, null);
                                 allRemoved.add(currentlyRelated);
                             }
                         } else
@@ -117,7 +117,7 @@ public abstract class AbstractUpdateEntityToOneRelationExecutor<ENTITY_UPDATE ex
                             if (false == related.equals(currentlyRelated))
                             {
                                 check(context, entity, relatedId, related);
-                                update(context, entity, related);
+                                update(context, entity, update, related);
                                 allAdded.add(related);
                                 if (currentlyRelated != null)
                                 {
@@ -156,6 +156,6 @@ public abstract class AbstractUpdateEntityToOneRelationExecutor<ENTITY_UPDATE ex
 
     protected abstract void check(IOperationContext context, ENTITY_PE entity, RELATED_ID relatedId, RELATED_PE related);
 
-    protected abstract void update(IOperationContext context, ENTITY_PE entity, RELATED_PE related);
+    protected abstract void update(IOperationContext context, ENTITY_PE entity, ENTITY_UPDATE entityUpdate, RELATED_PE related);
 
 }

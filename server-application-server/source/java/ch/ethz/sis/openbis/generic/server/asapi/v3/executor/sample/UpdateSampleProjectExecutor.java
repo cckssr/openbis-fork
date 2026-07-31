@@ -91,7 +91,7 @@ public class UpdateSampleProjectExecutor extends AbstractUpdateEntityToOneRelati
     }
 
     @Override
-    protected void update(IOperationContext context, SamplePE entity, ProjectPE related)
+    protected void update(IOperationContext context, SamplePE entity, SampleUpdate update, ProjectPE related)
     {
         if (related == null)
         {

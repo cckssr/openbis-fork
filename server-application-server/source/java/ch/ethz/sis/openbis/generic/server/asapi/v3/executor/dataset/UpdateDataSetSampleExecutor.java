@@ -99,7 +99,7 @@ public class UpdateDataSetSampleExecutor extends AbstractUpdateEntityToOneRelati
     }
 
     @Override
-    protected void update(IOperationContext context, DataPE entity, SamplePE related)
+    protected void update(IOperationContext context, DataPE entity, DataSetUpdate update, SamplePE related)
     {
         if (related != null)
         {
