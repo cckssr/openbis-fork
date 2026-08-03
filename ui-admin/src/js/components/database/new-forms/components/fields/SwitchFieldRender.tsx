@@ -30,25 +30,28 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 				required={field.required}
 				values={Array.isArray(field.value) ? field.value : []}
 				onChange={(vals) => onFieldChange(field.id, vals)}
-				renderInput={(val, index, onChange) => (
-					<SelectField
-						label={index === 0 ? field.label : null}
-						reference={field}
-						options={[{label: '', value: null}, {label: 'true', value: 'true'},
-							{label: 'false', value: 'false'}]}
-						id={field.id}
-						name={field.label}
-						mandatory={field.required}
-						mode="edit"
-						disabled={field.readOnly}
-						value={val ?? ''}
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value || null)}
-						description={field.meta?.helpText}
-						emptyOption={field.meta?.emptyOption}
-						hiddenLabel={index > 0}
-						disableUnderline={true}
-					/>
-				)}
+				renderInput={(val, index, onChange) => {
+					const selectedOption = BOOLEAN_OPTIONS.find(o => o.value === val) || null;
+					return (
+						<Autocomplete
+							options={BOOLEAN_OPTIONS}
+							value={selectedOption}
+							getOptionLabel={(option) => option.label}
+							isOptionEqualToValue={(option, v) => option.value === v.value}
+							onChange={(_, newValue) => onChange(newValue ? newValue.value : null)}
+							renderInput={(params) => (
+								<TextField
+									{...params}
+									label={index === 0 ? field.label : null}
+									hiddenLabel={index > 0}
+									variant="filled"
+									required={field.required && index === 0}
+									sx={{ '& .MuiInputBase-input': { fontSize: '0.875rem' }, '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
+								/>
+							)}
+						/>
+					);
+				}}
 				isEmpty={(v) => !v}
 			/>
 		);
@@ -72,6 +75,7 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 						required={field.required}
 					/>
 				)}
+				sx={{ '& .MuiInputBase-input': { fontSize: '0.875rem' }, '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
 			/>
 		);
 	} else {
