@@ -340,12 +340,22 @@ public class SftpListUtil {
     }
 
     public static @NonNull SftpFileAttributes getDefaultAbstractDirectoryAttributes(
-            boolean writable
+            boolean writable,
+            Long creationMillis,
+            Long modificationMillis
     ) {
         return SftpFileAttributes.builder()
-                .creationTime(FileTime.from(Instant.now()))
-                .modifiedTime(FileTime.from(Instant.now()))
-                .accessTime(FileTime.from(Instant.now()))
+                .creationTime(Optional.ofNullable(creationMillis)
+                        .map(Instant::ofEpochMilli).map(FileTime::from)
+                        .orElse(FileTime.fromMillis(System.currentTimeMillis()))
+                )
+                .modifiedTime(Optional.ofNullable(modificationMillis)
+                        .map(Instant::ofEpochMilli).map(FileTime::from)
+                        .orElse(FileTime.fromMillis(System.currentTimeMillis()))
+                )
+                .accessTime(Optional.ofNullable(modificationMillis)
+                        .map(Instant::ofEpochMilli).map(FileTime::from)
+                        .orElse(FileTime.fromMillis(System.currentTimeMillis())))
                 .directory(true)
                 .regularFile(false)
                 .size(0)
@@ -421,46 +431,114 @@ public class SftpListUtil {
         ).map(String::trim).filter(str -> !str.isEmpty()).orElse(null);
     }
 
-    public boolean checkExistence(@NonNull FtpPathLister.EntityDescriptor entityDescriptor) {
+    public EntityBasicInfo checkExistence(@NonNull FtpPathLister.EntityDescriptor entityDescriptor) {
         return switch (entityDescriptor.type()) {
-            case SPACE ->
-                    !openBISClientUtil.getOpenBISClient(user).getSpaces(
+            case SPACE -> {
+                SpacePermId spacePermId = new SpacePermId(entityDescriptor.identifier().orElseThrow());
+                Space space = openBISClientUtil.getOpenBISClient(user).getSpaces(
+                        Collections.singletonList(
+                                spacePermId
+                        ),
+                        new SpaceFetchOptions()
+                ).get(spacePermId);
+                yield new EntityBasicInfo(
+                        space != null,
+                        Optional.ofNullable(space)
+                                .map(Space::getRegistrationDate)
+                                .map(Date::getTime)
+                                .orElse(null),
+                        Optional.ofNullable(space)
+                                .map(Space::getModificationDate)
+                                .map(Date::getTime)
+                                .orElse(null)
+                );
+            }
+            case PROJECT -> {
+                ProjectIdentifier projectIdentifier = new ProjectIdentifier(
+                        entityDescriptor.identifier().orElseThrow()
+                );
+                Project project = openBISClientUtil.getOpenBISClient(user).getProjects(
+                        Collections.singletonList(
+                                projectIdentifier
+                        ),
+                        new ProjectFetchOptions()
+                ).get(projectIdentifier);
+                yield new EntityBasicInfo(
+                        project != null,
+                        Optional.ofNullable(project)
+                                .map(Project::getRegistrationDate)
+                                .map(Date::getTime)
+                                .orElse(null),
+                        Optional.ofNullable(project)
+                                .map(Project::getModificationDate)
+                                .map(Date::getTime)
+                                .orElse(null)
+                );
+            }
+            case EXPERIMENT -> {
+                if (entityDescriptor.identifier().isEmpty()) yield new EntityBasicInfo(false, null, null);
+                ExperimentPermId experimentPermId = new ExperimentPermId(entityDescriptor.identifier().orElseThrow());
+                Experiment experiment = openBISClientUtil.getOpenBISClient(user).getExperiments(
+                        Collections.singletonList(
+                                experimentPermId
+                        ),
+                        new ExperimentFetchOptions()
+                ).get(experimentPermId);
+                yield new EntityBasicInfo(
+                        experiment != null,
+                        Optional.ofNullable(experiment)
+                                .map(Experiment::getRegistrationDate)
+                                .map(Date::getTime)
+                                .orElse(null),
+                        Optional.ofNullable(experiment)
+                                .map(Experiment::getModificationDate)
+                                .map(Date::getTime)
+                                .orElse(null)
+                );
+            }
+            case SAMPLE, FOLDER -> {
+                if (entityDescriptor.identifier().isEmpty()) yield new EntityBasicInfo(false, null, null);
+                SamplePermId samplePermId = new SamplePermId(entityDescriptor.identifier().orElseThrow());
+                Sample sample = openBISClientUtil.getOpenBISClient(user).getSamples(
+                        Collections.singletonList(
+                                samplePermId
+                        ),
+                        new SampleFetchOptions()
+                ).get(samplePermId);
+                yield new EntityBasicInfo(
+                        sample != null,
+                        Optional.ofNullable(sample)
+                                .map(Sample::getRegistrationDate)
+                                .map(Date::getTime)
+                                .orElse(null),
+                        Optional.ofNullable(sample)
+                                .map(Sample::getModificationDate)
+                                .map(Date::getTime)
+                                .orElse(null)
+                );
+            }
+            case DATA_SET -> {
+                if (entityDescriptor.identifier().isEmpty()) yield new EntityBasicInfo(false, null, null);
+                DataSetPermId dataSetPermId = new DataSetPermId(entityDescriptor.identifier().orElseThrow());
+                DataSet dataSet = openBISClientUtil.getOpenBISClient(user).getDataSets(
                             Collections.singletonList(
-                                    new SpacePermId(entityDescriptor.identifier().orElseThrow())
-                            ),
-                            new SpaceFetchOptions()
-                    ).isEmpty();
-            case PROJECT ->
-                    !openBISClientUtil.getOpenBISClient(user).getProjects(
-                            Collections.singletonList(
-                                    new ProjectIdentifier(
-                                            entityDescriptor.identifier().orElseThrow()
-                                    )
-                            ),
-                            new ProjectFetchOptions()
-                    ).isEmpty();
-            case EXPERIMENT -> entityDescriptor.identifier().isPresent() &&
-                    !openBISClientUtil.getOpenBISClient(user).getExperiments(
-                            Collections.singletonList(
-                                    new ExperimentPermId(entityDescriptor.identifier().orElseThrow())
-                            ),
-                            new ExperimentFetchOptions()
-                    ).isEmpty();
-            case SAMPLE, FOLDER -> entityDescriptor.identifier().isPresent() &&
-                    !openBISClientUtil.getOpenBISClient(user).getSamples(
-                            Collections.singletonList(
-                                    new SamplePermId(entityDescriptor.identifier().orElseThrow())
-                            ),
-                            new SampleFetchOptions()
-                    ).isEmpty();
-            case DATA_SET -> entityDescriptor.identifier().isPresent() &&
-                    !openBISClientUtil.getOpenBISClient(user).getDataSets(
-                            Collections.singletonList(
-                                    new DataSetPermId(entityDescriptor.identifier().orElseThrow())
+                                    dataSetPermId
                             ),
                             new DataSetFetchOptions()
-                    ).isEmpty();
-            default -> false;
+                    ).get(dataSetPermId);
+                yield new EntityBasicInfo(
+                        dataSet != null,
+                        Optional.ofNullable(dataSet)
+                                .map(DataSet::getRegistrationDate)
+                                .map(Date::getTime)
+                                .orElse(null),
+                        Optional.ofNullable(dataSet)
+                                .map(DataSet::getModificationDate)
+                                .map(Date::getTime)
+                                .orElse(null)
+                );
+            }
+            default -> new EntityBasicInfo(false, null, null);
         };
     }
 
@@ -626,4 +704,10 @@ public class SftpListUtil {
     public static boolean isLegalOpenBISCode(@NonNull String code) {
         return ENTITY_CODE_LEGAL_PATTERN.asMatchPredicate().test(code);
     }
+
+    public record EntityBasicInfo(
+            boolean exists,
+            Long registrationMillis,
+            Long lastModificationMillis
+    ) {}
 }

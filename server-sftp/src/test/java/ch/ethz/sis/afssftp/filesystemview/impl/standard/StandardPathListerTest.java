@@ -16,6 +16,7 @@ import junit.framework.TestCase;
 import org.mockito.Mockito;
 
 import java.nio.file.NoSuchFileException;
+import java.nio.file.attribute.FileTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -757,6 +758,8 @@ public class StandardPathListerTest extends TestCase {
         );
 
         for (SftpNode.Type type : abstractDirectoryTypes) {
+            Mockito.doReturn( new SftpListUtil.EntityBasicInfo(true, 4000L, 50000L) )
+                    .when(listUtil).checkExistence(Mockito.any());
             SftpNodeChain chain = SftpNodeChain.concat(
                     exampleBaseChainUpToProject,
                     SftpNode.builder()
@@ -771,9 +774,14 @@ public class StandardPathListerTest extends TestCase {
             assertFalse(readAttributes.isSymbolicLink());
             assertFalse(readAttributes.isOther());
             assertEquals(
-                    SftpListUtil.getDefaultAbstractDirectoryAttributes(SftpNode.Type.SUBLEVEL == type).getPermissions(),
+                    SftpListUtil.getDefaultAbstractDirectoryAttributes(SftpNode.Type.SUBLEVEL == type, null, null).getPermissions(),
                     readAttributes.getPermissions()
             );
+            if (type == SftpNode.Type.SUBLEVEL) {
+                assertEquals(FileTime.fromMillis(4000), readAttributes.getCreationTime());
+                assertEquals(FileTime.fromMillis(50000), readAttributes.getModifiedTime());
+                assertEquals(FileTime.fromMillis(50000), readAttributes.getAccessTime());
+            }
         }
 
         // Abstract directory types: entities
@@ -796,7 +804,8 @@ public class StandardPathListerTest extends TestCase {
             );
 
             FtpPathLister.EntityDescriptor entityDescriptor = standardPathLister.toEntityDescriptor(chain).get();
-            Mockito.doReturn(true).when(listUtil).checkExistence(entityDescriptor);
+            Mockito.doReturn(new SftpListUtil.EntityBasicInfo(true, 4000L, 50000L))
+                    .when(listUtil).checkExistence(entityDescriptor);
 
             SftpFileAttributes readAttributes = standardPathLister.readAttributes(chain);
             assertTrue(readAttributes.isDirectory());
@@ -804,11 +813,14 @@ public class StandardPathListerTest extends TestCase {
             assertFalse(readAttributes.isSymbolicLink());
             assertFalse(readAttributes.isOther());
             assertEquals(
-                    SftpListUtil.getDefaultAbstractDirectoryAttributes(false).getPermissions(),
+                    SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null).getPermissions(),
                     readAttributes.getPermissions()
             );
+            assertEquals(FileTime.fromMillis(4000), readAttributes.getCreationTime());
+            assertEquals(FileTime.fromMillis(50000), readAttributes.getModifiedTime());
+            assertEquals(FileTime.fromMillis(50000), readAttributes.getAccessTime());
 
-            Mockito.doReturn(false).when(listUtil).checkExistence(entityDescriptor);
+            Mockito.doReturn(new SftpListUtil.EntityBasicInfo(false, null, null)).when(listUtil).checkExistence(entityDescriptor);
             Exception exception = null;
             try {
                 standardPathLister.readAttributes(chain);
@@ -837,7 +849,10 @@ public class StandardPathListerTest extends TestCase {
         for (SftpNodeChain chain : List.of(chain1, chain2)) {
             for (boolean mutable : List.of(false, true)) {
                 for (String afsFilePath : List.of("/", "/dir-1/dir-2/file-3")) {
-                    for (SftpFileAttributes sampleAttributes : new SftpFileAttributes[] { SftpListUtil.getDefaultAbstractDirectoryAttributes(false), null }) {
+                    for (SftpFileAttributes sampleAttributes : new SftpFileAttributes[] {
+                            SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null)
+                            , null
+                    }) {
                         String permId = "12345-12345";
                         FtpPathLister.EntityDescriptor entityDescriptor = new FtpPathLister.EntityDescriptor(
                                 SftpNode.Type.AFS_FILE,

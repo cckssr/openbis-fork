@@ -1516,7 +1516,7 @@ public class VirtualFileSystemProviderTest extends TestCase {
         );
 
         SftpNodeChain sftpNodeChain = ftpPathTranslator.fromPathSegments(examplePath.getPathSegments());
-        SftpFileAttributes sampleAttributes = SftpListUtil.getDefaultAbstractDirectoryAttributes(false);
+        SftpFileAttributes sampleAttributes = SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null);
         Mockito.doReturn(sampleAttributes)
                         .when(ftpPathLister).readAttributes(sftpNodeChain);
         assertEquals(sampleAttributes, virtualFileSystemProvider.readAttributes(examplePath, BasicFileAttributes.class));

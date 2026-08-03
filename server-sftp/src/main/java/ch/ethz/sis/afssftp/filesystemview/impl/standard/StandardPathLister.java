@@ -85,7 +85,21 @@ public class StandardPathLister implements FtpPathLister {
                     return attributes.get();
                 } else {
                     if ("/".equals(afsFilePath) && !isAfsEntityDataMutable) {
-                        return SftpListUtil.getDefaultAbstractDirectoryAttributes(false);
+                        SftpListUtil.EntityBasicInfo afsEntityBasicInfo = listUtil.checkExistence(entityDescriptor.afsEntity());
+                        if (afsEntityBasicInfo.exists()) {
+                            return SftpListUtil.getDefaultAbstractDirectoryAttributes(
+                                    false,
+                                    afsEntityBasicInfo.registrationMillis(),
+                                    afsEntityBasicInfo.lastModificationMillis()
+                            );
+                        } else {
+                            throw new NoSuchFileException(
+                                    String.format("Entity of type : %s and identifier : %s",
+                                            entityDescriptor.afsEntity().type(),
+                                            afsEntityPermId
+                                    )
+                            );
+                        }
                     } else {
                         throw new NoSuchFileException("AFS entity perm-id : " + afsEntityPermId + " AFS file-path : " + afsFilePath);
                     }
@@ -99,14 +113,41 @@ public class StandardPathLister implements FtpPathLister {
 
             if (lastNode != null) {
                 return switch (lastNode.getType()) {
-                    case ROOT -> SftpListUtil.getDefaultAbstractDirectoryAttributes(false);
-                    case SUBLEVEL -> SftpListUtil.getDefaultAbstractDirectoryAttributes(true);
+                    case ROOT -> SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null);
+                    case SUBLEVEL -> {
+                        Optional<EntityDescriptor> parentEntityDescriptorOpt = toEntityDescriptor(nodeChain.toParent());
+                        if (parentEntityDescriptorOpt.isPresent()) {
+                            EntityDescriptor parentEntityDescriptor = parentEntityDescriptorOpt.get();
+                            SftpListUtil.EntityBasicInfo entityBasicInfo = listUtil.checkExistence(parentEntityDescriptor);
+                            if (entityBasicInfo.exists()) {
+                                yield  SftpListUtil.getDefaultAbstractDirectoryAttributes(
+                                        true,
+                                        entityBasicInfo.registrationMillis(),
+                                        entityBasicInfo.lastModificationMillis()
+                                );
+                            } else {
+                                throw new NoSuchFileException(
+                                        String.format("Entity of type : %s and identifier : %s",
+                                                parentEntityDescriptor.type(),
+                                                parentEntityDescriptor.identifier()
+                                        )
+                                );
+                            }
+                        } else {
+                            yield SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null);
+                        }
+                    }
                     default -> {
                         Optional<EntityDescriptor> entityDescriptorOpt = toEntityDescriptor(nodeChain);
                         if (entityDescriptorOpt.isPresent()) {
                             EntityDescriptor entityDescriptor = entityDescriptorOpt.get();
-                            if (listUtil.checkExistence(entityDescriptor)) {
-                                yield  SftpListUtil.getDefaultAbstractDirectoryAttributes(false);
+                            SftpListUtil.EntityBasicInfo entityBasicInfo = listUtil.checkExistence(entityDescriptor);
+                            if (entityBasicInfo.exists()) {
+                                yield  SftpListUtil.getDefaultAbstractDirectoryAttributes(
+                                        false,
+                                        entityBasicInfo.registrationMillis(),
+                                        entityBasicInfo.lastModificationMillis()
+                                );
                             } else {
                                 throw new NoSuchFileException(
                                     String.format("Entity of type : %s and identifier : %s",
@@ -121,7 +162,7 @@ public class StandardPathLister implements FtpPathLister {
                     }
                 };
             } else {
-                return SftpListUtil.getDefaultAbstractDirectoryAttributes(false);
+                return SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null);
             }
         }
     }

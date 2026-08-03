@@ -161,27 +161,27 @@ public class IntegrationAfsSftpServerTest
                                 String spaceSubsampleDisplayName = String.format("%s (%s)", spaceFolder + "_" + subsample, getSampleOrDatasetPermIdByName(space, spaceFolder + "_" + subsample));
 
                                 assertEquals(
-                                        listRemoteDirectory(sftp,"/spaces/" + space + "/folders/" + spaceFolder + "/samples/" + spaceSubsampleDisplayName),
+                                        listRemoteDirectory(sftp,"/spaces/" + space + "/folders/" + spaceFolderDisplayName + "/samples/" + spaceSubsampleDisplayName),
                                         Set.of(".", "..", "folders", "samples", "datasets", "files")
                                 );
 
                                 assertEquals(
-                                        listRemoteDirectory(sftp,"/spaces/" + space + "/folders/" + spaceFolder + "/samples/" + spaceSubsampleDisplayName + "/folders"),
+                                        listRemoteDirectory(sftp,"/spaces/" + space + "/folders/" + spaceFolderDisplayName + "/samples/" + spaceSubsampleDisplayName + "/folders"),
                                         Set.of(".", "..")
                                 );
 
                                 assertEquals(
-                                        listRemoteDirectory(sftp,"/spaces/" + space + "/folders/" + spaceFolder + "/samples/" + spaceSubsampleDisplayName + "/samples"),
+                                        listRemoteDirectory(sftp,"/spaces/" + space + "/folders/" + spaceFolderDisplayName + "/samples/" + spaceSubsampleDisplayName + "/samples"),
                                         Set.of(".", "..")
                                 );
 
                                 assertEquals(
-                                        listRemoteDirectory(sftp,"/spaces/" + space + "/folders/" + spaceFolder + "/samples/" + spaceSubsampleDisplayName + "/datasets"),
+                                        listRemoteDirectory(sftp,"/spaces/" + space + "/folders/" + spaceFolderDisplayName + "/samples/" + spaceSubsampleDisplayName + "/datasets"),
                                         Set.of(".", "..")
                                 );
 
                                 assertEquals(
-                                        listRemoteDirectory(sftp,"/spaces/" + space + "/folders/" + spaceFolder + "/samples/" + spaceSubsampleDisplayName + "/files"),
+                                        listRemoteDirectory(sftp,"/spaces/" + space + "/folders/" + spaceFolderDisplayName + "/samples/" + spaceSubsampleDisplayName + "/files"),
                                         Set.of(".", "..")
                                 );
                             }
