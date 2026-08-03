@@ -303,6 +303,7 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 							label={field.label}
 							required={field.required}
 							variant="filled"
+							sx={{ '& .MuiInputBase-input': { fontSize: '0.875rem' }, '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
 							slotProps={{
 								input: {
 									...params.InputProps,
