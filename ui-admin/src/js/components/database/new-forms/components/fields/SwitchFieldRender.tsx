@@ -14,7 +14,7 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 	if (field.isMultiValue && !isEditing) {
 		const values: any[] = Array.isArray(field.value) ? field.value : [];
 		const lines = values.map((v, i) => {
-			const text = v === 'true' || v === true ? 'true' : v === 'false' || v === false ? 'true' : '';
+			const text = v === 'true' || v === true ? 'true' : v === 'false' || v === false ? 'false' : '';
 			return <div key={i}>{text}</div>;
 		});
 		return (
