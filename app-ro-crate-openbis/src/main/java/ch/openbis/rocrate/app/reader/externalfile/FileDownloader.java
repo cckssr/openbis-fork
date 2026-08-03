@@ -91,7 +91,6 @@ public class FileDownloader implements IFileDownloader
             {
                 continue;
             }
-            SupportedProtocol supportedProtocol1 = supportedProtocol.get();
             URL parsedUrl = new URL(dataEntity.getId());
             URL workingUrl = this.mapUrl.apply(parsedUrl);
 
