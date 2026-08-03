@@ -148,7 +148,7 @@ public class HttpDownloader {
 
         @Override
         public void run() {
-            Path tempFile;
+            Path tempFile = null;
             try {
                 // download
 
@@ -180,9 +180,12 @@ public class HttpDownloader {
                         Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
                         Files.move(tempFile, download.path, StandardCopyOption.ATOMIC_MOVE);
                     }
-                } catch (Exception e)
+                } finally
                 {
-                    throw e;
+                    if (tempFile != null && Files.exists(tempFile))
+                    {
+                        Files.delete(tempFile);
+                    }
                 }
             } catch (Exception exception) {
                 exceptions.put(this, exception);
