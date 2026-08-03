@@ -58,20 +58,20 @@ export const TextAreaFieldRenderer: React.FC<FieldRendererProps> = ({ field, onF
 			/>
 		);
 	} else {
-		return (<TextAreaField id={field.id}
-							   name={field.label}
-							   mandatory={field.required}
-							   label={field.label}
-							   mode={isEditing && !field.readOnly ? 'edit' : 'view'}
-							   disabled={isEditing && field.readOnly}
-							   value={field.value}
-							   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-								   onFieldChange(field.id, e.target.value)}
-							   disableUnderline={true}
-							   description={field.meta?.helpText}
-							   styles={field.dataType === FormFieldDataType.MONOSPACE_FONT
-								   ? {monospaceFont: true} : {}}
-			/>
-		);
+		return <MuiTextField
+			label={field.label}
+			variant="filled"
+			size="small"
+			fullWidth
+			multiline
+			hiddenLabel={false}
+			minRows={2}
+			maxRows={10}
+			value={field.value}
+			onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+				onFieldChange(field.id, e.target.value)}
+			margin="none"
+			sx={{ '& .MuiInputBase-input': { fontSize: '0.875rem' }, '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
+		/>;
 	}
 }

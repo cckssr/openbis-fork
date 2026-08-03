@@ -129,6 +129,7 @@ export const SelectFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 						label={field.label}
 						variant="filled"
 						required={field.required}
+						sx={{ '& .MuiInputBase-input': { fontSize: '0.875rem' }, '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
 					/>
 				)}
 			/>
