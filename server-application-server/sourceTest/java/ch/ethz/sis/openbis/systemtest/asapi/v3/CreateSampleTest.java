@@ -27,7 +27,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -2544,6 +2546,113 @@ public class CreateSampleTest extends AbstractSampleTest
         PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
         EntityTypePermId sampleType =
                 createASampleType(sessionToken, true, propertyType);
+
+        String sampleCode1 = "SAMPLE_WITH_SAMPLE_PROPERTY1-" + System.currentTimeMillis();
+        String sampleIdentifier1 = "/CISD/" + sampleCode1;
+
+        String sampleCode2 = "SAMPLE_WITH_SAMPLE_PROPERTY2-" + System.currentTimeMillis();
+        String sampleIdentifier2 = "/CISD/" + sampleCode2;
+
+        SampleCreation sampleCreation1 = new SampleCreation();
+        sampleCreation1.setCode(sampleCode1);
+        sampleCreation1.setTypeId(sampleType);
+        sampleCreation1.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation1.setProperty(propertyType.getPermId(), sampleIdentifier2);
+
+
+        SampleCreation sampleCreation2 = new SampleCreation();
+        sampleCreation2.setCode(sampleCode2);
+        sampleCreation2.setTypeId(sampleType);
+        sampleCreation2.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation2.setProperty(propertyType.getPermId(), sampleIdentifier1);
+
+        List<SamplePermId> testSampleIds = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation1, sampleCreation2));
+
+        assertEquals(testSampleIds.size(), 2);
+
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Map<ISampleId, Sample> samples = v3api.getSamples(sessionToken, testSampleIds, fetchOptions);
+
+        Sample sample1 = samples.get(testSampleIds.get(0));
+        Sample sample2 = samples.get(testSampleIds.get(1));
+
+        Map<String, Sample[]> sampleProperties1 = sample1.getSampleProperties();
+        Sample[] sampleProp1 = sampleProperties1.get(propertyType.getPermId());
+        assertNotNull(sampleProp1);
+        assertEquals(sampleProp1.length, 1);
+        assertEquals(sampleProp1[0].getPermId().getPermId(), sample2.getPermId().getPermId());
+
+        Map<String, Sample[]> sampleProperties2 = sample2.getSampleProperties();
+        Sample[] sampleProp2 = sampleProperties2.get(propertyType.getPermId());
+        assertNotNull(sampleProp2);
+        assertEquals(sampleProp2.length, 1);
+        assertEquals(sampleProp2[0].getPermId().getPermId(), sample1.getPermId().getPermId());
+    }
+
+    @Test
+    public void testFailCreateSamplesWithUniqueSampleProperties()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        //Create sample
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+
+        SampleTypeCreation creation = new SampleTypeCreation();
+        creation.setCode("SAMPLE-TYPE-" + System.currentTimeMillis());
+        List<PropertyAssignmentCreation> assignments = new ArrayList<>();
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setPropertyTypeId(propertyType);
+        propertyAssignmentCreation.setMandatory(false);
+        propertyAssignmentCreation.setUnique(true);
+        assignments.add(propertyAssignmentCreation);
+        creation.setPropertyAssignments(assignments);
+        EntityTypePermId sampleType = v3api.createSampleTypes(sessionToken, Arrays.asList(creation)).get(0);
+
+        String sampleCode1 = "SAMPLE_WITH_SAMPLE_PROPERTY1-" + System.currentTimeMillis();
+        String sampleIdentifier1 = "/CISD/" + sampleCode1;
+
+        String sampleCode2 = "SAMPLE_WITH_SAMPLE_PROPERTY2-" + System.currentTimeMillis();
+        String sampleIdentifier2 = "/CISD/" + sampleCode2;
+
+        SampleCreation sampleCreation1 = new SampleCreation();
+        sampleCreation1.setCode(sampleCode1);
+        sampleCreation1.setTypeId(sampleType);
+        sampleCreation1.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation1.setProperty(propertyType.getPermId(), sampleIdentifier2);
+
+
+        SampleCreation sampleCreation2 = new SampleCreation();
+        sampleCreation2.setCode(sampleCode2);
+        sampleCreation2.setTypeId(sampleType);
+        sampleCreation2.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation2.setProperty(propertyType.getPermId(), sampleIdentifier2);
+
+        assertUserFailureException(() -> v3api.createSamples(sessionToken, Arrays.asList(sampleCreation1, sampleCreation2)),
+                "ERROR: duplicate key value");
+    }
+
+    @Test
+    public void testCreateSamplesWithUniqueSampleProperties()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        //Create sample
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+
+        SampleTypeCreation creation = new SampleTypeCreation();
+        creation.setCode("SAMPLE-TYPE-" + System.currentTimeMillis());
+        List<PropertyAssignmentCreation> assignments = new ArrayList<>();
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setPropertyTypeId(propertyType);
+        propertyAssignmentCreation.setMandatory(false);
+        propertyAssignmentCreation.setUnique(true);
+        assignments.add(propertyAssignmentCreation);
+        creation.setPropertyAssignments(assignments);
+        EntityTypePermId sampleType = v3api.createSampleTypes(sessionToken, Arrays.asList(creation)).get(0);
 
         String sampleCode1 = "SAMPLE_WITH_SAMPLE_PROPERTY1-" + System.currentTimeMillis();
         String sampleIdentifier1 = "/CISD/" + sampleCode1;
