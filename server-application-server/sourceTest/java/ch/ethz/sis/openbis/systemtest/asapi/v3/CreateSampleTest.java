@@ -2612,26 +2612,23 @@ public class CreateSampleTest extends AbstractSampleTest
         EntityTypePermId sampleType = v3api.createSampleTypes(sessionToken, Arrays.asList(creation)).get(0);
 
         String sampleCode1 = "SAMPLE_WITH_SAMPLE_PROPERTY1-" + System.currentTimeMillis();
-        String sampleIdentifier1 = "/CISD/" + sampleCode1;
-
         String sampleCode2 = "SAMPLE_WITH_SAMPLE_PROPERTY2-" + System.currentTimeMillis();
-        String sampleIdentifier2 = "/CISD/" + sampleCode2;
+        String sampleIdentifier = "/CISD/" + sampleCode2;
 
         SampleCreation sampleCreation1 = new SampleCreation();
         sampleCreation1.setCode(sampleCode1);
         sampleCreation1.setTypeId(sampleType);
         sampleCreation1.setSpaceId(new SpacePermId("CISD"));
-        sampleCreation1.setProperty(propertyType.getPermId(), sampleIdentifier2);
-
+        sampleCreation1.setProperty(propertyType.getPermId(), sampleIdentifier);
 
         SampleCreation sampleCreation2 = new SampleCreation();
         sampleCreation2.setCode(sampleCode2);
         sampleCreation2.setTypeId(sampleType);
         sampleCreation2.setSpaceId(new SpacePermId("CISD"));
-        sampleCreation2.setProperty(propertyType.getPermId(), sampleIdentifier2);
+        sampleCreation2.setProperty(propertyType.getPermId(), sampleIdentifier);
 
         assertUserFailureException(() -> v3api.createSamples(sessionToken, Arrays.asList(sampleCreation1, sampleCreation2)),
-                "ERROR: duplicate key value");
+                "property contains value that is not unique!");
     }
 
     @Test
