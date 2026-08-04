@@ -50,11 +50,9 @@ Add a new type interface: `IVocabularytype` and `IVocabularyTerm` for values.
 VocabularyTypes are addressed from the IType.
 
 ```java
-interface IVocabularytype
+interface IVocabularyType
 {
     String getId();
-
-    String getDescription();
 
     String getLabel();
 
@@ -65,7 +63,7 @@ interface IVocabularyTerm
 {
     String getId();
 
-    String getDescription;
+    String getLabel();
 }
 
 
@@ -74,11 +72,10 @@ interface IVocabularyTerm
 `Itype` gets a new method:
 
 ```java
-interface IType
+interface IPropertyType
 {
-...
 
-    List<IVocabularyType> getVocabularyTypes();
+    void addVocabularyType(IVocabularyType);
 
 }
 
