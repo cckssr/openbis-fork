@@ -42,7 +42,9 @@ public enum LogCategory
     /** Log category for status events like server state or build and environment informations. */
     STATUS(true),
     /** Log category for data manipulation events (write access). */
-    TRACKING(true);
+    TRACKING(true),
+    /** Log category for data manipulation events (write access). */
+    STATISTICS(true);
 
     final boolean adminLog;
 
