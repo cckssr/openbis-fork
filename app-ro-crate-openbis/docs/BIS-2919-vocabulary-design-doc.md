@@ -33,12 +33,14 @@ individual terms.
     {
       "@id": "openBIS:termINSTRUMENT_CALORIMETER",
       "@type": "owl:NamedIndividual",
-      "rdfs:label": "Calorimeter"
+      "rdfs:label": "Calorimeter",
+      "rdfs:comment": "We use a bomb calorimeter"
     },
     {
       "@id": "openBIS:termINSTRUMENT_GAS_CHROMATOGRAPH",
       "@type": "owl:NamedIndividual",
-      "rdfs:label": "Gas chromatograph"
+      "rdfs:label": "Gas chromatograph",
+      "rdfs:comment": "A chromatograph with a long tube"
     }
   ]
 }

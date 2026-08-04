@@ -30,6 +30,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
@@ -129,6 +131,12 @@ public class RdfToModel
         handleTypes(types, IdsToTypes, typeToInheritanceChain, entityTypeToRdfIdentifier,
                 codeToType,
                 schema, identifierToCollectionType, openBisDerivedTypes);
+
+        Map<String, Vocabulary> idToVocabulary = schemaFacade.getVocabularyTypes().stream()
+                .collect(Collectors.toMap(IVocabularyType::getId, VocabularyHelper::mapVocabulary));
+
+
+
 
         Map<IType, List<String>> typesToProperties = new LinkedHashMap<>();
         for (IPropertyType typeProperty : typeProperties)
@@ -233,8 +241,11 @@ public class RdfToModel
         Map<String, String> collect = externalIdentifierToSample.entrySet().stream()
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().getCode()));
 
+        Map<VocabularyPermId, Vocabulary> voacbularies = idToVocabulary.values().stream()
+                .collect(Collectors.toMap(x -> x.getPermId(), Function.identity()));
         OpenBisModel openBisModel =
-                new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
+                new OpenBisModel(voacbularies, schema, spaces, projects, metadata, Map.of(),
+                        Map.of(),
                         collect,
                         objectIdentifiersToFiles, objectIdentifiersTOImageFiles);
 

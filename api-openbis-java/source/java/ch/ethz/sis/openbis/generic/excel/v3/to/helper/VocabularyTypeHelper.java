@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind.VOCABULARY_TYPE;
 
@@ -111,7 +112,8 @@ public class VocabularyTypeHelper
                     .ifPresent(longCells::add);
             CellWriter.writeCell(vocabularyTypeRowValues.createCell(1), vto.getLabel())
                     .ifPresent(longCells::add);
-            CellWriter.writeCell(vocabularyTypeRowValues.createCell(2), vto.getDescription())
+            CellWriter.writeCell(vocabularyTypeRowValues.createCell(2),
+                            Optional.ofNullable(vto.getDescription()).orElse(""))
                     .ifPresent(longCells::add);
             rowWriteResults.add(new RowWriteResult(rowNum, longCells));
         }
