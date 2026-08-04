@@ -409,10 +409,10 @@ class DataSet(
 
 
     def request_unarchiving(self):
-        return self._request_archiving(value=True)
+        return self._request_unarchiving(value=True)
 
     def revoke_request_unarchiving(self):
-        return self._request_archiving(value=False)
+        return self._request_unarchiving(value=False)
 
     def _request_unarchiving(self, value=True):
         up_obj = get_type_for_entity(self.entity, "update")
