@@ -137,7 +137,10 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
     public final void deleteRoleAssignment(final RoleAssignmentPE roleAssignment)
     {
         assert roleAssignment != null : "Role assignment unspecified";
-
+        if (operationLog.isInfoEnabled())
+        {
+            operationLog.info(String.format("BEFORE DELETE: role assignment '%s'.", roleAssignment));
+        }
         // Remove the role assignment from the grantee before delete it from the hibernate
         // session. Or you will get an InvalidDataAccessApiUsageException caused by an
         // ObjectDeletedException.
@@ -156,7 +159,7 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
         });
         if (operationLog.isInfoEnabled())
         {
-            operationLog.info(String.format("DELETE: role assignment '%s'.", roleAssignment));
+            operationLog.info(String.format("AFTER DELETE: role assignment '%s'.", roleAssignment));
         }
     }
 
