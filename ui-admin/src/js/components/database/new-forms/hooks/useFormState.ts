@@ -17,6 +17,7 @@ interface UseFormStateReturn {
   updateFieldMetadata: (fieldId: string, meta: any) => void;
   setMode: (mode: React.SetStateAction<FormMode>) => void;
   setForm: (form: React.SetStateAction<Form | null>) => void;
+  restoreForm: (form: Form) => void;
   resetForm: () => void;
 }
 
@@ -46,6 +47,10 @@ export const useFormState = ({
         setOriginalForm(newForm);
       }
     }
+  }, []);
+
+  const restoreForm = useCallback((restoredForm: Form) => {
+    setForm(restoredForm);
   }, []);
 
   // Update field value
@@ -117,6 +122,7 @@ export const useFormState = ({
     updateFieldMetadata,
     setMode,
     setForm: handleSetForm,
+    restoreForm,
     resetForm
   };
 };

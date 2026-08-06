@@ -3,7 +3,7 @@ import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts'
 
 interface UseConflictFlowParams {
   form: Form | null;
-  setForm: (updater: (prevForm: Form | null) => Form | null) => void;
+  restoreForm: (form: Form) => void;
   closeConflictDialog: () => void;
   setConflictResolving: (isResolving: boolean) => void;
 }
@@ -14,25 +14,24 @@ interface UseConflictFlowParams {
  */
 export const useConflictFlow = ({
   form,
-  setForm,
+  restoreForm,
   closeConflictDialog,
   setConflictResolving,
 }: UseConflictFlowParams) => {
   const handleResolveConflicts = useCallback(
     async (resolved: Record<string, any>) => {
-      setForm(prevForm => {
-        if (!prevForm) return null;
-        return {
-          ...prevForm,
-          fields: prevForm.fields.map(field =>
+      if (form) {
+        restoreForm({
+          ...form,
+          fields: form.fields.map(field =>
             resolved.hasOwnProperty(field.id) ? { ...field, value: resolved[field.id] } : field
           ),
-        };
-      });
+        });
+      }
       closeConflictDialog();
       setConflictResolving(true);
     },
-    [setForm, closeConflictDialog, setConflictResolving]
+    [form, restoreForm, closeConflictDialog, setConflictResolving]
   );
 
   return {

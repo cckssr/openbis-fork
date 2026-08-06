@@ -58,7 +58,7 @@ export const EntityFormContextProvider = ({
   const UnsavedChangesDialogAny = UnsavedChangesDialog as any;
 
   // Form state (already well-organized)
-  const { form, originalForm, mode, setForm, setMode, updateField, updateFieldMetadata } = useFormState({
+  const { form, originalForm, mode, setForm, restoreForm, setMode, updateField, updateFieldMetadata } = useFormState({
     initialForm: null,
     initialMode
   });
@@ -95,11 +95,11 @@ export const EntityFormContextProvider = ({
     []
   );
 
-  // Handle data restoration from localStorage
+  // Handle data restoration from localStorage.
   const handleDataRestore = useCallback((savedData: Form) => {
-    setForm(savedData);
+    restoreForm(savedData);
     actionToastContext.raiseInfo('Restored unsaved changes');
-  }, [setForm, actionToastContext]);
+  }, [restoreForm, actionToastContext]);
 
   // Auto-save feature flow (preference + save + restore + actionOverrides)
   const {
@@ -210,7 +210,7 @@ export const EntityFormContextProvider = ({
 
   const { handleResolveConflicts } = useConflictFlow({
     form,
-    setForm,
+    restoreForm,
     closeConflictDialog,
     setConflictResolving,
   });
