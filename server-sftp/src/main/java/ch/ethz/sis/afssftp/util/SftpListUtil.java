@@ -101,12 +101,17 @@ public class SftpListUtil {
     }
 
     public @NonNull List<Experiment> getExperiments(@NonNull String spaceCode, @NonNull String projectCode) {
+        ProjectIdentifier projectId = new ProjectIdentifier(spaceCode, projectCode);
+        return getExperiments(projectId.getIdentifier());
+    }
+
+    public @NonNull List<Experiment> getExperiments(@NonNull String projectIdentifier) {
         OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
         ProjectFetchOptions fetchOptions = new ProjectFetchOptions();
         fetchOptions.withExperiments();
         fetchOptions.withExperiments().withProperties();
-        ProjectIdentifier projectId = new ProjectIdentifier(spaceCode, projectCode);
+        ProjectIdentifier projectId = new ProjectIdentifier(projectIdentifier);
 
         return Optional.ofNullable(openBIS.getProjects(List.of(projectId), fetchOptions).get(projectId))
                 .map(Project::getExperiments).orElse(Collections.emptyList());
@@ -149,8 +154,17 @@ public class SftpListUtil {
      * @return samples attached to project-entity
      */
     public @NonNull List<Sample> getProjectSamples(@NonNull String spaceCode, @NonNull String projectCode) {
-        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
         ProjectIdentifier projectId = new ProjectIdentifier(spaceCode, projectCode);
+        return getProjectSamples(projectId.getIdentifier());
+    }
+
+    /***
+     * @param projectIdentifier complete project identifier, combination of spaceCode and projectCode
+     * @return samples attached to project-entity
+     */
+    public @NonNull List<Sample> getProjectSamples(@NonNull String projectIdentifier) {
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
+        ProjectIdentifier projectId = new ProjectIdentifier(projectIdentifier);
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProperties();
@@ -559,6 +573,12 @@ public class SftpListUtil {
     }
 
     public void deleteSpace(@NonNull String spaceCode) {
+        if (!getProjects(spaceCode).isEmpty() || !getSpaceSamples(spaceCode).isEmpty()) {
+            throw new IllegalArgumentException(
+                    String.format("Space %s is not empty", spaceCode)
+            );
+        }
+
         SpaceDeletionOptions spaceDeletionOptions = new SpaceDeletionOptions();
         spaceDeletionOptions.setReason("Deleted through SFTP");
         openBISClientUtil.getOpenBISClient(user).deleteSpaces(
@@ -586,6 +606,12 @@ public class SftpListUtil {
     }
 
     public void deleteProject(@NonNull String projectId) {
+        if (!getProjectSamples(projectId).isEmpty() || !getExperiments(projectId).isEmpty()) {
+            throw new IllegalArgumentException(
+                    String.format("Project %s is not empty", projectId)
+            );
+        }
+
         ProjectDeletionOptions projectDeletionOptions = new ProjectDeletionOptions();
         projectDeletionOptions.setReason("Deleted through SFTP");
         openBISClientUtil.getOpenBISClient(user).deleteProjects(
@@ -613,6 +639,15 @@ public class SftpListUtil {
     }
 
     public void deleteExperiment(@NonNull String experimentPermId) {
+        if (
+            !getExperimentSamples(experimentPermId).isEmpty() ||
+            !getExperimentDatasets(experimentPermId).isEmpty()
+        ) {
+            throw new IllegalArgumentException(
+                    String.format("Experiment %s is not empty", experimentPermId)
+            );
+        }
+
         ExperimentDeletionOptions experimentDeletionOptions = new ExperimentDeletionOptions();
         experimentDeletionOptions.setReason("Deleted through SFTP");
         openBISClientUtil.getOpenBISClient(user).deleteExperiments(
@@ -668,6 +703,15 @@ public class SftpListUtil {
     }
 
     public void deleteSample(@NonNull String samplePermId) {
+        if (
+                !getSampleChildren(samplePermId).isEmpty() ||
+                !getSampleDatasets(samplePermId).isEmpty()
+        ) {
+            throw new IllegalArgumentException(
+                    String.format("Sample %s is not empty", samplePermId)
+            );
+        }
+
         SampleDeletionOptions sampleDeletionOptions = new SampleDeletionOptions();
         sampleDeletionOptions.setReason("Deleted through SFTP");
         openBISClientUtil.getOpenBISClient(user).deleteSamples(

@@ -832,13 +832,49 @@ public class SftpListUtilTest extends TestCase {
                 OpenBIS.class
         );
         Mockito.doReturn(openBISClientMock).when(openBISClientUtil).getOpenBISClient(user);
-        SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
+        SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user, openBISClientUtil));
+        Mockito.doReturn(Collections.emptyList()).when(sftpListUtil).getSpaceSamples(Mockito.anyString());
+        Mockito.doReturn(Collections.emptyList()).when(sftpListUtil).getProjects(Mockito.anyString());
         sftpListUtil.deleteSpace("space_1");
         ArgumentCaptor<List> deleteSpacesArg = ArgumentCaptor.forClass(List.class);
         Mockito.verify(openBISClientMock, Mockito.times(1)).deleteSpaces(
                 deleteSpacesArg.capture(), Mockito.any()
         );
         assertEquals("SPACE_1", ((SpacePermId) deleteSpacesArg.getValue().get(0)).getPermId());
+    }
+
+    public void testDeleteSpaceFailsIfSpaceNotEmpty() {
+        OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
+        User user = User.builder()
+                .username("u5er")
+                .sessionToken("53551on")
+                .build();
+        OpenBIS openBISClientMock = Mockito.mock(
+                OpenBIS.class
+        );
+        Mockito.doReturn(openBISClientMock).when(openBISClientUtil).getOpenBISClient(user);
+        SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user, openBISClientUtil));
+
+        for (boolean someSamples: List.of(false, true)) {
+            for (boolean someProjects: List.of(false, true)) {
+                if (someSamples || someProjects) {
+                    Mockito.doReturn(someSamples ? Collections.singletonList(new Sample()) : Collections.emptyList())
+                            .when(sftpListUtil).getSpaceSamples(Mockito.anyString());
+                    Mockito.doReturn(someProjects ? Collections.singletonList(new Project()) : Collections.emptyList())
+                            .when(sftpListUtil).getProjects(Mockito.anyString());
+                    Exception exception = null;
+                    try {
+                        sftpListUtil.deleteSpace("space_1");
+                    } catch (Exception e) {
+                        exception = e;
+                    }
+                    assertNotNull(exception);
+                    Mockito.verify(openBISClientMock, Mockito.times(0)).deleteSpaces(
+                            Mockito.anyList(), Mockito.any()
+                    );
+                }
+            }
+        }
     }
 
     public void testDeleteProject() {
@@ -851,13 +887,49 @@ public class SftpListUtilTest extends TestCase {
                 OpenBIS.class
         );
         Mockito.doReturn(openBISClientMock).when(openBISClientUtil).getOpenBISClient(user);
-        SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
+        SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user, openBISClientUtil));
+        Mockito.doReturn(Collections.emptyList()).when(sftpListUtil).getProjectSamples(Mockito.anyString());
+        Mockito.doReturn(Collections.emptyList()).when(sftpListUtil).getExperiments(Mockito.anyString());
         sftpListUtil.deleteProject("/SPACE_1/PROJECT_1");
         ArgumentCaptor<List> deleteProjectsArg = ArgumentCaptor.forClass(List.class);
         Mockito.verify(openBISClientMock, Mockito.times(1)).deleteProjects(
                 deleteProjectsArg.capture(), Mockito.any()
         );
         assertEquals("/SPACE_1/PROJECT_1", ((ProjectIdentifier) deleteProjectsArg.getValue().get(0)).getIdentifier());
+    }
+
+    public void testDeleteProjectFailsIfProjectNotEmpty() {
+        OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
+        User user = User.builder()
+                .username("u5er")
+                .sessionToken("53551on")
+                .build();
+        OpenBIS openBISClientMock = Mockito.mock(
+                OpenBIS.class
+        );
+        Mockito.doReturn(openBISClientMock).when(openBISClientUtil).getOpenBISClient(user);
+        SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user, openBISClientUtil));
+
+        for (boolean someSamples: List.of(false, true)) {
+            for (boolean someExperiments: List.of(false, true)) {
+                if (someSamples || someExperiments) {
+                    Mockito.doReturn(someSamples ? Collections.singletonList(new Sample()) : Collections.emptyList())
+                            .when(sftpListUtil).getProjectSamples(Mockito.anyString());
+                    Mockito.doReturn(someExperiments ? Collections.singletonList(new Experiment()) : Collections.emptyList())
+                            .when(sftpListUtil).getExperiments(Mockito.anyString());
+                    Exception exception = null;
+                    try {
+                        sftpListUtil.deleteProject("/SPACE_1/PROJECT_1");
+                    } catch (Exception e) {
+                        exception = e;
+                    }
+                    assertNotNull(exception);
+                    Mockito.verify(openBISClientMock, Mockito.times(0)).deleteProjects(
+                            Mockito.anyList(), Mockito.any()
+                    );
+                }
+            }
+        }
     }
 
     public void testDeleteExperiment() {
@@ -879,6 +951,40 @@ public class SftpListUtilTest extends TestCase {
         assertEquals("EXPERIMENT_ID_1", ((ExperimentPermId) deleteExperimentsArg.getValue().get(0)).getPermId());
     }
 
+    public void testDeleteExperimentFailsIfExperimentNotEmpty() {
+        OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
+        User user = User.builder()
+                .username("u5er")
+                .sessionToken("53551on")
+                .build();
+        OpenBIS openBISClientMock = Mockito.mock(
+                OpenBIS.class
+        );
+        Mockito.doReturn(openBISClientMock).when(openBISClientUtil).getOpenBISClient(user);
+        SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user, openBISClientUtil));
+
+        for (boolean someSamples: List.of(false, true)) {
+            for (boolean someDatasets: List.of(false, true)) {
+                if (someSamples || someDatasets) {
+                    Mockito.doReturn(someSamples ? Collections.singletonList(new Sample()) : Collections.emptyList())
+                            .when(sftpListUtil).getExperimentSamples(Mockito.anyString());
+                    Mockito.doReturn(someDatasets ? Collections.singletonList(new DataSet()) : Collections.emptyList())
+                            .when(sftpListUtil).getExperimentDatasets(Mockito.anyString());
+                    Exception exception = null;
+                    try {
+                        sftpListUtil.deleteExperiment("experiment_id_1");
+                    } catch (Exception e) {
+                        exception = e;
+                    }
+                    assertNotNull(exception);
+                    Mockito.verify(openBISClientMock, Mockito.times(0)).deleteExperiments(
+                            Mockito.anyList(), Mockito.any()
+                    );
+                }
+            }
+        }
+    }
+
     public void testDeleteSample() {
         OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
         User user = User.builder()
@@ -896,6 +1002,40 @@ public class SftpListUtilTest extends TestCase {
                 deleteSamplesArg.capture(), Mockito.any()
         );
         assertEquals("SAMPLE_ID_1", ((SamplePermId) deleteSamplesArg.getValue().get(0)).getPermId());
+    }
+
+    public void testDeleteSampleFailsIfSampleNotEmpty() {
+        OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
+        User user = User.builder()
+                .username("u5er")
+                .sessionToken("53551on")
+                .build();
+        OpenBIS openBISClientMock = Mockito.mock(
+                OpenBIS.class
+        );
+        Mockito.doReturn(openBISClientMock).when(openBISClientUtil).getOpenBISClient(user);
+        SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user, openBISClientUtil));
+
+        for (boolean someSamples: List.of(false, true)) {
+            for (boolean someDatasets: List.of(false, true)) {
+                if (someSamples || someDatasets) {
+                    Mockito.doReturn(someSamples ? Collections.singletonList(new Sample()) : Collections.emptyList())
+                            .when(sftpListUtil).getSampleChildren(Mockito.anyString());
+                    Mockito.doReturn(someDatasets ? Collections.singletonList(new DataSet()) : Collections.emptyList())
+                            .when(sftpListUtil).getSampleDatasets(Mockito.anyString());
+                    Exception exception = null;
+                    try {
+                        sftpListUtil.deleteSample("sample_id_1");
+                    } catch (Exception e) {
+                        exception = e;
+                    }
+                    assertNotNull(exception);
+                    Mockito.verify(openBISClientMock, Mockito.times(0)).deleteSamples(
+                            Mockito.anyList(), Mockito.any()
+                    );
+                }
+            }
+        }
     }
 
     public void testDeleteDataSet() {
