@@ -37,16 +37,16 @@ def _log(message, level):
         print(message)
 
 def log_error(message):
-    _log(message, LOG_ERROR)
+    _log("[ERROR] " + str(message), LOG_ERROR)
 
 def log_warning(message):
-    _log(message, LOG_WARNING)
+    _log("[WARNING] " + str(message), LOG_WARNING)
 
 def log_info(message):
-    _log(message, LOG_INFO)
+    _log("[INFO] " + str(message), LOG_INFO)
 
 def log_debug(message):
-    _log("[DEBUG] " + message, LOG_DEBUG)
+    _log("[DEBUG] " + str(message), LOG_DEBUG)
 
 
 

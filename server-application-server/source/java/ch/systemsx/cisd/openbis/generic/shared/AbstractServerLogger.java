@@ -18,10 +18,13 @@ package ch.systemsx.cisd.openbis.generic.shared;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 import ch.ethz.sis.shared.log.standard.core.Level;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
+import ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler;
 import ch.systemsx.cisd.authentication.ILogMessagePrefixGenerator;
 import ch.systemsx.cisd.authentication.ISessionManager;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
@@ -55,6 +58,8 @@ public abstract class AbstractServerLogger implements IServer
 
     private final Logger trackingLog;
 
+    private final Logger statisticsLog;
+
     protected final ILogMessagePrefixGenerator<Session> logMessagePrefixGenerator;
 
     private final ISessionManager<Session> sessionManagerOrNull;
@@ -75,6 +80,7 @@ public abstract class AbstractServerLogger implements IServer
         authLog = LogFactory.getLogger(LogCategory.AUTH, getClass());
         accessLog = LogFactory.getLogger(LogCategory.ACCESS, getClass());
         trackingLog = LogFactory.getLogger(LogCategory.TRACKING, getClass());
+        statisticsLog = LogFactory.getLogger(LogCategory.STATISTICS, getClass());
     }
 
     // helper methods for logging collections and arrays
@@ -175,6 +181,11 @@ public abstract class AbstractServerLogger implements IServer
     {
         logMessage(trackingLog, Level.INFO, sessionToken, commandName, parameterDisplayFormat,
                 parameters);
+    }
+
+    protected final void logStatistics(final String sessionToken, final String commandName)
+    {
+        logMessage(statisticsLog, Level.INFO, sessionToken, commandName, "", new Object[0]);
     }
 
     private final void logMessage(final Logger logger, final Level level,

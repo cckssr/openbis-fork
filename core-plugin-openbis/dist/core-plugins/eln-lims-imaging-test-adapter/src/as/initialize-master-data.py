@@ -58,13 +58,7 @@ from java.nio.charset import StandardCharsets
 venv_path = get_property("imaging-test.venv-path", None)
 print("VENV_PATH", venv_path)
 
-
-# skip if just upgrade
-if uploadRequired:
-
-    if venv_path is None:
-        raise ValueError("Venv path not configured!")
-
+if venv_path is not None:
     command = ""
     if not os.path.exists(venv_path) or len(os.listdir(venv_path)) <= 1:
         print("VENV does not exists - creating one")
@@ -88,10 +82,14 @@ if uploadRequired:
         exitCode = process.waitFor()
 
         if exitCode != 0:
-            print("Error during")
+            print("Error during virtual environment setup of eln-lims-imaging-test-adapter")
             error = String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8)
             raise ValueError("Error during virtual environment setup:" + error)
 
+# skip if just upgrade
+if uploadRequired:
+    if venv_path is None:
+        raise ValueError("Venv path not configured!")
 
     print("registering imaging-test data!")
     ImagingFixes.registerExamples(sys.path[-1], "imaging-test", venv_path)

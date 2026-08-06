@@ -607,6 +607,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public Map<ISpaceId, Space> getSpaces(String sessionToken, List<? extends ISpaceId> spaceIds, SpaceFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "get-spaces", "SPACE_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(spaceIds), fetchOptions);
+        logStatistics(sessionToken, "get-spaces");
         return null;
     }
 
@@ -614,6 +615,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public Map<IProjectId, Project> getProjects(String sessionToken, List<? extends IProjectId> projectIds, ProjectFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "get-projects", "PROJECT_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(projectIds), fetchOptions);
+        logStatistics(sessionToken, "get-projects");
         return null;
     }
 
@@ -622,6 +624,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
             ExperimentFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "get-experiments", "EXPERIMENT_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(experimentIds), fetchOptions);
+        logStatistics(sessionToken, "get-experiments");
         return null;
     }
 
@@ -638,6 +641,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
             List<? extends ISampleId> sampleIds, SampleFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "get-samples", "SAMPLE_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(sampleIds), fetchOptions);
+        logStatistics(sessionToken, "get-samples");
         return null;
     }
 
@@ -723,6 +727,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public Map<IDataSetId, DataSet> getDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "get-data-sets", "DATA_SET_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(dataSetIds), fetchOptions);
+        logStatistics(sessionToken, "get-data-sets");
         return null;
     }
 
@@ -788,6 +793,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public SearchResult<Space> searchSpaces(String sessionToken, SpaceSearchCriteria searchCriteria, SpaceFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-spaces", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        logStatistics(sessionToken, "search-spaces");
         return null;
     }
 
@@ -795,6 +801,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public SearchResult<Project> searchProjects(String sessionToken, ProjectSearchCriteria searchCriteria, ProjectFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-projects", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        logStatistics(sessionToken, "search-projects");
         return null;
     }
 
@@ -803,6 +810,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
             ExperimentFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-experiments", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        logStatistics(sessionToken, "search-experiments");
         return null;
     }
 
@@ -818,6 +826,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public SearchResult<Sample> searchSamples(String sessionToken, SampleSearchCriteria searchCriteria, SampleFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-samples", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        logStatistics(sessionToken, "search-samples");
         return null;
     }
 
@@ -833,6 +842,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public SearchResult<DataSet> searchDataSets(String sessionToken, DataSetSearchCriteria searchCriteria, DataSetFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-data-sets", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        logStatistics(sessionToken, "search-data-sets");
         return null;
     }
 

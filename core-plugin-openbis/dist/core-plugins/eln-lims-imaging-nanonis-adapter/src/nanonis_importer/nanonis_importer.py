@@ -42,9 +42,9 @@ if SERVICE_TYPE == "AS":
     SXM_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisSxmAdaptor"
     DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisDatAdaptor"
 
-AFS_URL = None
-# AFS_URL = 'http://localhost:8085/afs-server/api'
+AFS_URL = 'http://localhost:8085/afs-server/api'
 # AFS_URL = "https://openbis-sis-ci-sprint.ethz.ch/afs-server/api"
+# AFS_URL = "http://local.openbis.ch:8085/afs-server/api"
 
 def get_instance(url=None, token=None):
     if url is None:

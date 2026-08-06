@@ -36,7 +36,6 @@ import org.springframework.dao.DataAccessException;
 
 import jakarta.persistence.PersistenceException;
 import jakarta.validation.ConstraintViolationException;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.io.Serializable;
 import java.util.*;
@@ -161,6 +160,8 @@ public abstract class AbstractCreateEntityWithCustomIdExecutor<CREATION extends 
 
         save(context, new ArrayList<PE>(creationToEntityMap.values()), false);
 
+        postSaveUpdateBatch(context, mapBatch);
+
         CreationIdCache creationIdCache = CreationIdCache.getInstance(context);
 
         for (Map.Entry<CREATION, PE> entry : creationToEntityMap.entrySet())
@@ -206,6 +207,10 @@ public abstract class AbstractCreateEntityWithCustomIdExecutor<CREATION extends 
         {
             entry.setValue(idToEntityMap.get(entry.getValue().getId()));
         }
+    }
+
+    protected void postSaveUpdateBatch(IOperationContext context, MapBatch<CREATION, PE> batch) {
+        // optional call made after updateBatch is saved
     }
 
     protected abstract IObjectId getId(PE entity);

@@ -46,27 +46,29 @@ public class SessionTokenHash
         {
             return false;
         }
-        final String[] splittedToken =
-                StringUtils.split(hashOrNull, SESSION_TOKEN_SEPARATOR);
-        if (splittedToken.length < 2)
-        {
+        // Obtain the start of the Timestamp
+        int startOfTimestampIndex = hashOrNull.lastIndexOf(SESSION_TOKEN_SEPARATOR);
+        if (startOfTimestampIndex == -1) {
             return false;
         }
-        String[] splittedTimeStampToken =
-                StringUtils.split(splittedToken[1], TIMESTAMP_TOKEN_SEPARATOR);
-        if (splittedTimeStampToken.length < 2)
-        {
+        // Obtain the start of the random
+        int startOfRandomIndex = hashOrNull.lastIndexOf(TIMESTAMP_TOKEN_SEPARATOR);
+        if (startOfRandomIndex == -1) {
             return false;
         }
+
+        final String timestamp = hashOrNull.substring(startOfTimestampIndex + 1, startOfRandomIndex);
+        final String random = hashOrNull.substring(startOfRandomIndex + 1);
+
         try
         {
-            Long.parseLong(splittedTimeStampToken[0]);
+            Long.parseLong(timestamp);
         } catch (NumberFormatException ex)
         {
             return false;
         }
 
-        return splittedTimeStampToken[1].length() == 32;
+        return random.length() == 32;
     }
 
     @Override public String toString()

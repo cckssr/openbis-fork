@@ -55,6 +55,7 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
             Map<String, Serializable> previewMetadata,
             List<ImagingDataSetFilter> filterConfig)
     {
+        operationLog.info(String.format("Running adaptor with venv: '%s' and script '%s'", pythonPath, scriptPath));
         ProcessBuilder processBuilder = new ProcessBuilder(pythonPath,
                 scriptPath, rootFile.getAbsolutePath(), format, convertMapToJson(imageConfig),
                 convertMapToJson(imageMetadata), convertMapToJson(previewConfig), convertMapToJson(previewMetadata),

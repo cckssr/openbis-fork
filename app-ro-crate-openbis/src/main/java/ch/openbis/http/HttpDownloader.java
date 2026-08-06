@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -111,7 +112,7 @@ public class HttpDownloader {
             downloaderThread.start();
         }
         maxThreadLimitSemaphore.acquire(MAX_DOWNLOAD_THREADS);
-        for (var keyVal : exceptions.entrySet())
+        for (Map.Entry<Downloader, Exception> keyVal : exceptions.entrySet())
         {
             httpDownloaderError.error(keyVal.getKey().download.url, keyVal.getKey().download.path,
                     keyVal.getValue());
@@ -147,7 +148,7 @@ public class HttpDownloader {
 
         @Override
         public void run() {
-            Path tempFile;
+            Path tempFile = null;
             try {
                 // download
 
@@ -167,14 +168,24 @@ public class HttpDownloader {
                 if (response.statusCode() != HttpURLConnection.HTTP_OK) {
                     throw new RuntimeException("Http status: " + response.statusCode());
                 }
-                InputStream in = response.body();
+                try (InputStream in = response.body())
+                {
 
-                if (!Files.exists(download.path) || httpDownloaderOverride.override(download.url, download.path)) {
-                    Path dir = download.path.getParent();
-                    String name = download.path.getFileName().toString();
-                    tempFile = Files.createTempFile(dir,name, ".tmp");
-                    Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
-                    Files.move(tempFile, download.path, StandardCopyOption.ATOMIC_MOVE);
+                    if (!Files.exists(download.path) || httpDownloaderOverride.override(
+                            download.url, download.path))
+                    {
+                        Path dir = download.path.getParent();
+                        String name = download.path.getFileName().toString();
+                        tempFile = Files.createTempFile(dir, name, ".tmp");
+                        Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
+                        Files.move(tempFile, download.path, StandardCopyOption.ATOMIC_MOVE);
+                    }
+                } finally
+                {
+                    if (tempFile != null && Files.exists(tempFile))
+                    {
+                        Files.delete(tempFile);
+                    }
                 }
             } catch (Exception exception) {
                 exceptions.put(this, exception);

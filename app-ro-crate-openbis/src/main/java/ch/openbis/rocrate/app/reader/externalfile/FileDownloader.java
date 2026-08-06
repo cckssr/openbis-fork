@@ -77,6 +77,9 @@ public class FileDownloader implements IFileDownloader
         List<AbstractEntity> abstractEntityList = new ArrayList<>();
         abstractEntityList.addAll(roCrate.getAllContextualEntities());
         abstractEntityList.addAll(roCrate.getAllDataEntities());
+
+        // /stuff/file.txt
+        // /other/file.txt
         for (AbstractEntity dataEntity : abstractEntityList)
         {
             String typerooni = dataEntity.getProperty("@type").asText();
@@ -91,11 +94,12 @@ public class FileDownloader implements IFileDownloader
             {
                 continue;
             }
-            SupportedProtocol supportedProtocol1 = supportedProtocol.get();
             URL parsedUrl = new URL(dataEntity.getId());
             URL workingUrl = this.mapUrl.apply(parsedUrl);
+            UUID fileUuid = UUID.randomUUID();
 
-            Path tempFile = iFileDownloadStrategy.getPath("download" + downloadUUid);
+            Path tempFile =
+                    iFileDownloadStrategy.getPath("download" + downloadUUid + "_" + fileUuid);
             httpDownloader.add(workingUrl.toString(), tempFile);
             downloadPaths.put(dataEntity, tempFile);
 

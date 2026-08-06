@@ -15,15 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import jakarta.annotation.Resource;
 
@@ -318,11 +310,16 @@ public class CreateSampleExecutor extends AbstractCreateEntityExecutor<SampleCre
     }
 
     @Override
-    protected void updateAll(IOperationContext context, MapBatch<SampleCreation, SamplePE> batch)
-    {
-        // needed to be here in order to be able to set sample properties from the same call
+    protected void postSaveUpdateBatch(IOperationContext context, MapBatch<SampleCreation, SamplePE> batch) {
+        // needed to be here in order to be able to set sample properties from the same batch call
         updateEntityPropertyExecutor.update(context, batch);
 
+        save(context, new ArrayList<>(batch.getObjects().values()), false);
+    }
+
+    @Override
+    protected void updateAll(IOperationContext context, MapBatch<SampleCreation, SamplePE> batch)
+    {
         Map<AttachmentHolderPE, Collection<? extends AttachmentCreation>> attachmentMap =
                 new HashMap<AttachmentHolderPE, Collection<? extends AttachmentCreation>>();
         Map<IEntityWithMetaprojects, Collection<? extends ITagId>> tagMap = new HashMap<IEntityWithMetaprojects, Collection<? extends ITagId>>();

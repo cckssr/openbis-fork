@@ -3,6 +3,7 @@ package ch.ethz.sis.openbis.generic.server.as.plugins.imaging;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.UUID;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
@@ -77,12 +78,14 @@ final class AfsClientProxy
     {
         URI base = URI.create(afsServerUrl);
         if (base.getPort() == -1) {
+            operationLog.info("Configured port is '-1' - recalibrating URL");
             // it is done because AfsClient kept adding "-1" to url port which is wrong
             int port = "https".equalsIgnoreCase(base.getScheme()) ? 443 : 80;
             try
             {
                 base = new URI(base.getScheme(), base.getUserInfo(), base.getHost(), port,
                         base.getPath(), base.getQuery(), base.getFragment());
+                operationLog.info("New URL: "  + base);
             } catch (URISyntaxException e)
             {
                 operationLog.error("Error creating AFS server URL", e);
@@ -117,7 +120,7 @@ final class AfsClientProxy
             return client.isSessionValid();
         } catch (Exception e)
         {
-            operationLog.error(String.format("Could not check session validity, returning false. Error: %s", e));
+            operationLog.error(String.format("Could not check session validity, returning false. Error: %s", e.getCause()));
             return false;
         }
     }
