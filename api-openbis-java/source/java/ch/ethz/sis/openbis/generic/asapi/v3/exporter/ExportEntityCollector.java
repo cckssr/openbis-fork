@@ -14,6 +14,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options.ExportOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
@@ -30,6 +31,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -41,6 +45,9 @@ import java.util.Map;
 import java.util.Set;
 
 public final class ExportEntityCollector {
+    private static final Logger operationLog =
+            LogFactory.getLogger(LogCategory.OPERATION, ExportEntityCollector.class);
+
     private ExportEntityCollector() {}
 
     /*
@@ -120,10 +127,12 @@ public final class ExportEntityCollector {
                     //
                     SpaceFetchOptions spaceFetchOptions = new SpaceFetchOptions();
                     spaceFetchOptions.withProjects();
+                    SpacePermId spaceRequestPermId = new SpacePermId(current.getPermId());
                     Map<ISpaceId, Space> spaces = api.getSpaces(sessionToken,
-                            List.of(new SpacePermId(current.getPermId())),
+                            List.of(spaceRequestPermId),
                             spaceFetchOptions);
-                    space = spaces.values().iterator().next();
+                    space = getSingleOrNull(spaces, spaceRequestPermId);
+                    if (space == null) { collection.remove(current); continue; }
                     spacePermId = space.getPermId();
                     spaceIdentifier = "/" + space.getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, spacePermId);
@@ -171,10 +180,12 @@ public final class ExportEntityCollector {
                     if (withLevelsBelow) {
                         projectFetchOptions.withExperiments();
                     }
+                    ProjectPermId projectRequestPermId = new ProjectPermId(current.getPermId());
                     Map<IProjectId, Project> projects = api.getProjects(sessionToken,
-                            List.of(new ProjectPermId(current.getPermId())),
+                            List.of(projectRequestPermId),
                             projectFetchOptions);
-                    project = projects.values().iterator().next();
+                    project = getSingleOrNull(projects, projectRequestPermId);
+                    if (project == null) { collection.remove(current); continue; }
                     projectIdentifier = project.getIdentifier().getIdentifier();
                     projectSpacePermId = project.getSpace().getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, projectSpacePermId);
@@ -232,10 +243,12 @@ public final class ExportEntityCollector {
                     } else {
                         experimentFetchOptions.withSampleProperties();
                     }
+                    ExperimentPermId experimentRequestPermId = new ExperimentPermId(current.getPermId());
                     Map<IExperimentId, Experiment> experiments = api.getExperiments(sessionToken,
-                            List.of(new ExperimentPermId(current.getPermId())),
+                            List.of(experimentRequestPermId),
                             experimentFetchOptions);
-                    experiment = experiments.values().iterator().next();
+                    experiment = getSingleOrNull(experiments, experimentRequestPermId);
+                    if (experiment == null) { collection.remove(current); continue; }
                     experimentIdentifier = experiment.getIdentifier().getIdentifier();
                     experimentSpacePermId = experiment.getProject().getSpace().getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, experimentSpacePermId);
@@ -346,8 +359,10 @@ public final class ExportEntityCollector {
                         }
                     }
 
-                    Map<ISampleId, Sample> samples = api.getSamples(sessionToken, List.of(new SamplePermId(current.getPermId())), sampleFetchOptions);
-                    sample = samples.values().iterator().next();
+                    SamplePermId sampleRequestPermId = new SamplePermId(current.getPermId());
+                    Map<ISampleId, Sample> samples = api.getSamples(sessionToken, List.of(sampleRequestPermId), sampleFetchOptions);
+                    sample = getSingleOrNull(samples, sampleRequestPermId);
+                    if (sample == null) { collection.remove(current); continue; }
                     sampleSpacePermId = sample.getSpace().getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, sampleSpacePermId);
 
@@ -473,8 +488,10 @@ public final class ExportEntityCollector {
                         }
                     }
 
-                    Map<IDataSetId, DataSet> datasets = api.getDataSets(sessionToken, List.of(new DataSetPermId(current.getPermId())), dataSetFetchOptions);
-                    dataSet = datasets.values().iterator().next();
+                    DataSetPermId dataSetRequestPermId = new DataSetPermId(current.getPermId());
+                    Map<IDataSetId, DataSet> datasets = api.getDataSets(sessionToken, List.of(dataSetRequestPermId), dataSetFetchOptions);
+                    dataSet = getSingleOrNull(datasets, dataSetRequestPermId);
+                    if (dataSet == null) { collection.remove(current); continue; }
                     if (dataSet.getSample() != null) {
                         datasetSpacePermId = dataSet.getSample().getSpace().getPermId();
                     }
@@ -600,6 +617,23 @@ public final class ExportEntityCollector {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the single entity fetched for the given id, or {@code null} if nothing was fetched. An
+     * empty result means the entity could not be resolved - it was deleted from the source between
+     * selection and resolution, or the session user has no rights to it. This includes entities
+     * explicitly selected for export (a harvester may be configured with a space that has since been
+     * deleted from the source), so it is never a hard error: a warning is logged and {@code null} is
+     * returned so the caller drops the perm id and continues the traversal.
+     */
+    private static <K, V> V getSingleOrNull(Map<K, V> map, IObjectId id) {
+        if (map.isEmpty()) {
+            operationLog.warn("Skipping entity that could not be resolved "
+                    + "(deleted from the source or not accessible to the session user): " + id);
+            return null;
+        }
+        return map.values().iterator().next();
     }
 
     private static <K, V> Map<K, V> safe(Map<K, V> mapOrNull) {
