@@ -34,7 +34,10 @@ public enum AfsSftpServerParameter
 
     maxFileChannelsPerSession,
     maxAfsClientChunkSize,
-    afsCacheTimeoutMillis;
+    afsCacheTimeoutMillis,
+
+    createdExperimentType,
+    createdSampleType;
 
     private final String parameterName;
 

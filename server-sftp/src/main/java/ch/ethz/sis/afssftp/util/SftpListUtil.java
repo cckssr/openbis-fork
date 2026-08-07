@@ -3,6 +3,7 @@ package ch.ethz.sis.afssftp.util;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
 import ch.ethz.sis.afssftp.authentication.User;
+import ch.ethz.sis.afssftp.conf.Parameters;
 import ch.ethz.sis.afssftp.filesystemview.FtpPathLister;
 import ch.ethz.sis.afssftp.filesystemview.SftpFileAttributes;
 import ch.ethz.sis.afssftp.filesystemview.SftpNode;
@@ -53,7 +54,7 @@ import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.isPathNotInStor
 public class SftpListUtil {
     public static final String FOLDER_SAMPLE_TYPE = "FOLDER";
     public static final String ENTRY_SAMPLE_TYPE = "ENTRY";
-    public static final String DATASET_ENTITY_TYPE_AFS_DATA = "AFS_DATA";
+
     public static final Set<SftpNode.Type> POSSIBLE_AFS_ENTITY_TYPES = Set.of(
             SftpNode.Type.FOLDER,
             SftpNode.Type.SAMPLE,
@@ -630,7 +631,9 @@ public class SftpListUtil {
         experimentCreation.setProjectId(new ProjectIdentifier(spaceCode, projectCode));
         experimentCreation.setCode(experimentName.replace(" ", "_").replaceAll("[^a-zA-Z0-9_\\-.]", "").toUpperCase());
         experimentCreation.setProperty(SftpListUtil.PROPERTY_NAME, experimentName);
-        experimentCreation.setTypeId(new EntityTypePermId(EXPERIMENT_TYPE_COLLECTION));
+        experimentCreation.setTypeId(new EntityTypePermId(
+            Parameters.getConfiguredCreatedExperimentType().orElse(EXPERIMENT_TYPE_COLLECTION)
+        ));
         openBISClientUtil.getOpenBISClient(user).createExperiments(
                 Collections.singletonList(
                         experimentCreation
@@ -693,7 +696,9 @@ public class SftpListUtil {
         if (folderType) {
             sampleCreation.setTypeId(new EntityTypePermId(FOLDER_SAMPLE_TYPE));
         } else {
-            sampleCreation.setTypeId(new EntityTypePermId(ENTRY_SAMPLE_TYPE));
+            sampleCreation.setTypeId(new EntityTypePermId(
+                Parameters.getConfiguredCreatedSampleType().orElse(ENTRY_SAMPLE_TYPE)
+            ));
         }
         openBISClientUtil.getOpenBISClient(user).createSamples(
                 Collections.singletonList(
