@@ -31,9 +31,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
-import ch.ethz.sis.shared.log.classic.core.LogCategory;
-import ch.ethz.sis.shared.log.classic.impl.LogFactory;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,8 +42,6 @@ import java.util.Map;
 import java.util.Set;
 
 public final class ExportEntityCollector {
-    private static final Logger operationLog =
-            LogFactory.getLogger(LogCategory.OPERATION, ExportEntityCollector.class);
 
     private ExportEntityCollector() {}
 
@@ -624,13 +619,11 @@ public final class ExportEntityCollector {
      * empty result means the entity could not be resolved - it was deleted from the source between
      * selection and resolution, or the session user has no rights to it. This includes entities
      * explicitly selected for export (a harvester may be configured with a space that has since been
-     * deleted from the source), so it is never a hard error: a warning is logged and {@code null} is
+     * deleted from the source), so it is never a hard error: {@code null} is
      * returned so the caller drops the perm id and continues the traversal.
      */
     private static <K, V> V getSingleOrNull(Map<K, V> map, IObjectId id) {
         if (map.isEmpty()) {
-            operationLog.warn("Skipping entity that could not be resolved "
-                    + "(deleted from the source or not accessible to the session user): " + id);
             return null;
         }
         return map.values().iterator().next();
