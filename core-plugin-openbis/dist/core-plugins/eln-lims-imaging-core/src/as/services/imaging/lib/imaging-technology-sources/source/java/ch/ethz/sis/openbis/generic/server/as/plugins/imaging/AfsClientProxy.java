@@ -24,6 +24,8 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
 final class AfsClientProxy
 {
+
+    public static final String AFS_SERVER_URL_PROPERTY_NAME = "api.v3.transaction.participant.afs-server.url";
     private UUID transactionId;
 
     private final AfsClient client;
@@ -57,6 +59,11 @@ final class AfsClientProxy
         SearchResult<DataStore> dataStoreSearchResult =
                 applicationServerApi.searchDataStores(sessionToken, dataStoreSearchCriteria, new DataStoreFetchOptions());
         String url = dataStoreSearchResult.getObjects().isEmpty() ? null : dataStoreSearchResult.getObjects().getFirst().getDownloadUrl();
+
+        if(url == null || url.isBlank() || url.startsWith("https")) {
+            operationLog.warn(String.format("Detected non-http AFS url: '%s' - using '%s' property value", url, AFS_SERVER_URL_PROPERTY_NAME));
+            url = CommonServiceProvider.tryToGetProperty(AFS_SERVER_URL_PROPERTY_NAME);
+        }
 
         if(url != null && !url.isBlank()) {
             operationLog.info("Resolved AFS server URL: " + url);
