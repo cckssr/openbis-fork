@@ -1,6 +1,7 @@
 package ch.openbis.drive.gui.maincontent.syncjobs;
 
 import ch.openbis.drive.gui.util.Style;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -20,6 +21,8 @@ public class SyncJobCardLabel extends HBox implements AutoCloseable {
     public static int DEFAULT_TAG_MIN_WIDTH = 130;
     private final @NonNull ChangeListener<Number> desiredWidthChangeListener;
     private final @NonNull ObservableValue<Double> desiredWidth;
+
+    private final TextField valueNode;
 
     public SyncJobCardLabel(@NonNull String tag,
                             @NonNull String value,
@@ -46,7 +49,7 @@ public class SyncJobCardLabel extends HBox implements AutoCloseable {
         Label labelNode = new Label(tag);
         labelNode.setMinWidth(tagMinWidth);
         labelNode.setStyle(String.format("-fx-font-weight: bold; -fx-font-size: %spt", fontSize - 1));
-        TextField valueNode = new TextField(value);
+        valueNode = new TextField(value);
         valueNode.setEditable(false);
         valueNode.setStyle(String.format("-fx-font-size: %spt; -fx-background-color: transparent; -fx-text-fill: %s",
                 fontSize, Style.toCssValue(Optional.ofNullable(color).orElse(Color.BLACK))));
@@ -65,6 +68,12 @@ public class SyncJobCardLabel extends HBox implements AutoCloseable {
         this.desiredWidth = desiredWidth;
         this.desiredWidth.addListener(desiredWidthChangeListener);
         this.getChildren().addAll(labelNode, valueNode);
+    }
+
+    public void setValue(@NonNull String value) {
+        Platform.runLater( () -> {
+            valueNode.setText(value);
+        });
     }
 
     @Override

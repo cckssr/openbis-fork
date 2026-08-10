@@ -10,6 +10,7 @@ import ch.openbis.drive.gui.maincontent.SynchronizationTasksPanel;
 import ch.openbis.drive.gui.util.AboutDialog;
 import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.SharedContext;
+import ch.openbis.drive.logging.Logging;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
@@ -40,7 +41,6 @@ import static ch.openbis.drive.gui.util.NodeNavigationUtil.closeAndClearChildNod
 
 
 public class MainViewController {
-    private Logger logger = LogManager.getLogger(this.getClass());
     public static final String SIDE_MENU_ID = "side-menu";
     public static final String MAIN_CONTENT_PANEL_ID = "main-content";
     public static final String SYNC_TASKS_BUTTON_ID = "menu-sync-tasks";
@@ -139,21 +139,21 @@ public class MainViewController {
         activateSynchronizationTasksPanel();
     }
 
-    private Pane getOpenBisDriveTopLeftLogo() {
+    public static Pane getOpenBisDriveTopLeftLogo() {
         BorderPane logo = new BorderPane();
 
         Node logoImage;
         ImageView image = null;
         try {
             image = new ImageView(new Image(
-                    Objects.requireNonNull(this.getClass().getClassLoader().getResourceAsStream("images/openbis-drive-logo-small.png"))
+                    Objects.requireNonNull(MainViewController.class.getClassLoader().getResourceAsStream("images/openbis-drive-logo-small.png"))
             ));
             image.setSmooth(true);
             image.setPreserveRatio(true);
             image.setFitHeight(DisplaySettings.SIDE_MENU_BUTTON_HEIGHT);
             image.setTranslateY(DisplaySettings.SIDE_MENU_BUTTON_HEIGHT * 0.08);
         } catch (Exception e) {
-            logger.catching(new RuntimeException("Error loading top-left logo image", e));
+            Logging.tryCatchErrorInStaticMethod(MainViewController.class, new RuntimeException("Error loading top-left logo image", e));
         }
         if (image != null) {
             logoImage = image;
@@ -167,6 +167,36 @@ public class MainViewController {
         logo.setCenter(logoImage);
         logo.setMaxSize(DisplaySettings.SIDE_MENU_WIDTH, DisplaySettings.SIDE_MENU_BUTTON_HEIGHT);
         logo.setPrefSize(DisplaySettings.SIDE_MENU_WIDTH, DisplaySettings.SIDE_MENU_BUTTON_HEIGHT);
+        return logo;
+    }
+
+    public static Pane getOpenBisDriveBigRectangleLogo(double width) {
+        BorderPane logo = new BorderPane();
+
+        Node logoImage;
+        ImageView image = null;
+        try {
+            image = new ImageView(new Image(
+                    Objects.requireNonNull(MainViewController.class.getClassLoader().getResourceAsStream("images/openbis-drive-logo-transparent-medium.png"))
+            ));
+            image.setSmooth(true);
+            image.setPreserveRatio(true);
+            image.setFitHeight(width / 4);
+        } catch (Exception e) {
+            Logging.tryCatchErrorInStaticMethod(MainViewController.class, new RuntimeException("Error loading logo image", e));
+        }
+        if (image != null) {
+            logoImage = image;
+        } else {
+            Label logoText = new Label(DisplaySettings.LOGO_TEXT);
+            logoText.setFont(Font.font("Sans-Serif", 20));
+            logoImage = logoText;
+        }
+
+        logo.setBackground(Background.fill(Color.TRANSPARENT));
+        logo.setCenter(logoImage);
+        logo.setMaxSize(width, width / 4);
+        logo.setPrefSize(width, width / 4);
         return logo;
     }
 

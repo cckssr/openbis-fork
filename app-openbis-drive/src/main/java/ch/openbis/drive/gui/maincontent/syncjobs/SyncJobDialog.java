@@ -29,6 +29,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.*;
@@ -47,7 +48,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
@@ -55,7 +55,6 @@ import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathStr
 public class SyncJobDialog extends Dialog<SyncJob> {
     private final Logger logger = LogManager.getLogger(this.getClass());
     final int MAX_TEXT_INPUT_LENGTH = 300;
-    Pattern HTTP_URL_PATTERN = Pattern.compile("^(http|https)://[^\\s/$.?#][^/]*$");
     final static String SUGGESTED_REMOTE_ROOT_DIRECTORY = "/";
     final static String LINE_SEPARATOR = System.lineSeparator();
     final OpenBISQueryUtil.SearchUnit searchUnit;
@@ -63,6 +62,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     final SyncJob editedSyncJob;
     final List<SyncJob> currentSyncJobs;
+    final OpenBISQueryUtil.AvailableSession availableSession;
 
     final TextField openbisServerUrlValue;
     final TextField titleValue;
@@ -97,11 +97,20 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     final static int EXTENDED_HEIGHT = 750;
     final static int EXTENDED_WIDTH = 900;
 
-    public SyncJobDialog(@Nullable SyncJob toBeModified, Stage mainStage, List<SyncJob> currentSyncJobs) {
+    public SyncJobDialog(
+            @Nullable SyncJob toBeModified,
+            @NonNull OpenBISQueryUtil.AvailableSession availableSession,
+            Stage mainStage,
+            List<SyncJob> currentSyncJobs) {
         super();
         this.editedSyncJob = toBeModified;
         this.currentSyncJobs = currentSyncJobs;
-        if (this.editedSyncJob != null) {
+        this.availableSession = availableSession;
+
+        if (this.editedSyncJob != null &&
+                availableSession.openBISUrl().equals(this.editedSyncJob.getOpenBisUrl()) &&
+                availableSession.personalAccessToken().equals(this.editedSyncJob.getOpenBisPersonalAccessToken())
+        ) {
             entityChosen.setValue(new ChosenEntity(
                     this.editedSyncJob.getEntityPermId(),
                     this.editedSyncJob.getEntityType(),
@@ -621,36 +630,13 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     TextField getPersonalAccessTokenTextField() {
         TextField personalAccessTokenValue = new TextField();
+        personalAccessTokenValue.setEditable(false);
+        personalAccessTokenValue.getStyleClass().add(DisplaySettings.GREYED_TEXT_FIELD_STYLE_CLASS);
+        personalAccessTokenValue.setStyle(String.format("-fx-text-fill: %s",
+                Style.toCssValue(Color.BLACK)));
         personalAccessTokenValue.setPrefWidth(1200);
-        addValidationLayerToTextInput(personalAccessTokenValue, (textInput) -> validatePersonalAccessTokenValue(textInput.getText()), personalAccessTokenPropertyError);
-        if (editedSyncJob != null) {
-            personalAccessTokenValue.setText(editedSyncJob.getOpenBisPersonalAccessToken());
-        } else {
-            personalAccessTokenValue.setText(getMostRecentlyTouchedSyncJob().map( SyncJob::getOpenBisPersonalAccessToken ).orElse(""));
-        }
+        personalAccessTokenValue.setText(availableSession.personalAccessToken());
         return personalAccessTokenValue;
-    }
-
-    String[] validatePersonalAccessTokenValue(String personalAccessTokenInput) {
-        String[] error;
-        if(personalAccessTokenInput == null || personalAccessTokenInput.isBlank()) {
-            error = new String[] { "error_tooltip.required_value" };
-        } else {
-            if(personalAccessTokenInput.length() > MAX_TEXT_INPUT_LENGTH) {
-                error = new String[] { "error_tooltip.too_long_text_input" };
-            } else {
-                error = null;
-            }
-        }
-
-        if (error == null) {
-            searchUnit.setPersonalAccessToken(personalAccessTokenInput.trim());
-            afsSearchUnit.setPersonalAccessToken(personalAccessTokenInput.trim());
-        } else {
-            searchUnit.setPersonalAccessToken(null);
-            afsSearchUnit.setPersonalAccessToken(null);
-        }
-        return error;
     }
 
     AutoCompletePopup<ServerDirectorySuggestion> getOpenbisServerDirectoryAutocompletion() {
@@ -892,45 +878,11 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     TextField getOpenbisServerUrlTextField() {
         TextField openbisServerUrlValue = new TextField();
+        openbisServerUrlValue.setEditable(false);
+        openbisServerUrlValue.getStyleClass().add(DisplaySettings.GREYED_TEXT_FIELD_STYLE_CLASS);
         openbisServerUrlValue.setPrefWidth(1200);
-        addValidationLayerToTextInput(openbisServerUrlValue, (textInput) -> validateOpenbisServerUrlValue(openbisServerUrlValue.getText()), openbisUrlPropertyError);
-        if (editedSyncJob != null) {
-            openbisServerUrlValue.setText(editedSyncJob.getOpenBisUrl());
-        } else {
-            openbisServerUrlValue.setText(getMostRecentlyTouchedSyncJob().map( SyncJob::getOpenBisUrl ).orElse(""));
-        }
-        openbisServerUrlValue.textProperty().addListener( (obs, oldValue, newValue) -> {
-            entityChosen.setValue(null);
-        });
-        openbisServerUrlValue.setPromptText("http(s)://myopenbis.com");
+        openbisServerUrlValue.setText(availableSession.openBISUrl());
         return openbisServerUrlValue;
-    }
-
-    String[] validateOpenbisServerUrlValue(String serverUrlInput) {
-        String[] error;
-        if(serverUrlInput == null || serverUrlInput.isBlank()) {
-            error = new String[] { "error_tooltip.required_value" };
-        } else {
-            if(serverUrlInput.length() > MAX_TEXT_INPUT_LENGTH) {
-                error = new String[] { "error_tooltip.too_long_text_input" };
-            } else {
-                if(HTTP_URL_PATTERN.asMatchPredicate().test(serverUrlInput)) {
-                    //No error
-                    error = null;
-                } else {
-                    error = new String[] { "error_tooltip.required_http_or_https_path" };
-                }
-            }
-        }
-
-        if (error == null) {
-            searchUnit.setOpenBISUrl(serverUrlInput.trim());
-            afsSearchUnit.setOpenBISUrl(serverUrlInput.trim());
-        } else {
-            searchUnit.setOpenBISUrl(null);
-            afsSearchUnit.setOpenBISUrl(null);
-        }
-        return error;
     }
 
     String[] validateIgnoredPathPatterns(String ignoredPathPatterns) {
@@ -1005,20 +957,10 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     void doValidationOnAllInputFields() {
         doValidationOnTextInputNode(localDirectoryValue, (textInput) -> validateLocalDirectoryValue(textInput.getText()), localDirectoryPropertyError);
-        doValidationOnTextInputNode(personalAccessTokenValue, (textInput) -> validatePersonalAccessTokenValue(textInput.getText()), personalAccessTokenPropertyError);        
         doValidationOnTextInputNode(openbisServerDirectoryValue, (textInput) -> validateRemoteDirectoryValue(textInput.getText()), remoteDirectoryPropertyError);
         doValidationOnTextInputNode(openbisEntityIdValue, (textInput) -> validateEntityIdValue(textInput.getText()), entityIdPropertyError);
         doValidationOnTextInputNode(titleValue, (textInput) -> validateTitleValue(textInput.getText()), titlePropertyError);
-        doValidationOnTextInputNode(openbisServerUrlValue, (textInput) -> validateOpenbisServerUrlValue(textInput.getText()), openbisUrlPropertyError);
         doValidationOnTextInputNode(ignoredPathPatterns, (textInput) -> validateIgnoredPathPatterns(textInput.getText()), ignoredPathPatternPropertyError);
-    }
-
-    Optional<SyncJob> getMostRecentlyTouchedSyncJob() {
-        if (currentSyncJobs != null && !currentSyncJobs.isEmpty()) {
-            return Optional.ofNullable(currentSyncJobs.get(currentSyncJobs.size() - 1));
-        } else {
-            return Optional.empty();
-        }
     }
 
     Button getInputTooltipHelpButton(String tooltipText) {

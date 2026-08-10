@@ -3,9 +3,7 @@ package ch.openbis.drive.gui.maincontent;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.gui.i18n.I18n;
-import ch.openbis.drive.gui.maincontent.syncjobs.SyncJobCard;
-import ch.openbis.drive.gui.maincontent.syncjobs.SyncJobDeleteDialog;
-import ch.openbis.drive.gui.maincontent.syncjobs.SyncJobDialog;
+import ch.openbis.drive.gui.maincontent.syncjobs.*;
 import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.ErrorLabel;
 import ch.openbis.drive.gui.util.ServiceCallHandler;
@@ -237,17 +235,32 @@ public class SynchronizationTasksPanel extends ResizablePanel {
         Optional<SyncJob> selectedSyncJob = getSelectedSyncJob();
         if (selectedSyncJob.isPresent()) {
             SyncJob syncJob = selectedSyncJob.get();
-            SyncJobDialog syncJobDialog = new SyncJobDialog(syncJob, (Stage) this.getScene().getWindow(), syncJobs.getValue());
-            syncJobDialog.setResizable(true);
-            Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
-            if (newSyncJob.isPresent()) {
-                ServiceCallHandler serviceCallHandler = SharedContext.getContext().getServiceCallHandler(parent);
-                ServiceCallHandler.ServiceCallResult<Settings> settings = serviceCallHandler.getSettings();
-                if (settings.isOk()) {
-                    Settings toBeUpdated = settings.getOk();
-                    if (toBeUpdated.getJobs().remove(syncJob)) {
-                        toBeUpdated.getJobs().add(newSyncJob.get());
-                        serviceCallHandler.setSettings(toBeUpdated);
+            SyncJobSessionChoiceDialog syncJobSessionChoiceDialog = new SyncJobSessionChoiceDialog((Stage) this.getScene().getWindow(), syncJobs.get());
+            syncJobSessionChoiceDialog.setResizable(true);
+            Optional<SyncJobSessionChoiceResult> sessionChoiceResult = syncJobSessionChoiceDialog.showAndWait();
+
+            //New login, if necessary
+            if (sessionChoiceResult.isPresent() &&
+                    sessionChoiceResult.get().next() &&
+                    sessionChoiceResult.get().availableSession() == null) {
+                SyncJobLoginDialog syncJobLoginDialog = new SyncJobLoginDialog((Stage) this.getScene().getWindow());
+                syncJobLoginDialog.setResizable(true);
+                sessionChoiceResult = syncJobLoginDialog.showAndWait();
+            }
+
+            if (sessionChoiceResult.isPresent() && sessionChoiceResult.get().next()) {
+                SyncJobDialog syncJobDialog = new SyncJobDialog(syncJob, sessionChoiceResult.get().availableSession(), (Stage) this.getScene().getWindow(), syncJobs.getValue());
+                syncJobDialog.setResizable(true);
+                Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
+                if (newSyncJob.isPresent()) {
+                    ServiceCallHandler serviceCallHandler = SharedContext.getContext().getServiceCallHandler(parent);
+                    ServiceCallHandler.ServiceCallResult<Settings> settings = serviceCallHandler.getSettings();
+                    if (settings.isOk()) {
+                        Settings toBeUpdated = settings.getOk();
+                        if (toBeUpdated.getJobs().remove(syncJob)) {
+                            toBeUpdated.getJobs().add(newSyncJob.get());
+                            serviceCallHandler.setSettings(toBeUpdated);
+                        }
                     }
                 }
             }
@@ -256,13 +269,33 @@ public class SynchronizationTasksPanel extends ResizablePanel {
     }
 
     private void openCreationDialogForNewSyncJob() {
-        SyncJobDialog syncJobDialog = new SyncJobDialog(null, (Stage) this.getScene().getWindow(), syncJobs.getValue());
-        syncJobDialog.setResizable(true);
-        Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
-        if (newSyncJob.isPresent()) {
-            ServiceCallHandler serviceCallHandler = SharedContext.getContext().getServiceCallHandler(parent);
-            serviceCallHandler.addSyncJob(newSyncJob.get());
+        SyncJobSessionChoiceDialog syncJobSessionChoiceDialog = new SyncJobSessionChoiceDialog((Stage) this.getScene().getWindow(), syncJobs.get());
+        syncJobSessionChoiceDialog.setResizable(true);
+        Optional<SyncJobSessionChoiceResult> sessionChoiceResult = syncJobSessionChoiceDialog.showAndWait();
+
+        //New login, if necessary
+        if (sessionChoiceResult.isPresent() &&
+                sessionChoiceResult.get().next() &&
+                sessionChoiceResult.get().availableSession() == null) {
+            SyncJobLoginDialog syncJobLoginDialog = new SyncJobLoginDialog((Stage) this.getScene().getWindow());
+            syncJobLoginDialog.setResizable(true);
+            sessionChoiceResult = syncJobLoginDialog.showAndWait();
         }
+
+        if (sessionChoiceResult.isPresent() && sessionChoiceResult.get().next()) {
+            SyncJobDialog syncJobDialog = new SyncJobDialog(null,
+                    sessionChoiceResult.get().availableSession(),
+                    (Stage) this.getScene().getWindow(),
+                    syncJobs.getValue()
+            );
+            syncJobDialog.setResizable(true);
+            Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
+            if (newSyncJob.isPresent()) {
+                ServiceCallHandler serviceCallHandler = SharedContext.getContext().getServiceCallHandler(parent);
+                serviceCallHandler.addSyncJob(newSyncJob.get());
+            }
+        }
+
         refreshAll();
     }
 
