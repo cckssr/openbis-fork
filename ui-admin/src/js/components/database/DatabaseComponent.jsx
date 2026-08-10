@@ -79,6 +79,7 @@ class DatabaseComponent extends React.PureComponent {
         fetchOptions.withProperties()
         fetchOptions.withDataSets().withProperties()
         fetchOptions.withDataSets().withType()
+        fetchOptions.withSamples().withType()
         const experiments = await openbis.getExperiments(
           [new openbis.ExperimentPermId(object.id)],
           fetchOptions
@@ -86,7 +87,9 @@ class DatabaseComponent extends React.PureComponent {
         json = experiments[object.id]
         showDataBrowser = canUseDataBrowser
         const defaultCollectionView = constants.DEFAULT_COLLECTION_VIEW
-        showImagingGallery = json.dataSets.filter(dataset => allowedImagingDataTypes.includes(dataset.type.code)).length > 0 && Object.keys(json.properties || {}).includes(defaultCollectionView)
+        const hasImagingDataSets = json.dataSets.filter(dataset => allowedImagingDataTypes.includes(dataset.type.code)).length > 0
+        const hasImagingSamples = (json.samples || []).some(sample => sample.type.code === constants.IMAGING_DATA)
+        showImagingGallery = (hasImagingDataSets || hasImagingSamples) && Object.keys(json.properties || {}).includes(defaultCollectionView)
       } else if (object.type === objectType.OBJECT) {
         const fetchOptions = new openbis.SampleFetchOptions()
         fetchOptions.withSpace()
