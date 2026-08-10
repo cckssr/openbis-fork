@@ -8,22 +8,33 @@ import ch.ethz.sis.afsserver.server.Worker;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 class HttpDownloadInputStream<CONNECTION extends TransactionConnectionInformation, API> extends InputStream
 {
     final APIServer<CONNECTION, Request, Response, API> server;
+    final Map<String, Object> parsedParameters;
+    final String method;
     Worker<CONNECTION> connectionWorker;
     boolean errorFound = false;
 
     public  HttpDownloadInputStream(
-            APIServer<CONNECTION, Request, Response, API> server) throws Exception {
+            APIServer<CONNECTION, Request, Response, API> server,
+            final String method,
+            final Map<String, Object> parsedParameters) throws Exception {
         this.server = server;
+        this.parsedParameters = parsedParameters;
+        this.method = method;
         connectionWorker = server.checkOut();
     }
 
     @Override
     public int read() throws IOException
     {
+        String owner = parsedParameters.get("owner").toString();
+        String source = parsedParameters.get("source").toString();
+        //final Response response = server.processOperation(apiRequest, apiResponseBuilder, performanceAuditor);
+
         return 0;
     }
 

@@ -42,7 +42,10 @@ public class HttpDownloadAdapter<CONNECTION extends TransactionConnectionInforma
     @Override
     protected boolean isValidHttpMethod(final HttpMethod givenMethod, final String apiMethod)
     {
-        return "zip".equals(apiMethod) && isValidHttpMethod(givenMethod);
+        return ("zip".equals(apiMethod) // Download a zip containing a directory or file
+                ||
+                "plain".equals(apiMethod)) // Download a file without zip
+                && isValidHttpMethod(givenMethod);
     }
 
     @Override
@@ -56,8 +59,8 @@ public class HttpDownloadAdapter<CONNECTION extends TransactionConnectionInforma
     {
         switch (key)
         {
-            case "owners":
-            case "sources":
+            case "owner":
+            case "source":
                 parsedParameters.put(key, values);
                 break;
         }
@@ -69,7 +72,7 @@ public class HttpDownloadAdapter<CONNECTION extends TransactionConnectionInforma
     {
         return new HttpResponse(HttpResponse.OK,
                 Map.of(HttpResponse.CONTENT_TYPE_HEADER, HttpResponse.CONTENT_TYPE_ZIP),
-                new HttpDownloadInputStream<>(server));
+                new HttpDownloadInputStream<>(server, method, parsedParameters));
     }
 
     @Override
