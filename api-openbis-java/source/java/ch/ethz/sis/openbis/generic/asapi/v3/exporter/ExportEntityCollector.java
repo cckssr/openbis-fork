@@ -14,7 +14,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options.ExportOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
@@ -29,10 +28,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
-import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
@@ -122,12 +118,13 @@ public final class ExportEntityCollector {
                     //
                     SpaceFetchOptions spaceFetchOptions = new SpaceFetchOptions();
                     spaceFetchOptions.withProjects();
-                    SpacePermId spaceRequestPermId = new SpacePermId(current.getPermId());
                     Map<ISpaceId, Space> spaces = api.getSpaces(sessionToken,
-                            List.of(spaceRequestPermId),
+                            List.of(new SpacePermId(current.getPermId())),
                             spaceFetchOptions);
-                    space = getSingleOrNull(spaces, spaceRequestPermId);
-                    if (space == null) { collection.remove(current); continue; }
+                    if((space = getSingleOrNull(spaces)) == null) {
+                        collection.remove(current);
+                        continue;
+                    }
                     spacePermId = space.getPermId();
                     spaceIdentifier = "/" + space.getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, spacePermId);
@@ -175,12 +172,13 @@ public final class ExportEntityCollector {
                     if (withLevelsBelow) {
                         projectFetchOptions.withExperiments();
                     }
-                    ProjectPermId projectRequestPermId = new ProjectPermId(current.getPermId());
                     Map<IProjectId, Project> projects = api.getProjects(sessionToken,
-                            List.of(projectRequestPermId),
+                            List.of(new ProjectPermId(current.getPermId())),
                             projectFetchOptions);
-                    project = getSingleOrNull(projects, projectRequestPermId);
-                    if (project == null) { collection.remove(current); continue; }
+                    if((project = getSingleOrNull(projects)) == null) {
+                        collection.remove(current);
+                        continue;
+                    }
                     projectIdentifier = project.getIdentifier().getIdentifier();
                     projectSpacePermId = project.getSpace().getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, projectSpacePermId);
@@ -238,12 +236,13 @@ public final class ExportEntityCollector {
                     } else {
                         experimentFetchOptions.withSampleProperties();
                     }
-                    ExperimentPermId experimentRequestPermId = new ExperimentPermId(current.getPermId());
                     Map<IExperimentId, Experiment> experiments = api.getExperiments(sessionToken,
-                            List.of(experimentRequestPermId),
+                            List.of(new ExperimentPermId(current.getPermId())),
                             experimentFetchOptions);
-                    experiment = getSingleOrNull(experiments, experimentRequestPermId);
-                    if (experiment == null) { collection.remove(current); continue; }
+                    if((experiment = getSingleOrNull(experiments)) == null) {
+                        collection.remove(current);
+                        continue;
+                    }
                     experimentIdentifier = experiment.getIdentifier().getIdentifier();
                     experimentSpacePermId = experiment.getProject().getSpace().getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, experimentSpacePermId);
@@ -354,10 +353,13 @@ public final class ExportEntityCollector {
                         }
                     }
 
-                    SamplePermId sampleRequestPermId = new SamplePermId(current.getPermId());
-                    Map<ISampleId, Sample> samples = api.getSamples(sessionToken, List.of(sampleRequestPermId), sampleFetchOptions);
-                    sample = getSingleOrNull(samples, sampleRequestPermId);
-                    if (sample == null) { collection.remove(current); continue; }
+                    Map<ISampleId, Sample> samples = api.getSamples(sessionToken,
+                            List.of(new SamplePermId(current.getPermId())),
+                            sampleFetchOptions);
+                    if((sample = getSingleOrNull(samples)) == null) {
+                        collection.remove(current);
+                        continue;
+                    }
                     sampleSpacePermId = sample.getSpace().getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, sampleSpacePermId);
 
@@ -483,10 +485,13 @@ public final class ExportEntityCollector {
                         }
                     }
 
-                    DataSetPermId dataSetRequestPermId = new DataSetPermId(current.getPermId());
-                    Map<IDataSetId, DataSet> datasets = api.getDataSets(sessionToken, List.of(dataSetRequestPermId), dataSetFetchOptions);
-                    dataSet = getSingleOrNull(datasets, dataSetRequestPermId);
-                    if (dataSet == null) { collection.remove(current); continue; }
+                    Map<IDataSetId, DataSet> datasets = api.getDataSets(sessionToken,
+                            List.of(new DataSetPermId(current.getPermId())),
+                            dataSetFetchOptions);
+                    if((dataSet = getSingleOrNull(datasets)) == null) {
+                        collection.remove(current);
+                        continue;
+                    }
                     if (dataSet.getSample() != null) {
                         datasetSpacePermId = dataSet.getSample().getSpace().getPermId();
                     }
@@ -622,7 +627,7 @@ public final class ExportEntityCollector {
      * deleted from the source), so it is never a hard error: {@code null} is
      * returned so the caller drops the perm id and continues the traversal.
      */
-    private static <K, V> V getSingleOrNull(Map<K, V> map, IObjectId id) {
+    private static <K, V> V getSingleOrNull(Map<K, V> map) {
         if (map.isEmpty()) {
             return null;
         }
