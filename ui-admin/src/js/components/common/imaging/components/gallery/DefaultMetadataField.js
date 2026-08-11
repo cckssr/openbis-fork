@@ -24,9 +24,10 @@ export const formatMetadataValue = (value) => {
 
     if (Array.isArray(value)) {
         if (value.some(item => React.isValidElement(item))) {
-            return value.map(item => React.isValidElement(item) ? item : formatMetadataValue(item));
+            return value.map(item => formatMetadataValue(item));
+        } else {
+            return value.map(item => formatMetadataValue(item)).join(', ');
         }
-        return value.map(item => formatMetadataValue(item)).join(', ');
     }
 
     if (value instanceof Date) {

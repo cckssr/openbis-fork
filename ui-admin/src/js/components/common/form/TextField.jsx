@@ -47,7 +47,13 @@ class TextFormField extends React.PureComponent {
       case FormFieldDataType.ARRAY_TIMESTAMP:
         return '[' + array.map(v => v == null ? 'null' : `"${date.format(new Date(v), true)}"`).join(', ') + ']'
       default:
-        throw 'Unsupported array data type: ' + dataType
+        // If the text field is used to display not property-related strings which should typically be JSX components,
+        // for example, Preview Tags
+        if (!dataType) {
+          return array
+        } else {
+          throw 'Unsupported array data type: ' + dataType
+        }
     }
   }
 

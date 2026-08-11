@@ -21,6 +21,9 @@ const useStyles = makeStyles((theme) => ({
     },
     tagsSelect: {
         width: '100%',
+    },
+    smallText: {
+        fontSize: theme.typography.body2.fontSize
     }
 }));
 
@@ -57,14 +60,15 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
         switch (galleryFilter.property) {
             case constants.IMAGING_TAGS:
                 return (<FormControl variant='standard' className={classes.tagsSelect} >
-                    <InputLabel id='gallery-select-preview-tags'>Preview Tags</InputLabel>
+                    <InputLabel id='gallery-select-preview-tags' className={classes.smallText}>Preview Tags</InputLabel>
                     <Select multiple
                         id='gallery-select-preview-tags'
                         value={selectedTags}
                         onChange={handleTagsOnChange}
+                        className={classes.smallText}
                     >
                         {options.length > 0 && options.find(option => option.value === constants.IMAGING_TAGS).options.map((tag) => (
-                            <MenuItem key={tag.value} value={tag.value}>
+                            <MenuItem key={tag.value} value={tag.value} className={classes.smallText}>
                                 {tag.label}
                             </MenuItem>
                         ))}
@@ -74,9 +78,10 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
                 return (<FormControl variant='standard' className={classes.tagsSelect} >
                     <Select value={selectedValue}
                         onChange={handleSelectValue}
+                        className={classes.smallText}
                     >
                         {options.length > 0 && options.find(option => option.value === constants.DEFAULT_DATASET_VIEW).options.map((opt) => (
-                            <MenuItem key={opt.value} value={opt.value}>
+                            <MenuItem key={opt.value} value={opt.value} sx={{fontSize: '0.875rem'}}>
                                 {opt.label}
                             </MenuItem>
                         ))}
