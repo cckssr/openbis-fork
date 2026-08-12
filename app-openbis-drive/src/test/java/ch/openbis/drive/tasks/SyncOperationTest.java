@@ -2,13 +2,13 @@ package ch.openbis.drive.tasks;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.dto.File;
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.db.SyncJobEventDAOImp;
 import ch.openbis.drive.model.*;
 import ch.openbis.drive.notifications.NotificationManager;
 import ch.openbis.drive.util.SystemTrayUtil;
-import junit.framework.TestCase;
 import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,7 +32,7 @@ import java.util.regex.PatternSyntaxException;
 import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
 
 @RunWith(JUnit4.class)
-public class SyncOperationTest extends TestCase {
+public class SyncOperationTest extends DriveTestCase {
     
     private final Configuration configuration = new Configuration(Path.of("/fake-local-app-directory"));
     private final SystemTrayUtil systemTrayUtil = Mockito.mock(SystemTrayUtil.class);

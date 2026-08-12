@@ -1,5 +1,7 @@
 package ch.openbis.drive.gui;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.gui.maincontent.LogsPanel;
 import ch.openbis.drive.gui.maincontent.NotificationsPanel;
@@ -38,6 +40,7 @@ import static ch.openbis.drive.gui.util.NodeNavigationUtil.closeAndClearChildNod
 
 
 public class MainViewController {
+    private Logger logger = LogManager.getLogger(this.getClass());
     public static final String SIDE_MENU_ID = "side-menu";
     public static final String MAIN_CONTENT_PANEL_ID = "main-content";
     public static final String SYNC_TASKS_BUTTON_ID = "menu-sync-tasks";
@@ -150,7 +153,7 @@ public class MainViewController {
             image.setFitHeight(DisplaySettings.SIDE_MENU_BUTTON_HEIGHT);
             image.setTranslateY(DisplaySettings.SIDE_MENU_BUTTON_HEIGHT * 0.08);
         } catch (Exception e) {
-            System.err.println("Error loading top-left logo image");
+            logger.catching(new RuntimeException("Error loading top-left logo image", e));
         }
         if (image != null) {
             logoImage = image;

@@ -1,5 +1,7 @@
 package ch.openbis.drive.gui;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.gui.util.DisplaySettings;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class OpenDriveApplication extends Application {
+    private Logger logger = LogManager.getLogger(this.getClass());
     volatile ServerSocket serverSocket;
 
     @Override
@@ -75,14 +78,14 @@ public class OpenDriveApplication extends Application {
             try {
                 serverSocket.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.catching(e);
             }
         }
 
         try {
             SharedContext.closeSharedContext();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.catching(e);
             System.exit(1);
         }
     }
@@ -109,11 +112,11 @@ public class OpenDriveApplication extends Application {
                         }
 
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.catching(e);
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.catching(e);
             }
         });
         thread.setDaemon(true);

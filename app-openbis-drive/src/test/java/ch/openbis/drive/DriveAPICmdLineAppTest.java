@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RunWith(JUnit4.class)
-public class DriveAPICmdLineAppTest {
+public class DriveAPICmdLineAppTest extends DriveTestCase {
 
     final DriveAPICmdLineApp driveAPICmdLineApp = Mockito.spy(DriveAPICmdLineApp.class);
     final DriveAPIClientProtobufImpl driveAPIClient = Mockito.mock(DriveAPIClientProtobufImpl.class);

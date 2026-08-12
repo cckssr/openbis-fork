@@ -1,5 +1,7 @@
 package ch.openbis.drive.gui.util;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ServiceCallHandler {
+    private Logger logger = LogManager.getLogger(this.getClass());
     private final @NonNull DriveAPIClientProtobufImpl driveAPIClientProtobuf;
     private final @NonNull I18n i18n;
     private final Stage callingStage;
@@ -113,6 +116,7 @@ public class ServiceCallHandler {
                 try {
                     return new ServiceCallResult<>(callable.call(), null);
                 } catch (Exception e) {
+                    logger.catching(e);
                     ServiceExceptionAction serviceExceptionAction = handleServiceException(e);
                     if (serviceExceptionAction == ServiceExceptionAction.RETRY) {
                         Thread.sleep(5000);
@@ -165,7 +169,7 @@ public class ServiceCallHandler {
                     return ServiceExceptionAction.SHUTDOWN;
                 }
             } else {
-                e.printStackTrace();
+                logger.catching(e);
 
                 if (Platform.isFxApplicationThread()) {
                     showBackgroundServiceCallErrorDialog();

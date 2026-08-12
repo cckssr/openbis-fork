@@ -1,8 +1,8 @@
 package ch.openbis.drive.conf;
 
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.util.OpenBISDriveUtil;
 import ch.openbis.drive.util.OsDetectionUtil;
-import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @RunWith(JUnit4.class)
-public class ConfigurationTest extends TestCase {
+public class ConfigurationTest extends DriveTestCase {
 
     @Test
     public void testGetLocalAppDirectory() throws IOException {

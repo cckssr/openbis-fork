@@ -1,6 +1,8 @@
 package ch.openbis.drive.tasks;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.model.SyncJob;
@@ -16,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TaskManagerImpl implements TaskManager {
+    private final Logger logger = LogManager.getLogger(this.getClass());
     final ConcurrentHashMap<SyncJob, CloseableSyncTimer> jobTimers = new ConcurrentHashMap<>();
     final ConcurrentHashMap<SyncJob, SyncOperation> syncOperations = new ConcurrentHashMap<>();
 
@@ -106,7 +109,7 @@ public class TaskManagerImpl implements TaskManager {
         }
 
         private Void tryToInsertAndStartNewSyncOperation(@NonNull TriggeringCause triggeringCause) {
-            System.out.println(String.format("Sync-job %s from %s", syncJob.getLocalDirectoryRoot(), triggeringCause));
+            logger.traceAccess(String.format("Sync-job %s from %s", syncJob.getLocalDirectoryRoot(), triggeringCause));
 
             SyncOperation syncTaskOperation;
             try {
@@ -119,7 +122,7 @@ public class TaskManagerImpl implements TaskManager {
                         systemTrayUtil
                 );
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.catching(e);
                 return null;
             }
             if (syncOperations.putIfAbsent(syncJob, syncTaskOperation) == null) {
@@ -143,7 +146,7 @@ public class TaskManagerImpl implements TaskManager {
                     }
 
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.catching(e);
                 } finally {
                     tryToRestartDirectoryWatch();
                     syncOperations.remove(syncJob);
@@ -191,12 +194,13 @@ public class TaskManagerImpl implements TaskManager {
                     directoryWatch.start(this::rescheduleSyncOperationFromFileSystemEvent);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.catching(e);
             }
         }
     }
 
     static class CloseableSyncTimer extends Timer {
+        private final Logger logger = LogManager.getLogger(this.getClass());
         final AtomicBoolean cancelled = new AtomicBoolean(false);
         final DirectoryWatch directoryWatch;
 
@@ -214,7 +218,7 @@ public class TaskManagerImpl implements TaskManager {
             try {
                 this.directoryWatch.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.catching(e);
             }
             super.cancel();
         }

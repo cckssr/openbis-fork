@@ -1,6 +1,7 @@
 package ch.openbis.drive.util;
 
 import ch.openbis.drive.conf.Configuration;
+import ch.openbis.drive.logging.Logging;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -31,7 +32,6 @@ public class OpenBISDriveUtil {
         }
 
         Configuration configuration = new Configuration();
-        String[] envp = System.getenv().entrySet().stream().map( (entry) -> String.format("%s=%s", entry.getKey(), entry.getValue()) ).toArray(String[]::new);
         if ( !configuration.isManualInstallation() ) {
             switch (OsDetectionUtil.detectOS()) {
 
@@ -43,19 +43,36 @@ public class OpenBISDriveUtil {
                     processBuilder.start();
                 }
 
-                case Windows -> Runtime.getRuntime().exec(new String[]{"cmd.exe", "/K",  String.format("start /b \"\" \"%s\" background-process", configuration.getAppLauncherPath().toAbsolutePath())},
-                        envp);
+                case Windows -> {
+                    ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/K", String.format("start /b \"\" \"%s\" background-process", configuration.getAppLauncherPath().toAbsolutePath()));
+                    processBuilder.redirectOutput(Path.of("NUL").toFile());
+                    processBuilder.redirectError(Path.of("NUL").toFile());
+                    processBuilder.environment().putAll(System.getenv());
+                    processBuilder.start();
+                }
 
                 case Unknown -> throw new IllegalStateException("Unknown operating-system");
             }
         } else {
             switch (OsDetectionUtil.detectOS()) {
 
-                case Linux, Mac -> Runtime.getRuntime().exec(new String[]{"sh", "openbis-drive-service-start.sh"}, envp,
-                        configuration.getManualInstallationAppLaunchDirectory().toFile());
+                case Linux, Mac -> {
+                    ProcessBuilder processBuilder = new ProcessBuilder("sh", "openbis-drive-service-start.sh");
+                    processBuilder.redirectOutput(Path.of("/dev/null").toFile());
+                    processBuilder.redirectError(Path.of("/dev/null").toFile());
+                    processBuilder.directory(configuration.getManualInstallationAppLaunchDirectory().toFile());
+                    processBuilder.environment().putAll(System.getenv());
+                    processBuilder.start();
+                }
 
-                case Windows -> Runtime.getRuntime().exec(new String[]{"cmd.exe", "/K",  "openbis-drive-service-start.bat"}, envp,
-                        configuration.getManualInstallationAppLaunchDirectory().toFile());
+                case Windows -> {
+                    ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/K", "openbis-drive-service-start.bat");
+                    processBuilder.redirectOutput(Path.of("NUL").toFile());
+                    processBuilder.redirectError(Path.of("NUL").toFile());
+                    processBuilder.directory(configuration.getManualInstallationAppLaunchDirectory().toFile());
+                    processBuilder.environment().putAll(System.getenv());
+                    processBuilder.start();
+                }
 
                 case Unknown -> throw new IllegalStateException("Unknown operating-system");
             }
@@ -114,7 +131,7 @@ public class OpenBISDriveUtil {
             return true;
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Logging.tryCatchErrorInStaticMethod(OpenBISDriveUtil.class, e);
             return false;
         }
     }
@@ -125,7 +142,7 @@ public class OpenBISDriveUtil {
                 OpenBISDriveUtil.startGraphicalInterface(section);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Logging.tryCatchErrorInStaticMethod(OpenBISDriveUtil.class, e);
         }
     }
 
@@ -143,7 +160,7 @@ public class OpenBISDriveUtil {
             return true;
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Logging.tryCatchErrorInStaticMethod(OpenBISDriveUtil.class, e);
             return false;
         }
     }
@@ -156,7 +173,6 @@ public class OpenBISDriveUtil {
         String launchCommandAddition = section != null ? section.toLabel() : "";
 
         Configuration configuration = new Configuration();
-        String[] envp = System.getenv().entrySet().stream().map( (entry) -> String.format("%s=%s", entry.getKey(), entry.getValue()) ).toArray(String[]::new);
         if ( !configuration.isManualInstallation() ) {
             switch (OsDetectionUtil.detectOS()) {
 
@@ -168,19 +184,36 @@ public class OpenBISDriveUtil {
                     processBuilder.start();
                 }
 
-                case Windows -> Runtime.getRuntime().exec(new String[]{"cmd.exe", "/K",  String.format("start /b \"\" \"%s\" gui %s", configuration.getAppLauncherPath().toAbsolutePath(), launchCommandAddition)},
-                        envp);
+                case Windows -> {
+                    ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/K",  String.format("start /b \"\" \"%s\" gui %s", configuration.getAppLauncherPath().toAbsolutePath(), launchCommandAddition));
+                    processBuilder.redirectOutput(Path.of("NUL").toFile());
+                    processBuilder.redirectError(Path.of("NUL").toFile());
+                    processBuilder.environment().putAll(System.getenv());
+                    processBuilder.start();
+                }
 
                 case Unknown -> throw new IllegalStateException("Unknown operating-system");
             }
         } else {
             switch (OsDetectionUtil.detectOS()) {
 
-                case Linux, Mac -> Runtime.getRuntime().exec(new String[]{"sh", "openbis-drive-gui.sh", launchCommandAddition}, envp,
-                        configuration.getManualInstallationAppLaunchDirectory().toFile());
+                case Linux, Mac -> {
+                    ProcessBuilder processBuilder = new ProcessBuilder("sh", "openbis-drive-gui.sh", launchCommandAddition);
+                    processBuilder.redirectOutput(Path.of("/dev/null").toFile());
+                    processBuilder.redirectError(Path.of("/dev/null").toFile());
+                    processBuilder.directory(configuration.getManualInstallationAppLaunchDirectory().toFile());
+                    processBuilder.environment().putAll(System.getenv());
+                    processBuilder.start();
+                }
 
-                case Windows -> Runtime.getRuntime().exec(new String[]{"cmd.exe", "/K",  String.format("openbis-drive-gui.bat %s", launchCommandAddition)}, envp,
-                        configuration.getManualInstallationAppLaunchDirectory().toFile());
+                case Windows -> {
+                    ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/K",  String.format("openbis-drive-gui.bat %s", launchCommandAddition));
+                    processBuilder.redirectOutput(Path.of("NUL").toFile());
+                    processBuilder.redirectError(Path.of("NUL").toFile());
+                    processBuilder.directory(configuration.getManualInstallationAppLaunchDirectory().toFile());
+                    processBuilder.environment().putAll(System.getenv());
+                    processBuilder.start();
+                }
 
                 case Unknown -> throw new IllegalStateException("Unknown operating-system");
             }

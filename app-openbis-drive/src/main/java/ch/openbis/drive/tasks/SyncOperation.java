@@ -5,6 +5,8 @@ import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsclient.client.AfsClientDownloadHelper;
 import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 
@@ -32,6 +34,7 @@ import java.util.stream.Stream;
 import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
 
 public class SyncOperation {
+    private Logger logger = LogManager.getLogger(this.getClass());
     static final int MAX_READ_SIZE_BYTES = 10485760;
     static final int AFS_CLIENT_TIMEOUT = 30000;
     public static final String CONFLICT_FILE_SUFFIX = ".openbis-conflict";
@@ -111,6 +114,7 @@ public class SyncOperation {
             try {
                 this.ignoredPathMatchers.addAll(GlobUtil.compileIgnoredPathGlob(hiddenPathPattern));
             } catch (Exception e) {
+                logger.catching(e);
                 raiseJobExceptionNotification(e);
                 throw new RuntimeException(e);
             }
@@ -151,6 +155,7 @@ public class SyncOperation {
                 case Bidirectional -> synchronize();
             }
         } catch (Exception e) {
+            logger.catching(e);
             raiseJobExceptionNotification(e);
             throw e;
         } finally {
@@ -579,6 +584,7 @@ public class SyncOperation {
                         try {
                             return glob.matches(relativizedLocalPath);
                         } catch (Exception e) {
+                            logger.catching(e);
                             raiseJobExceptionNotification(e);
                             return true;
                         }
@@ -719,6 +725,7 @@ public class SyncOperation {
             try {
                 localFile = Path.of(notification.getLocalFile());
             } catch (Exception e) {
+                logger.catching(e);
                 removeNotification = true;
             }
 

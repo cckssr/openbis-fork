@@ -1,5 +1,6 @@
 package ch.openbis.drive.gui.util;
 
+import ch.openbis.drive.logging.Logging;
 import ch.openbis.drive.model.SyncJob;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -49,8 +50,7 @@ public class UsageUtil {
                         throw syncJobsResult.getErr();
                     }
                 } catch (Exception e) {
-                    System.err.println("Error measuring disk-usage");
-                    e.printStackTrace();
+                    Logging.tryCatchErrorInStaticMethod(UsageUtil.class, e);
                     data = null;
                     loading.setValue(false);
                 }
@@ -73,7 +73,7 @@ public class UsageUtil {
             Path localDirPath = null;
             try {
                 localDirPath = Path.of(localDir);
-            } catch (Exception e) { System.err.printf("Error parsing local directory path %s%n", localDir); }
+            } catch (Exception e) { Logging.tryCatchErrorInStaticMethod(UsageUtil.class, new RuntimeException(String.format("Error parsing local directory path %s%n", localDir), e)); }
             long localDirSize;
             if(localDirPath != null && Files.isDirectory(localDirPath)) {
                 localDirSize = getOccupiedSpaceByDirectory(localDirPath);
@@ -101,7 +101,7 @@ public class UsageUtil {
                             try {
                                 totalSize.addAndGet(Files.size(file));
                             } catch (Exception e) {
-                                System.err.printf("Error getting size of file %s%n", file.toString());
+                                Logging.tryCatchErrorInStaticMethod(UsageUtil.class, new RuntimeException(String.format("Error getting size of file %s%n", file), e));
                             }
                         }
                         return FileVisitResult.CONTINUE;

@@ -4,6 +4,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntity;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.gui.util.*;
 import ch.openbis.drive.model.Settings;
@@ -51,6 +53,7 @@ import java.util.stream.Collectors;
 import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
 
 public class SyncJobDialog extends Dialog<SyncJob> {
+    private final Logger logger = LogManager.getLogger(this.getClass());
     final int MAX_TEXT_INPUT_LENGTH = 300;
     Pattern HTTP_URL_PATTERN = Pattern.compile("^(http|https)://[^\\s/$.?#][^/]*$");
     final static String SUGGESTED_REMOTE_ROOT_DIRECTORY = "/";
@@ -1068,7 +1071,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
                     openbisEntityIdAutocompletion.show(openbisEntityIdValue);
                 });
             } else {
-                ex.printStackTrace();
+                logger.catching(ex);
 
                 openbisEntityIdAutocompletion.getSuggestions().clear();
                 openbisEntityIdAutocompletion.getSuggestions().addAll(EntitySuggestion.newError(
@@ -1101,7 +1104,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
                     openbisServerDirectoryAutocompletion.show(openbisServerDirectoryValue);
                 });
             } else {
-                ex.printStackTrace();
+                logger.catching(ex);
                 List<ServerDirectorySuggestion> directorySuggestions = List.of(
                         new ServerDirectorySuggestion(ServerDirectorySuggestion.Kind.DIRECTORY, SUGGESTED_REMOTE_ROOT_DIRECTORY, null),
                         new ServerDirectorySuggestion(ServerDirectorySuggestion.Kind.ERROR, null,

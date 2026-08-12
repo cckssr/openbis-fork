@@ -1,5 +1,7 @@
 package ch.openbis.drive.util;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.gui.Launcher;
 import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.model.Notification;
@@ -20,6 +22,8 @@ import java.util.Objects;
 import java.util.function.Function;
 
 public class SystemTrayUtil {
+
+    private final Logger logger = LogManager.getLogger(this.getClass());
 
     SimpleBooleanProperty popupMenuVisible = new SimpleBooleanProperty(false);
     TrayIcon trayIcon;
@@ -46,7 +50,7 @@ public class SystemTrayUtil {
             InputStream iconInputStream = Objects.requireNonNull(this.getClass().getClassLoader().getResourceAsStream(getNormalIconResourcePath()));
             this.normalIcon = ImageIO.read(iconInputStream).getScaledInstance(16,16, Image.SCALE_SMOOTH);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.catching(e);
             this.normalIcon = getFallbackImage();
         }
 
@@ -54,7 +58,7 @@ public class SystemTrayUtil {
             InputStream iconInputStream = Objects.requireNonNull(this.getClass().getClassLoader().getResourceAsStream(getExclamationMarkIconResourcePath()));
             this.exclamationMarkIcon = ImageIO.read(iconInputStream).getScaledInstance(16,16, Image.SCALE_SMOOTH);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.catching(e);
             this.exclamationMarkIcon = getFallbackImage();
         }
 
@@ -89,7 +93,7 @@ public class SystemTrayUtil {
 
                 // return if there is no support
                 if (!java.awt.SystemTray.isSupported()) {
-                    System.out.println("No system tray support");
+                    logger.info("No system tray support");
                     return;
                 }
 
@@ -112,8 +116,8 @@ public class SystemTrayUtil {
                 tray.add(trayIcon);
                 this.trayIcon = trayIcon;
             } catch (java.awt.AWTException e) {
-                System.out.println("Unable to init system tray");
-                e.printStackTrace();
+                logger.info("Unable to init system tray");
+                logger.catching(e);
             }
         }
     }
@@ -219,7 +223,7 @@ public class SystemTrayUtil {
             try {
                 OpenBISDriveUtil.tryToStopGraphicalInterface();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.catching(e);
             } finally {
                 stopCallback.apply(null);
             }
@@ -272,7 +276,7 @@ public class SystemTrayUtil {
             try {
                 OpenBISDriveUtil.tryToStopGraphicalInterface();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.catching(e);
             } finally {
                 stopCallback.apply(null);
             }
@@ -306,7 +310,7 @@ public class SystemTrayUtil {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.catching(e);
         }
     }
 
@@ -325,7 +329,7 @@ public class SystemTrayUtil {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.catching(e);
         }
     }
 
@@ -366,6 +370,7 @@ public class SystemTrayUtil {
     }
 
     static class RoundedPopupMenu extends JPopupMenu {
+        Logger logger = LogManager.getLogger(this.getClass());
         RoundedPopupMenu() {
             setLightWeightPopupEnabled(true);
             setOpaque(true);
@@ -398,7 +403,7 @@ public class SystemTrayUtil {
                         Window w = SwingUtilities.getWindowAncestor(this);
                         w.setShape(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 20, 20));
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.catching(e);
                     }
                 }
             } else {

@@ -1,17 +1,16 @@
 package ch.openbis.drive.util;
 
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.conf.Configuration;
-import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.nio.file.Path;
-import java.util.List;
 
 @RunWith(JUnit4.class)
-public class OpenBISDriveUtilTest extends TestCase {
+public class OpenBISDriveUtilTest extends DriveTestCase {
 
     @Test
     public void testGetLocalHiddenDirectoryPath() {

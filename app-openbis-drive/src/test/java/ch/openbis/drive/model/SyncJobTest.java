@@ -1,5 +1,6 @@
 package ch.openbis.drive.model;
 
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.util.OsDetectionUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,7 +11,7 @@ import java.nio.file.FileSystems;
 import java.util.List;
 
 @RunWith(JUnit4.class)
-public class SyncJobTest {
+public class SyncJobTest extends DriveTestCase {
 
     @Test
     public void testDefaultValues() {

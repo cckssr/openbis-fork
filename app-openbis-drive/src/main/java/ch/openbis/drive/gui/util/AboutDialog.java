@@ -1,5 +1,7 @@
 package ch.openbis.drive.gui.util;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.gui.i18n.I18n;
 import javafx.application.HostServices;
 import javafx.event.EventHandler;
@@ -12,6 +14,7 @@ import javafx.stage.WindowEvent;
 import lombok.NonNull;
 
 public class AboutDialog extends Dialog<Boolean> {
+    private final Logger logger = LogManager.getLogger(this.getClass());
 
     public static final String MAIN_OPENBIS_CH_PAGE = "https://openbis.ch";
 
@@ -38,7 +41,7 @@ public class AboutDialog extends Dialog<Boolean> {
                 HostServices hostServices = SharedContext.getContext().getHostServices();
                 hostServices.showDocument(MAIN_OPENBIS_CH_PAGE);
             } catch (Exception e) {
-                System.err.println("Error following link: " + MAIN_OPENBIS_CH_PAGE);
+                logger.catching(new RuntimeException("Error following link: " + MAIN_OPENBIS_CH_PAGE, e));
             }
         });
         getDialogPane().setContent(new VBox(aboutMessage, openbisMainPageUrl));

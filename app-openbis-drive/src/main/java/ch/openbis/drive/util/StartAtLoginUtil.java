@@ -1,6 +1,7 @@
 package ch.openbis.drive.util;
 
 import ch.openbis.drive.conf.Configuration;
+import ch.openbis.drive.logging.Logging;
 import lombok.NonNull;
 
 import java.nio.ByteBuffer;
@@ -45,7 +46,7 @@ public class StartAtLoginUtil {
                                 try {
                                     Files.delete(path);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    Logging.tryCatchErrorInStaticMethod(StartAtLoginUtil.class, e);
                                     throw new RuntimeException(e);
                                 }
                             }
@@ -71,7 +72,7 @@ public class StartAtLoginUtil {
                                 try {
                                     Files.delete(path);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    Logging.tryCatchErrorInStaticMethod(StartAtLoginUtil.class, e);
                                     throw new RuntimeException(e);
                                 }
                             }

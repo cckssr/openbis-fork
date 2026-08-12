@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RunWith(JUnit4.class)
-public class DriveAPIServerImplTest {
+public class DriveAPIServerImplTest extends DriveTestCase {
 
     private final SystemTrayUtil systemTrayUtil = Mockito.mock(SystemTrayUtil.class);
 

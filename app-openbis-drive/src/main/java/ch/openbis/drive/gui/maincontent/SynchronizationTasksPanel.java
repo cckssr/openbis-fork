@@ -1,5 +1,7 @@
 package ch.openbis.drive.gui.maincontent;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.gui.maincontent.syncjobs.SyncJobCard;
 import ch.openbis.drive.gui.maincontent.syncjobs.SyncJobDeleteDialog;
@@ -39,6 +41,7 @@ import java.util.*;
 import static ch.openbis.drive.gui.util.DisplaySettings.SYNC_JOB_CARD_SPACING;
 
 public class SynchronizationTasksPanel extends ResizablePanel {
+    private Logger logger = LogManager.getLogger(this.getClass());
     private final VBox mainVBox;
     private final Button addButton;
     private final HBox editButtonGroup;
@@ -327,7 +330,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
                     }
                 }
             } else {
-                syncJobsLiveResult.getErr().printStackTrace();
+                logger.catching(syncJobsLiveResult.getErr());
             }
         }));
         timeline.setCycleCount(Animation.INDEFINITE);
@@ -345,7 +348,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
                 try {
                     syncJobCard.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.catching(e);
                 }
             });
         }

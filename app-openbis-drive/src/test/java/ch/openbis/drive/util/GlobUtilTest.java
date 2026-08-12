@@ -1,5 +1,6 @@
 package ch.openbis.drive.util;
 
+import ch.openbis.drive.DriveTestCase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,7 +9,7 @@ import org.junit.runners.JUnit4;
 import java.nio.file.Path;
 
 @RunWith(JUnit4.class)
-public class GlobUtilTest {
+public class GlobUtilTest extends DriveTestCase {
     @Test
     public void testCompileIgnoredPathGlob() throws Exception{
         Assert.assertEquals(2, GlobUtil.compileIgnoredPathGlob("testglob").size());

@@ -1,5 +1,6 @@
 package ch.openbis.drive.gui.util;
 
+import ch.openbis.drive.logging.Logging;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import lombok.NonNull;
@@ -15,7 +16,7 @@ public class NodeNavigationUtil {
                     try {
                         ((AutoCloseable) node).close();
                     } catch (Exception e) {
-                        System.err.printf("Error closing node %s%n", node.getClass().getCanonicalName());
+                        Logging.tryCatchErrorInStaticMethod(NodeNavigationUtil.class, new RuntimeException(String.format("Error closing node %s%n", node.getClass().getCanonicalName()), e));
                     }
                 }
             }

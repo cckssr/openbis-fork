@@ -1,5 +1,7 @@
 package ch.openbis.drive.util;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import com.sun.nio.file.ExtendedWatchEventModifier;
 import lombok.NonNull;
 
@@ -17,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 public class DirectoryWatch {
+    private Logger logger = LogManager.getLogger(this.getClass());
     private final String localParentDirectory;
     private WatchService watcher;
     private final AtomicBoolean running = new AtomicBoolean();
@@ -39,6 +42,7 @@ public class DirectoryWatch {
             running.set(true);
             new Thread( this::processEvents ).start();
         } catch (Exception e) {
+            logger.catching(e);
             if (newWatcher != null) {
                 newWatcher.close();
             }
@@ -97,12 +101,12 @@ public class DirectoryWatch {
                 try {
                     callback.call();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.catching(e);
                 }
                 try {
                     this.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.catching(e);
                 }
                 return;
             }

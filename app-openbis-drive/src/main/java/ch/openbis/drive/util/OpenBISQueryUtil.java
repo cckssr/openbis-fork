@@ -28,6 +28,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperationResult;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.tasks.SyncOperation;
 import com.google.common.collect.Streams;
 import lombok.NonNull;
@@ -181,6 +183,7 @@ public class OpenBISQueryUtil {
     }
 
     public static class SearchUnit implements AutoCloseable {
+        private final Logger logger = LogManager.getLogger(this.getClass());
         private String openBISUrl = null;
         private String personalAccessToken = null;
 
@@ -244,7 +247,7 @@ public class OpenBISQueryUtil {
                                     searchSynchronizableOpenBISEntities(this.openBISUrl, this.personalAccessToken, this.searchText);
                             resultListener.apply(result, null);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.catching(e);
                             resultListener.apply(null, e);
                         } finally {
                             this.searching = false;
@@ -273,6 +276,7 @@ public class OpenBISQueryUtil {
     }
 
     public static class AfsSearchUnit implements AutoCloseable {
+        private Logger logger = LogManager.getLogger(this.getClass());
         private String openBISUrl = null;
         private String personalAccessToken = null;
         private String entityId = null;
@@ -345,7 +349,7 @@ public class OpenBISQueryUtil {
                                     searchOpenBISEntityAfsDirectories(this.openBISUrl, this.personalAccessToken, this.entityId, this.searchText);
                             resultListener.apply(result, null);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.catching(e);
                             resultListener.apply(null, e);
                         } finally {
                             this.searching = false;
