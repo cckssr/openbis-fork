@@ -189,11 +189,16 @@ function SciCatExportView(exportController, exportModel) {
         $legendRequired.text("Publication")
         $legendOptional.text("Optional publication parameters");
 
+        var hiddenProperties = ["PUBLICATION.OPENBIS_RELATED_OBJECTS", "PUBLICATION.OPENBIS_RELATED_IDENTIFIERS"];
 
 
         var propertyGroupPropertiesOnForm = 0;
         for(var j = 0; j < propertyTypes.length; j++) {
             var propertyType = $.extend({}, propertyTypes[j]);
+
+            if(hiddenProperties.includes(propertyType.code)) {
+                continue;
+            }
 
             if(requiredProperties.includes(propertyType.code)) {
                 $legend = $legendRequired;
