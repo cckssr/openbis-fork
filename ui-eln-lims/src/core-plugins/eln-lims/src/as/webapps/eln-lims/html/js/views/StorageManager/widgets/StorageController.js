@@ -318,6 +318,19 @@ function StorageController(configOverride, spaceCode) {
 								Util.showInfo("Storage space is getting low, currently " + positionsUsed + " out of " + totalPositions + " posible positions are taken.", function() {}, true);
 							}
 						}
+						// Sort boxes
+						for(var xIdx = 0; xIdx < boxes.length; xIdx++) {
+						    if(!boxes[xIdx]) {
+						        continue;
+						    }
+						    for(var yIdx = 0; yIdx < boxes[xIdx].length; yIdx++) {
+                                if(!boxes[yIdx]) {
+						            continue;
+						        }
+						        var rack = boxes[xIdx][yIdx];
+						        rack.sort(_this.rackSort);
+						    }
+						}
 						//
 						// Refresh Grid with the boxes
 						//
@@ -327,7 +340,14 @@ function StorageController(configOverride, spaceCode) {
 			}, false, true);
 		});
 	}
-	
+
+	this.rackSort = function(data1, data2, asc) {
+        var value1 = data1.displayName;
+        var value2 = data2.displayName;
+        var sortDirection = (asc === 1 || asc === undefined)? 1 : -1;
+        return sortDirection * naturalSort(value1, value2);
+    }
+
 	//
 	// Set the sample to bind before painting the view
 	//
