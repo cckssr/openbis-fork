@@ -14,7 +14,7 @@ A General Availability release will be made available later this year.
 
 Installing Prerequisites:
 - JDK 21
-- Postgres 17
+- Postgres 18
 
 [openbis-installer-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/eyKK8nBaALwEYEc)
 
