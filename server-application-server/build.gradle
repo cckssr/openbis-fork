@@ -103,6 +103,8 @@ dependencies {
             files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/services/imaging/lib/openBIS-imaging-technology.jar"),
             files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-nanonis-adapter/src/as/services/imaging-nanonis/lib/premise-adapters.jar"),
             files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-test-adapter/src/as/services/imaging-test/lib/imaging-test-adapters.jar"),
+            // ro-crate examples
+            files("../core-plugin-openbis/dist/core-plugins/eln-lims-ro-crate-examples/src/as/services/ro-crate-examples/lib/openBIS-ro-crate-examples.jar"),
             // zenodo export dependencies
             files("../ui-eln-lims/src/core-plugins/eln-lims/src/as/services/exports-api/lib/job-scheduler.jar"),
             files("../ui-eln-lims/src/core-plugins/eln-lims/src/as/services/exports-api/lib/json-20250517.jar")
@@ -220,6 +222,7 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
              '-Deln-lims-imaging-core.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',
              '-Deln-lims-imaging-core.as.services.imaging.storageRoot.afs=../server-data-store/targets/tests/storage',
 
+             '-Das.disabled-core-plugins=tralala-AS',
              '-Dorg.mortbay.util.FileResource.checkAliases=false',
              '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED',
              '-Xmx4096M', '-ea'])
