@@ -324,7 +324,7 @@ function StorageController(configOverride, spaceCode) {
 						        continue;
 						    }
 						    for(var yIdx = 0; yIdx < boxes[xIdx].length; yIdx++) {
-                                if(!boxes[yIdx]) {
+                                if(!boxes[xIdx][yIdx]) {
 						            continue;
 						        }
 						        var rack = boxes[xIdx][yIdx];
