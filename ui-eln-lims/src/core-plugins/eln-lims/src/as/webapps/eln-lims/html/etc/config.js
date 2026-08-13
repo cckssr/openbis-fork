@@ -65,5 +65,5 @@ setFavicons({
 //</PROFILE_PLACEHOLDER>
 
 var PLUGINS_CONFIGURATION = {
-    extraPlugins : ["life-sciences", "flow", "microscopy", "imaging"]
+    extraPlugins : ["life-sciences", "flow", "microscopy", "imaging", "ro-crate-examples"]
 };
