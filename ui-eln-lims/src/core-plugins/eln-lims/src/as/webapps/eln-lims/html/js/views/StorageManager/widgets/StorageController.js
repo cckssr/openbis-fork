@@ -319,17 +319,19 @@ function StorageController(configOverride, spaceCode) {
 							}
 						}
 						// Sort boxes
-						for(var xIdx = 0; xIdx < boxes.length; xIdx++) {
-						    if(!boxes[xIdx]) {
-						        continue;
-						    }
-						    for(var yIdx = 0; yIdx < boxes[xIdx].length; yIdx++) {
-                                if(!boxes[xIdx][yIdx]) {
-						            continue;
-						        }
-						        var rack = boxes[xIdx][yIdx];
-						        rack.sort(_this.rackSort);
-						    }
+						if(_this._storageModel.storageConfig) {
+                            for(var xIdx = 1; xIdx <= _this._storageModel.storageConfig.rowNum; xIdx++) {
+                                if(!boxes[xIdx]) {
+                                    continue;
+                                }
+                                for(var yIdx = 1; yIdx <= _this._storageModel.storageConfig.colNum; yIdx++) {
+                                    if(!boxes[xIdx][yIdx]) {
+                                        continue;
+                                    }
+                                    var rack = boxes[xIdx][yIdx];
+                                    rack.sort(_this.rackSort);
+                                }
+                            }
 						}
 						//
 						// Refresh Grid with the boxes
