@@ -81,11 +81,12 @@ public class RoCrateExamplesService implements ICustomASServiceExecutor
 
                     String pluginsFolder = CommonServiceProvider.tryToGetProperty("core-plugins-folder");
                     Path dataPath = Path.of(pluginsFolder, "/eln-lims-ro-crate-examples/src/as/example-data", "sci_cat_master_data.zip");
-
+                    operationLog.info(String.format("Importing data: %s", dataPath));
                     CommonServiceProvider.getSessionWorkspaceProvider().write(token, "sci_cat_master_data.zip", new FileInputStream(dataPath.toFile()));
                     ImportData importData = new ImportData(ImportFormat.EXCEL, "sci_cat_master_data.zip");
                     ImportOptions importOptions = new ImportOptions(ImportMode.UPDATE_IF_EXISTS);
                     ImportResult result = api.executeImport(token, importData, importOptions);
+                    operationLog.info(String.format("Import result: %s", result));
                     Map<String, ImportResult> r = new HashMap<>();
                     r.put("result", result);
                     return (Serializable) r;
@@ -93,7 +94,7 @@ public class RoCrateExamplesService implements ICustomASServiceExecutor
             }
         } catch (Exception e)
         {
-            operationLog.error("Exception during service: " + e.toString());
+            operationLog.error("Exception during service: " + e);
             return (Serializable) Map.of("error", e);
         }
         return (Serializable) Map.of("result", false);
