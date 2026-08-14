@@ -1721,6 +1721,32 @@ the archiving procedure will fail.
 `request_archiving` sets an internal flag in dataset. OpenBIS periodically searches for datasets with such flag and bundles 
 them together in archiving package.
 
+### Pre-generating entity codes
+
+Saving samples and experiments causes for OpenBIS to generate a unique code value for each entity. 
+It is possible to pre-generate these codes in case they will be needed in a transaction processing (more about transactions can be found [here](#createupdatedelete-many-samples-in-a-transaction))    
+
+#### Creation of sample codes
+```python
+
+codes = o.gen_codes(entity='SAMPLE', prefix='MY_TYPE_PREFIX', count=2)
+# ['MY_TYPE_PREFIX144', 'MY_TYPE_PREFIX145']
+
+sample = o.new_sample(code=codes[0], type='MY_TYPE', experiment='/DEFAULT/DEFAULT/DEFAULT',
+                      props={'name': 'MY_SAMPLE_WITH_CODE-' + codes[0]})
+sample.save()
+```
+
+#### Creation of experiment codes
+```python
+
+codes = o.gen_codes(entity='EXPERIMENT', prefix='MY_PREFIX-', count=2)
+# ['MY_PREFIX-1', 'MY_PREFIX-2']
+
+experiment = o.new_experiment(code=codes[0], project='/DEFAULT/DEFAULT', type='COLLECTION')
+
+experiment.save()
+```
 
 ### Semantic Annotations
 
