@@ -79,8 +79,8 @@ public class RoCrateExamplesService implements ICustomASServiceExecutor
                     IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
                     String token = api.loginAsSystem();
 
-                    String pluginsFolder = CommonServiceProvider.tryToGetProperty("core-plugins-folder");
-                    Path dataPath = Path.of(pluginsFolder, "/eln-lims-ro-crate-examples/src/as/example-data", "sci_cat_master_data.zip");
+                    Path exampleDataFolderPath = Path.of(this.properties.get("lib-folder").toString(), "../../../example-data");
+                    Path dataPath = Path.of(exampleDataFolderPath.toString(), "sci_cat_master_data.zip");
                     operationLog.info(String.format("Importing data: %s", dataPath));
                     CommonServiceProvider.getSessionWorkspaceProvider().write(token, "sci_cat_master_data.zip", new FileInputStream(dataPath.toFile()));
                     ImportData importData = new ImportData(ImportFormat.EXCEL, "sci_cat_master_data.zip");
