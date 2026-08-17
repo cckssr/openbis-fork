@@ -186,15 +186,13 @@ public abstract class AbstractServerLogger implements IServer
 
     protected final void logStatistics(final String sessionToken, final String commandName)
     {
-        statisticsLogMessage(statisticsLog, Level.INFO, sessionToken, commandName, "", new Object[0]);
+        statisticsLogMessage(statisticsLog, sessionToken, commandName);
     }
 
     // formatter that matches 2026-08-17 12:24:38
     private final DateTimeFormatter STATISTICS_DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
-    private final void statisticsLogMessage(final Logger logger, final Level level,
-            final String sessionToken, final String commandName,
-            String parameterDisplayFormat, Object[] parameters)
+    private final void statisticsLogMessage(final Logger logger, final String sessionToken, final String commandName)
     {
         String timestamp = STATISTICS_DTF.format(Instant.now());
         Session session = sessionManagerOrNull.tryGetSession(sessionToken);
@@ -205,7 +203,7 @@ public abstract class AbstractServerLogger implements IServer
         {
             elapsedTimeMessage = getElapsedTimeMessage();
         }
-        logger.log(level, String.format("%s %s %s %s", timestamp, elapsedTimeMessage, userId, commandName));
+        logger.log(Level.INFO, String.format("%s %s %s %s", timestamp, elapsedTimeMessage, userId, commandName));
     }
 
     private final void logMessage(final Logger logger, final Level level,
