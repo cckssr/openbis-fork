@@ -8,6 +8,7 @@ import ch.openbis.drive.gui.util.Style;
 import ch.openbis.drive.gui.util.UsageUtil;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.util.OpenBISQueryUtil;
+import ch.openbis.drive.util.ParallelExecutionUtil;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -61,7 +62,7 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         super(parent);
 
         SyncJobCard thisRef = this;
-        OpenBISQueryUtil.EXECUTOR_SERVICE.submit(new Task<>() {
+        ParallelExecutionUtil.EXECUTOR_SERVICE.submit(new Task<>() {
             @Override
             protected Void call() throws Exception {
                 patCheckResult = OpenBISQueryUtil.getInstance()

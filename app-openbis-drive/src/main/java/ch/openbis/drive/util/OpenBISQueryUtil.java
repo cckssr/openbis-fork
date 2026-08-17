@@ -59,8 +59,6 @@ public class OpenBISQueryUtil {
     private final Logger logger = LogManager.getLogger(this.getClass());
     private static final OpenBISQueryUtil INSTANCE = new OpenBISQueryUtil();
 
-    public final static ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
-
     static final int AFS_MAX_READ_SIZE_BYTES = 10485760;
     static final int AFS_CLIENT_TIMEOUT = 30000;
 
@@ -230,7 +228,7 @@ public class OpenBISQueryUtil {
                                 }
                                 return patCheckResult;
                             },
-                            EXECUTOR_SERVICE
+                            ParallelExecutionUtil.EXECUTOR_SERVICE
                     )
             ).toArray(CompletableFuture[]::new)).get(5, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {

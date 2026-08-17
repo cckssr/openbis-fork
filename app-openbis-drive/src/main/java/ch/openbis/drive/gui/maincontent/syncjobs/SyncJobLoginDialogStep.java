@@ -7,67 +7,85 @@ import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.SharedContext;
 import ch.openbis.drive.gui.util.Style;
+import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.util.OpenBISQueryUtil;
+import impl.org.controlsfx.skin.AutoCompletePopup;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
 import lombok.NonNull;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import static ch.openbis.drive.gui.maincontent.syncjobs.SyncJobDialog.*;
+import static ch.openbis.drive.gui.maincontent.syncjobs.SyncJobFormDialogStep.*;
 
 
-public class SyncJobLoginDialog extends Dialog<SyncJobSessionChoiceResult> {
+public class SyncJobLoginDialogStep implements DialogStep<SyncJobDialogContext, SyncJob> {
     private final Logger logger = LogManager.getLogger(this.getClass());
     final int MAX_TEXT_INPUT_LENGTH = 1000;
     Pattern HTTP_URL_PATTERN = Pattern.compile("^(http|https)://[^\\s/$.?#][^/]*$");
-    public static final int EXTENDED_HEIGHT = SyncJobDialog.EXTENDED_HEIGHT - 100;
 
-    final TextField openbisServerUrlValue;
+    volatile TextField openbisServerUrlValue;
+    volatile AutoCompletePopup<String> openbisServerUrlAutocomplete;
     final BooleanProperty openbisUrlPropertyError = new SimpleBooleanProperty(false);
+    volatile Set<String> knownOpenbisUrls;
 
-    final TextField usernameValue;
+    volatile TextField usernameValue;
     final BooleanProperty usernamePropertyError = new SimpleBooleanProperty(false);
 
-    final PasswordField passwordValue;
+    volatile PasswordField passwordValue;
     final BooleanProperty passwordPropertyError = new SimpleBooleanProperty(false);
 
     final List<BooleanProperty> validationErrors = List.of(
             openbisUrlPropertyError, usernamePropertyError, passwordPropertyError);
     final BooleanBinding allValid = Bindings.createBooleanBinding(
             () -> validationErrors.stream().noneMatch(BooleanProperty::getValue), validationErrors.toArray(BooleanProperty[]::new));
+    volatile ChangeListener<Boolean> allValidListener;
+    volatile BooleanProperty applyDisableProperty;
 
     final ProgressIndicator loggingInProgressIndicator = new ProgressIndicator();
 
-    public SyncJobLoginDialog(Stage mainStage) {
-        super();
-        I18n i18n = SharedContext.getContext().getI18n();
+    private volatile Node content;
+    private volatile CompletableFuture<DialogStepResult<SyncJobDialogContext, SyncJob>> result;
+    private volatile EventHandler<ActionEvent> applyButtonHandler;
 
+    @Override
+    public void initialize(
+            @NonNull SyncJobDialogContext context,
+            @NonNull Dialog<SyncJob> parentDialog,
+            @NonNull BooleanProperty applyDisableProperty,
+            @NonNull CompletableFuture<DialogStepResult<SyncJobDialogContext, SyncJob>> resultFuture
+    ) {
+        I18n i18n = SharedContext.getContext().getI18n();
+        this.applyDisableProperty = applyDisableProperty;
+        this.result = resultFuture;
+        this.knownOpenbisUrls = context.currentSyncJobs().stream()
+                .map(SyncJob::getOpenBisUrl).collect(Collectors.toSet());
 
         VBox baseVerticalBox = new VBox();
         baseVerticalBox.setPadding(new Insets(50, 0, 0, 0));
         baseVerticalBox.setSpacing(50);
         baseVerticalBox.setAlignment(Pos.TOP_CENTER);
+        this.content = baseVerticalBox;
 
         GridPane gridPane = new GridPane();
         int columnsCount = 6;
@@ -81,6 +99,7 @@ public class SyncJobLoginDialog extends Dialog<SyncJobSessionChoiceResult> {
         openbisServerUrlLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.openbis_server_url"));
         openbisServerUrlLabel.setPadding(new Insets(30, 0, 0, 0));
         openbisServerUrlValue = getOpenbisServerUrlTextField();
+        openbisServerUrlAutocomplete = getOpenbisServerUrlAutocomplete();
 
         Label usernameLabel = new Label();
         usernameLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.login.user"));
@@ -110,47 +129,23 @@ public class SyncJobLoginDialog extends Dialog<SyncJobSessionChoiceResult> {
                 gridPane
         );
 
-        getDialogPane().setContent(baseVerticalBox);
-
-        initStyle(StageStyle.DECORATED);
-
-        final Window window = getDialogPane().getScene().getWindow();
-        window.addEventHandler(WindowEvent.WINDOW_SHOWN, new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                Platform.runLater(() -> DisplaySettings.centerStageOnMainStage((Stage) window, mainStage));
-            }
-        });
-        Style.applyStyle(getDialogPane().getScene());
-
-        getDialogPane().getButtonTypes().add(ButtonType.APPLY);
-        Button applyButton = (Button) getDialogPane().lookupButton(ButtonType.APPLY);
-        applyButton.textProperty().bind(i18n.createStringBinding("generic_buttons.next"));
-
-        getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-        ((Button) getDialogPane().lookupButton(ButtonType.CANCEL)).textProperty().bind(i18n.createStringBinding("generic_buttons.cancel"));
-
-        Platform.runLater( () -> {
-            getDialogPane().getScene().getWindow().setWidth(SyncJobDialog.EXTENDED_WIDTH);
-            getDialogPane().getScene().getWindow().setHeight(EXTENDED_HEIGHT);
-        } );
-
-        allValid.addListener((obs, oldValue, newValue) -> {
+        allValidListener = (obs, oldValue, newValue) -> {
             if (newValue) {
-                applyButton.setDisable(false);
+                applyDisableProperty.setValue(false);
             } else {
-                applyButton.setDisable(true);
+                applyDisableProperty.setValue(true);
             }
-        });
+        };
+        allValid.addListener(allValidListener);
 
         //Validation and login attempt
-        applyButton.addEventFilter(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
+        applyButtonHandler = new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
                 doValidationOnAllInputFields();
                 if (validationErrors.stream().anyMatch(BooleanExpression::getValue)) {
-                    applyButton.setDisable(true);
-                    actionEvent.consume();
+                    applyDisableProperty.setValue(true);
+                    return;
                 }
 
                 CompletableFuture<OpenBISQueryUtil.NewSessionResult> newSessionCompletableFuture =
@@ -184,13 +179,20 @@ public class SyncJobLoginDialog extends Dialog<SyncJobSessionChoiceResult> {
                     if (newSessionResult.result() == OpenBISQueryUtil.NewSessionResultEnum.OK) {
                         final OpenBISQueryUtil.AvailableSession availableSession = newSessionResult.availableSession();
                         Platform.runLater( () -> {
-                            setResult(
-                                    new SyncJobSessionChoiceResult(
-                                            true,
-                                            availableSession
+                            result.complete(
+                                    new DialogStepResult<>(
+                                            DialogStepResultEnum.NEXT,
+                                            new SyncJobDialogContext(
+                                                    context.toBeModified(),
+                                                    context.currentSyncJobs(),
+                                                    new SyncJobSessionChoiceResult(
+                                                            true,
+                                                            availableSession
+                                                    )
+                                            ),
+                                            null
                                     )
                             );
-                            close();
                         });
                     } else {
                         String errorTooltip = switch (newSessionResult.result()) {
@@ -207,13 +209,40 @@ public class SyncJobLoginDialog extends Dialog<SyncJobSessionChoiceResult> {
                         setLoginAttemptErrorOnAllFields(i18n.get("sync_tasks.login.login_error.unknown_error"));
                     });
                 }
+            }
+        };
+    }
 
-                actionEvent.consume();
+    AutoCompletePopup<String> getOpenbisServerUrlAutocomplete() {
+        AutoCompletePopup<String> openbisServerUrlAutocomplete = new AutoCompletePopup<>();
+        openbisServerUrlAutocomplete.getSuggestions().addAll(
+                knownOpenbisUrls.stream()
+                        .limit(10).toList()
+        );
+        openbisServerUrlAutocomplete.setOnSuggestion(new EventHandler<AutoCompletePopup.SuggestionEvent<String>>() {
+            @Override
+            public void handle(AutoCompletePopup.SuggestionEvent<String> event) {
+                openbisServerUrlValue.setText(event.getSuggestion());
             }
         });
-        setResultConverter((dialogButton) ->
-            new SyncJobSessionChoiceResult(false, null)
-        );
+        openbisServerUrlValue.textProperty().addListener((obs, oldValue, newValue) -> {
+            openbisServerUrlAutocomplete.getSuggestions().clear();
+            openbisServerUrlAutocomplete.getSuggestions().addAll(
+                    knownOpenbisUrls.stream().filter( value -> value.contains(newValue.trim()))
+                            .limit(10).toList()
+            );
+            openbisServerUrlAutocomplete.setMinWidth(openbisServerUrlValue.getWidth());
+            openbisServerUrlAutocomplete.show(openbisServerUrlValue);
+        });
+        openbisServerUrlValue.focusedProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue) {
+                openbisServerUrlAutocomplete.setMinWidth(openbisServerUrlValue.getWidth());
+                openbisServerUrlAutocomplete.show(openbisServerUrlValue);
+            } else {
+                openbisServerUrlAutocomplete.hide();
+            }
+        });
+        return openbisServerUrlAutocomplete;
     }
 
     TextField getOpenbisServerUrlTextField() {
@@ -312,5 +341,30 @@ public class SyncJobLoginDialog extends Dialog<SyncJobSessionChoiceResult> {
         setLoginAttemptError(openbisServerUrlValue, errorTooltip);
         setLoginAttemptError(usernameValue, errorTooltip);
         setLoginAttemptError(passwordValue, errorTooltip);
+    }
+
+    @Override
+    public @NonNull Node getContent() {
+        return content;
+    }
+
+    @Override
+    public @NonNull EventHandler<ActionEvent> getApplyHandler() {
+        return applyButtonHandler;
+    }
+
+    @Override
+    public CompletableFuture<DialogStepResult<SyncJobDialogContext, SyncJob>> getResult() {
+        return result;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (allValidListener != null) {
+            allValid.removeListener(allValidListener);
+        }
+        if (applyDisableProperty != null) {
+            applyDisableProperty.setValue(false);
+        }
     }
 }

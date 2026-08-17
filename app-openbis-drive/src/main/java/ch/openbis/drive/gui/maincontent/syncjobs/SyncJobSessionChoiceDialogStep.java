@@ -2,37 +2,47 @@ package ch.openbis.drive.gui.maincontent.syncjobs;
 
 import ch.openbis.drive.gui.MainViewController;
 import ch.openbis.drive.gui.i18n.I18n;
-import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.SharedContext;
-import ch.openbis.drive.gui.util.Style;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.util.OpenBISQueryUtil;
+import ch.openbis.drive.util.ParallelExecutionUtil;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.*;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 
-public class SyncJobSessionChoiceDialog extends Dialog<SyncJobSessionChoiceResult> {
-    public static final int EXTENDED_HEIGHT = SyncJobDialog.EXTENDED_HEIGHT - 100;
+public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogContext, SyncJob> {
     private final ConcurrentHashMap<RadioButton, OpenBISQueryUtil.AvailableSession> availableSessionMap =
             new ConcurrentHashMap<>();
 
-    private final Future<?> loadingAvailableSessionsFuture;
+    private volatile Future<?> loadingAvailableSessionsFuture;
+    private volatile Node content;
+    private volatile CompletableFuture<DialogStepResult<SyncJobDialogContext, SyncJob>> result;
+    private volatile EventHandler<ActionEvent> applyButtonHandler;
 
-    public SyncJobSessionChoiceDialog(Stage mainStage, List<SyncJob> currentSyncJobs) {
-        super();
+    @Override
+    public void initialize(
+            @NonNull SyncJobDialogContext context,
+            @NonNull Dialog<SyncJob> parentDialog,
+            @NonNull BooleanProperty applyDisableProperty,
+            @lombok.NonNull CompletableFuture<DialogStepResult<SyncJobDialogContext, SyncJob>> resultFuture
+    ) {
+        this.result = resultFuture;
         I18n i18n = SharedContext.getContext().getI18n();
 
         VBox progressIndicatorBox = new VBox();
@@ -47,6 +57,7 @@ public class SyncJobSessionChoiceDialog extends Dialog<SyncJobSessionChoiceResul
         baseVerticalBox.setPadding(new Insets(50, 0, 0, 0));
         baseVerticalBox.setSpacing(50);
         baseVerticalBox.setAlignment(Pos.TOP_CENTER);
+        this.content = baseVerticalBox;
 
         GridPane gridPane = new GridPane();
         int columnsCount = 6;
@@ -72,19 +83,6 @@ public class SyncJobSessionChoiceDialog extends Dialog<SyncJobSessionChoiceResul
                 gridPane
         );
 
-        getDialogPane().setContent(baseVerticalBox);
-
-        initStyle(StageStyle.DECORATED);
-
-        final Window window = getDialogPane().getScene().getWindow();
-        window.addEventHandler(WindowEvent.WINDOW_SHOWN, new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                Platform.runLater(() -> DisplaySettings.centerStageOnMainStage((Stage) window, mainStage));
-            }
-        });
-        Style.applyStyle(getDialogPane().getScene());
-
         ToggleGroup sessionChoices = new ToggleGroup();
 
         RadioButton newLoginChoice = new RadioButton(i18n.get("sync_tasks.session_choice.new_login"));
@@ -96,18 +94,27 @@ public class SyncJobSessionChoiceDialog extends Dialog<SyncJobSessionChoiceResul
         vBox.setSpacing(20);
         vBox.getChildren().add(newLoginChoice);
 
-        loadingAvailableSessionsFuture = OpenBISQueryUtil.EXECUTOR_SERVICE.submit(
+        loadingAvailableSessionsFuture = ParallelExecutionUtil.EXECUTOR_SERVICE.submit(
             new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
                     Set<OpenBISQueryUtil.AvailableSession> availableSessionSet =
-                            OpenBISQueryUtil.getInstance().getAvailableSessions(currentSyncJobs);
+                            OpenBISQueryUtil.getInstance().getAvailableSessions(
+                                    context.currentSyncJobs()
+                            );
 
                     if (availableSessionSet.isEmpty()) {
-                        Platform.runLater( () -> {
-                            setResult(new SyncJobSessionChoiceResult(true, null));
-                            close();
-                        });
+                        result.complete(
+                                new DialogStepResult<>(
+                                    DialogStepResultEnum.NEXT,
+                                    new SyncJobDialogContext(
+                                            context.toBeModified(),
+                                            context.currentSyncJobs(),
+                                            new SyncJobSessionChoiceResult(true, null)
+                                    ),
+                                    null
+                                )
+                        );
                     } else {
                         Platform.runLater(
                                 () -> {
@@ -131,25 +138,42 @@ public class SyncJobSessionChoiceDialog extends Dialog<SyncJobSessionChoiceResul
             }
         );
 
-        getDialogPane().getButtonTypes().add(ButtonType.APPLY);
-        Button applyButton = (Button) getDialogPane().lookupButton(ButtonType.APPLY);
-        applyButton.textProperty().bind(i18n.createStringBinding("generic_buttons.next"));
-
-        getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-        ((Button) getDialogPane().lookupButton(ButtonType.CANCEL)).textProperty().bind(i18n.createStringBinding("generic_buttons.cancel"));
-
-        Platform.runLater( () -> {
-            getDialogPane().getScene().getWindow().setWidth(SyncJobDialog.EXTENDED_WIDTH);
-            getDialogPane().getScene().getWindow().setHeight(EXTENDED_HEIGHT);
-        } );
-
-        setResultConverter((dialogButton) -> {
-            loadingAvailableSessionsFuture.cancel(true);
-            if (dialogButton.getButtonData().getTypeCode().equals(ButtonType.APPLY.getButtonData().getTypeCode())) {
-                return new SyncJobSessionChoiceResult(true, availableSessionMap.get((RadioButton) sessionChoices.getSelectedToggle()));
-            } else {
-                return new SyncJobSessionChoiceResult(false, null);
+        applyButtonHandler = new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                result.complete(new DialogStepResult<>(
+                                DialogStepResultEnum.NEXT,
+                                new SyncJobDialogContext(
+                                        context.toBeModified(),
+                                        context.currentSyncJobs(),
+                                        new SyncJobSessionChoiceResult(true, availableSessionMap.get((RadioButton) sessionChoices.getSelectedToggle()))
+                                ),
+                                null
+                        )
+                );
             }
-        });
+        };
+    }
+
+    @Override
+    public @NonNull Node getContent() {
+        return content;
+    }
+
+    @Override
+    public @lombok.NonNull EventHandler<ActionEvent> getApplyHandler() {
+        return applyButtonHandler;
+    }
+
+    @Override
+    public CompletableFuture<DialogStepResult<SyncJobDialogContext, SyncJob>> getResult() {
+        return result;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (loadingAvailableSessionsFuture != null) {
+            loadingAvailableSessionsFuture.cancel(true);
+        }
     }
 }
