@@ -15,6 +15,7 @@ export function getCodeField(dto: any, overrides: FieldOverrides = {}): FormFiel
   const value = overrides.value ?? dto.code;
   const field: FormField<string> = {
     id: permId + '-code',
+    name: 'code',
     label: 'Code',
     value,
     dataType: FormFieldDataType.VARCHAR,
@@ -41,6 +42,7 @@ export function getDescriptionField(dto: any, overrides: FieldOverrides = {}): F
   const value = overrides.value ?? dto.description;
   const field: FormField<string> = {
     id: permId + '-description',
+    name: 'description',
     label: 'Description',
     value,
     dataType: FormFieldDataType.WORD_PROCESSOR,
@@ -67,6 +69,7 @@ export function getPermIdField(dto: any, overrides: FieldOverrides = {}): FormFi
   const permId = dto.permId.permId;
   return {
     id: permId + '-permId',
+    name: 'permId',
     label: 'PermId',
     value: overrides.value ?? permId,
     dataType: FormFieldDataType.VARCHAR,
@@ -84,6 +87,7 @@ export function getIdentifierField(dto: any, overrides: FieldOverrides = {}): Fo
   const permId = dto.permId.permId;
   return {
     id: permId + '-identifier',
+    name: 'identifier',
     label: 'Identifier',
     value: overrides.value ?? dto.identifier?.identifier,
     dataType: FormFieldDataType.VARCHAR,
@@ -101,6 +105,7 @@ export function getPathField(dto: any, overrides: FieldOverrides = {}): FormFiel
   const permId = dto.permId.permId;
   return {
     id: permId + '-path',
+    name: 'path',
     label: 'Path',
     value: overrides.value ?? dto.identifier?.identifier,
     dataType: FormFieldDataType.VARCHAR,
@@ -118,6 +123,7 @@ export function getSpaceField(dto: any, overrides: FieldOverrides = {}): FormFie
   const permId = dto.permId.permId;
   return {
     id: permId + '-space',
+    name: 'space',
     label: 'Space',
     value: overrides.value ?? dto.space?.code,
     dataType: FormFieldDataType.VARCHAR,
@@ -135,6 +141,7 @@ export function getProjectField(dto: any, overrides: FieldOverrides = {}): FormF
   const permId = dto.permId.permId;
   return {
     id: permId + '-project',
+    name: 'project',
     label: 'Project',
     value: overrides.value ?? dto.project?.code,
     dataType: FormFieldDataType.VARCHAR,
@@ -152,6 +159,7 @@ export function getCollectionField(dto: any, overrides: FieldOverrides = {}): Fo
   const permId = dto.permId.permId;
   return {
     id: permId + '-collection',
+    name: 'collection',
     label: 'Collection',
     value: overrides.value ?? dto.experiment?.identifier?.identifier,
     dataType: FormFieldDataType.VARCHAR,
@@ -169,6 +177,7 @@ export function getObjectField(dto: any, overrides: FieldOverrides = {}): FormFi
   const permId = dto.permId.permId;
   return {
     id: permId + '-object',
+    name: 'object',
     label: 'Object',
     value: overrides.value ?? dto.sample?.identifier?.identifier,
     dataType: FormFieldDataType.VARCHAR,
@@ -186,6 +195,7 @@ export function getRegistratorField(dto: any, overrides: FieldOverrides = {}): F
   const permId = dto.permId.permId;
   return {
     id: permId + '-registrator',
+    name: 'registrator',
     label: 'Registrator',
     value: overrides.value ?? dto.registrator?.userId,
     dataType: FormFieldDataType.VARCHAR,
@@ -203,6 +213,7 @@ export function getRegistrationDateField(dto: any, overrides: FieldOverrides = {
   const permId = dto.permId.permId;
   return {
     id: permId + '-registrationDate',
+    name: 'registrationDate',
     label: 'Registration Date',
     value: overrides.value ?? (dto.registrationDate ? getFormattedTimestamp(dto.registrationDate) : ''),
     dataType: FormFieldDataType.TIMESTAMP,
@@ -220,6 +231,7 @@ export function getModifierField(dto: any, overrides: FieldOverrides = {}): Form
   const permId = dto.permId.permId;
   return {
     id: permId + '-modifier',
+    name: 'modifier',
     label: 'Modifier',
     value: overrides.value ?? dto.modifier?.userId,
     dataType: FormFieldDataType.VARCHAR,
@@ -237,6 +249,7 @@ export function getModificationDateField(dto: any, overrides: FieldOverrides = {
   const permId = dto.permId.permId;
   return {
     id: permId + '-modificationDate',
+    name: 'modificationDate',
     label: 'Modification Date',
     value: overrides.value ?? (dto.modificationDate ? getFormattedTimestamp(dto.modificationDate) : ''),
     dataType: FormFieldDataType.TIMESTAMP,
@@ -254,6 +267,7 @@ export function getTypeField(dto: any, overrides: FieldOverrides = {}): FormFiel
   const permId = dto.permId.permId;
   return {
     id: permId + '-entityType',
+    name: 'entityType',
     label: 'Type',
     value: overrides.value ?? dto.type.code,
     dataType: FormFieldDataType.VARCHAR,

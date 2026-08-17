@@ -49,14 +49,16 @@ Core goals:
 
 ## Storage model (two keys, two responsibilities)
 
-### 1) Preference key (per entity)
+### 1) Preference key (per entity, or per entity-type slot in CREATE mode)
 
 **Purpose**: “Should auto-save be enabled for this entity?”
 
 Used by: `useEntityAutoSaveFlow`
 
 Key format:
-- `new-forms:auto-save-enabled:${user}:${entityKind}:${permId || 'unknown'}`
+- EDIT/VIEW: `new-forms:auto-save-enabled:${user}:${entityKind}:${permId || 'unknown'}`
+- CREATE: `new-forms:auto-save-enabled:${user}:${entityKind}:${entityType}` (no `permId`, but
+  `entityType` instead — see "CREATE mode" below)
 
 Value:
 - Stored only when enabled: `'true'`
@@ -66,16 +68,18 @@ Value:
 - Preference is **UI/session behavior**, not part of the entity's domain model.
 - Per entity gives the most intuitive UX: "I want auto-save for this object, not globally for everything."
 - Storing only `'true'` keeps `localStorage` clean and avoids unlimited key growth with false values.
-- Fallback to `'unknown'` handles cases where `permId` is undefined (e.g., during entity creation).
+- Fallback to `'unknown'` handles cases where `permId` is undefined.
 
-### 2) Draft key (per entity)
+### 2) Draft key (per entity, or per entity-type slot in CREATE mode)
 
 **Purpose**: Store the **unsaved draft data** (only dirty fields) for the current entity.
 
 Used by: `useAutoSave` / `useAutoSaveRestore`
 
 Key format:
-- `form-data-${entityKind}-${permId || 'new'}-${user}`
+- EDIT/VIEW: `form-data-${entityKind}-${permId || 'new'}-${user}`
+- CREATE: `form-data-${entityKind}-${entityType}-${user}` (no `permId`, but `entityType` instead —
+  see "CREATE mode" below)
 
 Value (shape):
 ```typescript
@@ -83,7 +87,7 @@ Value (shape):
   data: Partial<Form>,        // Only dirty fields
   dirtyFields: string[],      // Field IDs that were changed
   timestamp: number,           // Unix timestamp
-  entityPermId: string,       // Entity identifier for mismatch detection
+  entityPermId: string,       // Entity identifier for mismatch/ownership detection
   version: number              // Form version for schema validation
 }
 ```
@@ -91,7 +95,7 @@ Value (shape):
 **Reasoning**
 - Separating preference vs draft prevents coupling: clearing a draft should not reset preference.
 - Key includes user + entity identifiers to avoid cross-user and cross-entity collisions.
-- Fallback to `'new'` handles cases where `permId` is undefined (e.g., during new entity creation).
+- Fallback to `'new'` handles cases where `permId` is undefined (EDIT/VIEW only).
 
 ---
 
@@ -121,14 +125,40 @@ Auto-save triggers on:
 
 ## Restoration strategy
 
-Restoration is handled by `useAutoSaveRestore`.
-
-### When restore runs
+### EDIT mode: silent, automatic (`useAutoSaveRestore`)
 
 Restore is attempted only when:
 - mode is `EDIT`
 - preference is enabled
 - a draft exists for this entity
+
+Restore triggers when the form transitions into `EDIT` (e.g. clicking "Edit" on a `VIEW` form) -
+silently, no user prompt, since the draft can only ever belong to *this* entity (EDIT-mode
+`permId` is a real, stable server identity, so there's nothing to disambiguate).
+
+### CREATE mode: explicit, via a restore/discard dialog
+
+CREATE-mode drafts are **not** auto-applied. Because the draft key is shared by every open tab
+creating that entity type (see below), silently applying whatever happens to be in storage could
+mean pulling in a different tab's in-progress content, or a leftover draft from days ago. Instead,
+`useEntityAutoSaveFlow` checks once (the first time the freshly-loaded default `form` is
+available) whether a non-stale draft exists for the shared key, and if so exposes it as
+`pendingDraft` / `hasPendingDraft`. `EntityFormContextProvider` renders `RestoreDraftDialog` for
+this, offering **Restore Draft** / **Discard Draft** - the user decides, nothing happens
+automatically.
+
+#### Matching draft fields across tabs: `name`, not `id`
+
+A CREATE-mode form's field `id`s are prefixed with that tab's ephemeral tmp `permId` (e.g.
+`"2-newObject-code"`), which is essentially never the same string across two separate tab-open
+events. Matching a restored draft's fields by `id` (as EDIT mode does, and as the original
+implementation of this dialog did) would therefore silently match nothing, making restore
+look like it "does not work at all". Static field getters (`getCodeField`, `getDescriptionField`,
+`getSpaceField`, etc. in `formFieldGetters.ts`) and property fields (already, via
+`mapAssignmentToFormField`) all set a stable `name` (`'code'`, `'description'`, a property code,
+...) independent of `permId`. `useAutoSave.getDirtyFields` persists that `name` alongside `id` in
+the draft, and the CREATE-mode merge in `useEntityAutoSaveFlow` matches saved fields to the
+current form's fields by `name` (falling back to `id` only for the rare field with no `name`).
 
 ### How infinite loops are avoided
 
@@ -137,11 +167,80 @@ Restoration is a classic source of React loops:
 
 `useAutoSaveRestore` uses refs to:
 - detect “already restored for this entity”
-- restore only once per entry-to-edit / entity change
+- restore only once per entry-to-EDIT / entity change
 
 **Reasoning**
 - The provider must stay simple; restore complexity belongs in a dedicated hook.
 - Loop prevention is easiest when encapsulated and tested once.
+
+CREATE mode doesn't need this machinery: it never auto-restores (see above), and the one-time
+"is there a draft to offer" check in `useEntityAutoSaveFlow` uses a plain ref
+(`hasCheckedForDraftRef`) rather than mode-transition tracking, since a CREATE form is already in
+CREATE mode on mount - there's no transition to key off in the first place.
+
+### CREATE mode: one shared slot per entity type, one owner at a time
+
+New (not-yet-saved) entities also get drafts: if the user enables auto-save and closes the tab (or
+navigates away) with unsaved changes, reopening an equivalent "new entity" form offers to restore
+them (see the restore/discard dialog above).
+
+CREATE-mode `permId` is a small per-tab counter baked in at form-construction time (e.g.
+`"1-newObject"`), not a stable server identity — it gets reused once all tabs of that kind close.
+Rather than trying to disambiguate it, CREATE-mode preference/draft keys deliberately drop
+`permId` entirely — there is exactly **one** auto-save slot per new-entity **type** (per user),
+shared by every open tab creating that type of entity, mirroring that "only one form's toggle
+should really work" at a time.
+
+**Important distinction**: "type" here means `entityType` (the concrete type code, e.g. a
+specific sample type like `"YEAST"`), not `entityKind` (the broad category constant, e.g.
+`EntityKind.NEW_OBJECT` = `"newObject"`). `entityKind` alone is identical for *every* sample type
+- keying only by `entityKind` would put a "New Object" of type YEAST and one of type PLASMID in
+the same slot, so opening the second would immediately (and wrongly) offer to restore the first's
+draft. Keys are therefore always `user` + `entityKind` + `entityType` in CREATE mode. Kinds with
+no real sub-type (Project, Space) just have an empty `entityType`, which correctly collapses back
+to one slot per kind for those.
+
+#### Ownership: a liveness heartbeat, not just "does a draft exist"
+
+A naive "does *any* draft already exist under the shared key" check breaks the moment the owning
+tab goes away without cleanly unmounting (a hard refresh, closing the whole browser): the draft
+content itself is intentionally kept fresh-looking (its `beforeunload` handler writes it one last
+time so it can be restored later), so it would look "still owned" forever, permanently blocking
+every other tab from ever enabling auto-save for that entity type.
+
+To answer "does the owning tab actually still exist" instead of "does a draft still exist",
+ownership is tracked by a **separate heartbeat key**
+(`new-forms:auto-save-heartbeat:${user}:${entityKind}:${entityType}`, value
+`{ entityPermId, timestamp }`), decoupled from the draft content key:
+- While a CREATE-mode tab is actively driving the draft flow (`isDraftFlowEnabled`), it writes its
+  own `entityPermId` + `Date.now()` to the heartbeat key immediately and then every
+  `HEARTBEAT_INTERVAL_MS` (5s, same cadence as the draft auto-save).
+- The heartbeat is **released** (removed, if it's still this tab's own) both on clean React
+  unmount (tab closed via the UI) and on `beforeunload` (covers a full page refresh/navigation) -
+  so ownership is freed essentially instantly in both of those cases.
+- As a fallback for the rarer case neither of those fires (browser/OS crash), a heartbeat older
+  than `HEARTBEAT_STALE_AFTER_MS` (15s - three missed beats) is treated as abandoned.
+
+`isSlotTakenByAnother()` reads this heartbeat and reports "taken" only if it's fresh **and**
+belongs to a different `entityPermId` than the current tab.
+
+#### Two different reactions, only one of them user-visible
+
+- **On mount / preference load**: if the shared preference is `'true'` but `isSlotTakenByAnother()`
+  is true, this tab's `isAutoSaveEnabled` is initialized to `false` **silently** - no toast. Opening
+  a second "new entity" tab of the same type while the first is actively auto-saving should not
+  itself produce a warning; it should just not auto-enable in the second tab.
+- **On an explicit `setAutoSaveEnabled(true)` call** (the user actually toggling the switch on):
+  the same `isSlotTakenByAnother()` check runs, but if it's still taken, the call is a no-op (the
+  switch stays off) and a warning toast is raised: *"Auto saved turned off because a new entity of
+  the same type is already being auto saved."* This is also what happens if the user retries after
+  the first attempt - if the first entity's tab is still live, it's blocked again with the same
+  toast; once that tab's heartbeat has actually gone (closed, refreshed, or timed out), the retry
+  succeeds and this tab claims the slot.
+
+Dirty-field diffing for CREATE works unmodified: `originalForm` is set to the freshly-constructed
+default form on load and never mutated by `updateField`, so diffing `form.fields` against it
+already isolates exactly the fields the user typed — no special-casing needed in `useAutoSave`.
 
 ---
 

@@ -16,6 +16,7 @@ import ConflictResolutionDialog from '@src/js/components/database/new-forms/comp
 import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/common/DeleteConfirmationDialog.tsx';
 import MoveDialog from '@src/js/components/database/new-forms/components/common/MoveDialog.tsx';
 import EntityTypeSelectionDialog from '@src/js/components/database/new-forms/components/common/EntityTypeSelectionDialog.tsx';
+import RestoreDraftDialog from '@src/js/components/database/new-forms/components/common/RestoreDraftDialog.tsx';
 import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx';
 
 import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
@@ -101,31 +102,41 @@ export const EntityFormContextProvider = ({
     actionToastContext.raiseInfo('Restored unsaved changes');
   }, [restoreForm, actionToastContext]);
 
+  // Handle auto-save being forced off because another new entity of the same type already
+  // owns the (shared) CREATE-mode auto-save slot.
+  const handleAutoSaveBlocked = useCallback((message: string) => {
+    actionToastContext.raiseWarning(message);
+  }, [actionToastContext]);
+
   // Auto-save feature flow (preference + save + restore + actionOverrides)
   const {
     isAutoSaveEnabled,
     setAutoSaveEnabled,
     actionOverrides,
-    clearStorage
+    clearStorage,
+    hasPendingDraft,
+    restorePendingDraft,
+    discardPendingDraft,
+    dismissPendingDraft
   } = useEntityAutoSaveFlow({
     form,
     originalForm,
     mode,
     user,
     entityKind,
+    entityType: params?.entityType || '',
     permId,
-    onRestore: handleDataRestore
+    onRestore: handleDataRestore,
+    onAutoSaveBlocked: handleAutoSaveBlocked
   });
 
   // Report unsaved-changes state to the tab system (drives the close-tab warning via
   // tab.changed) and to the parent (Files-tab guard).
-  // Auto-save only applies to EDIT mode (drafts are persisted to localStorage only when
-  // mode === EDIT, see useEntityAutoSaveFlow). A new (CREATE) form is never auto-saved, so it
-  // must always warn — regardless of any stale auto-save preference.
+  // Drafts are persisted to localStorage in both EDIT and CREATE mode when auto-save is
+  // enabled (see useEntityAutoSaveFlow), so only warn about losing changes when it's off.
   useEffect(() => {
     const changed =
-      mode === FormMode.CREATE ||
-      (mode === FormMode.EDIT && !isAutoSaveEnabled);
+      (mode === FormMode.EDIT || mode === FormMode.CREATE) && !isAutoSaveEnabled;
     externalAppController.objectChange({ objectTypeChanging: entityKind, id: permId, changed });
     if (onUnsavedStateChange) {
       onUnsavedStateChange(changed);
@@ -373,6 +384,12 @@ export const EntityFormContextProvider = ({
           }
         }}
         onCancel={() => setUnsavedConfirm({ open: false, onConfirm: null })}
+      />
+      <RestoreDraftDialog
+        open={hasPendingDraft}
+        onRestore={restorePendingDraft}
+        onDiscard={discardPendingDraft}
+        onDismiss={dismissPendingDraft}
       />
       <EntityForm
         form={form}

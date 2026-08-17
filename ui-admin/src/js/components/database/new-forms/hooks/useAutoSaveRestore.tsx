@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
@@ -13,18 +13,22 @@ interface UseAutoSaveRestoreProps {
 
 interface RestorationState {
   entityPermId: string;
-  mode: FormMode;
 }
 
 /**
- * Hook for handling auto-save restoration logic.
+ * Hook for handling auto-save restoration logic for EDIT-mode forms.
  * Encapsulates all restoration state tracking and prevents infinite loops.
- * 
+ *
  * Features:
- * - Restores saved data when entering EDIT mode
+ * - Restores saved data when entering EDIT mode (e.g. clicking "Edit" on a VIEW form)
  * - Prevents duplicate restorations
  * - Handles entity changes gracefully
  * - Clears stale data automatically
+ *
+ * CREATE-mode forms do NOT use this hook: they have no VIEW -> EDIT-style transition to key
+ * a "just entered" check off (they're already in CREATE mode on mount), and their drafts are
+ * offered to the user explicitly via a restore/discard dialog instead of being silently
+ * auto-applied - see `useEntityAutoSaveFlow`'s `pendingDraft` handling.
  */
 export const useAutoSaveRestore = ({
   form,
@@ -70,19 +74,14 @@ export const useAutoSaveRestore = ({
       const savedData = loadFromStorage();
 
       if (savedData) {
-        const alreadyRestored = 
-          restorationStateRef.current?.entityPermId === currentEntityPermId &&
-          restorationStateRef.current?.mode === FormMode.EDIT;
+        const alreadyRestored = restorationStateRef.current?.entityPermId === currentEntityPermId;
 
         if (savedData.entityPermId === currentEntityPermId && !alreadyRestored) {
-          // Valid saved data for current entity - restore it          
+          // Valid saved data for current entity - restore it
           // Update refs BEFORE restoring to prevent infinite loop
           formEntityPermIdRef.current = currentEntityPermId;
-          restorationStateRef.current = {
-            entityPermId: currentEntityPermId,
-            mode: FormMode.EDIT
-          };
-          
+          restorationStateRef.current = { entityPermId: currentEntityPermId };
+
           onRestore(savedData);
         } else if (savedData.entityPermId !== currentEntityPermId) {
           // Different entity - clear stale data
@@ -110,4 +109,3 @@ export const useAutoSaveRestore = ({
     }
   }, [mode, form?.entityPermId]);
 };
-

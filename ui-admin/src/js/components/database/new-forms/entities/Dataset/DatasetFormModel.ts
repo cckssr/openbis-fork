@@ -92,6 +92,8 @@ export class DatasetFormModel {
       actions: [
         getSaveAction(),
         getCancelAction(true),
+        getDividerAction(FormMode.CREATE),
+        getAutoSaveAction(),
       ],
     }
   }

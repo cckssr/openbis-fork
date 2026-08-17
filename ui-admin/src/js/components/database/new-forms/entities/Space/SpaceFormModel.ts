@@ -61,6 +61,8 @@ export class SpaceFormModel {
 			actions: [
 				getSaveAction(EntityKind.SPACE),
 				getCancelAction(true),
+				getDividerAction(FormMode.CREATE),
+				getAutoSaveAction(),
 			],
 		};
 	}
