@@ -236,7 +236,7 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
         syncContext.setConfig(config);
         syncContext.setOperationLog(logger);
         EntitySynchronizer synchronizer = new EntitySynchronizer(syncContext);
-        Date resourceListTimestamp = synchronizer.synchronizeEntities();
+        Date resourceListTimestamp = synchronizePhases(synchronizer, config.isDryRun());
         if (resourceListTimestamp.before(newCutOffTimestamp))
         {
             newCutOffTimestamp = resourceListTimestamp;
@@ -256,6 +256,16 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
             logger.info("Saving the timestamp of sync start to file");
             saveSyncTimestamp(lastSyncTimestampFile, newLastIncSyncTimestamp, newLastFullSyncTimestamp);
         }
+    }
+
+    static Date synchronizePhases(EntitySynchronizer synchronizer, boolean dryRun) throws Exception
+    {
+        Date resourceListTimestamp = synchronizer.synchronizeEntities();
+        if (dryRun == false)
+        {
+            synchronizer.synchronizeAFSData();
+        }
+        return resourceListTimestamp;
     }
 
     private void checkAlias(SyncConfig config) throws UserFailureException

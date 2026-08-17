@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchroniz
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -117,6 +118,7 @@ public class ResourceListParser
         XPath xpath = createXPath();
         Date resourceListTimestamp = getResourceListTimestamp(doc, xpath);
         data.setResourceListTimestamp(resourceListTimestamp);
+        data.setDataSourceAfsUrl(getDataSourceAfsUrl(doc));
 
         monitor.log();
         NodeList nodes = doc.getDocumentElement().getChildNodes();
@@ -233,6 +235,25 @@ public class ResourceListParser
         {
             throw new XPathExpressionException("Last modification date cannot be parsed:" + timestamp);
         }
+    }
+
+    /**
+     * The data source's AFS server, as published by {@code Capability.write()} in {@code DataSourceRequestHandler} via an
+     * {@code rs:ln[@rel='afs-service-url']} link at the top of the resource list. Discovering it from the document itself means the harvester
+     * config never needs to duplicate (and risk drifting from) the data source's own {@code afs-url} setting.
+     */
+    private String getDataSourceAfsUrl(Document doc)
+    {
+        NodeList linkNodes = doc.getDocumentElement().getElementsByTagName("rs:ln");
+        for (int i = 0; i < linkNodes.getLength(); i++)
+        {
+            Element linkElement = (Element) linkNodes.item(i);
+            if ("afs-service-url".equals(linkElement.getAttribute("rel")))
+            {
+                return linkElement.getAttribute("href");
+            }
+        }
+        return null;
     }
 
     private void parseMasterData(Document doc, XPath xpath, String uri) throws XPathExpressionException
@@ -352,6 +373,11 @@ public class ResourceListParser
         IncomingDataSet incomingDataSet = new IncomingDataSet(ds, frozenFlags, fullDataSet, lastModificationDate);
         setTimestampsAndUsers(xdNode, incomingDataSet);
         data.getDataSetsToProcess().put(permId, incomingDataSet);
+        incomingDataSet.setAfsFiles(parseAfsFiles(xdNode));
+        incomingDataSet.setAfsDirectories(parseAfsDirectories(xdNode));
+        incomingDataSet.setTrashedAfsFiles(parseTrashedAfsFiles(xdNode));
+        incomingDataSet.setTrashedAfsDirectories(parseTrashedAfsDirectories(xdNode));
+        incomingDataSet.setAfsFileSnapshots(parseAfsFileSnapshots(xdNode));
         incomingDataSet.setConnections(parseConnections(xdNode));
         List<NewProperty> properties = parseDataSetProperties(xdNode);
         ds.setDataSetProperties(properties);
@@ -368,13 +394,11 @@ public class ResourceListParser
         DataSetCreation dataSet = fullDataSet.getMetadataCreation();
         dataSet.setDataSetKind(DataSetKind.LINK);
         LinkedDataCreation linkedData = new LinkedDataCreation();
-        Element docElement = (Element) xdNode;
-        NodeList binaryDataNode = docElement.getElementsByTagName("x:binaryData");
-        if (binaryDataNode.getLength() == 1)
+        Element linkedDataBinaryDataElement = findLinkedDataBinaryDataElement(xdNode);
+        if (linkedDataBinaryDataElement != null)
         {
-            Element binaryDataElement = (Element) binaryDataNode.item(0);
-            linkedData.setContentCopies(parseContentCopies(binaryDataElement));
-            fullDataSet.setFileMetadata(parseFileNodes(binaryDataElement));
+            linkedData.setContentCopies(parseContentCopies(linkedDataBinaryDataElement));
+            fullDataSet.setFileMetadata(parseFileNodes(linkedDataBinaryDataElement));
         }
         dataSet.setLinkedData(linkedData);
     }
@@ -602,9 +626,175 @@ public class ResourceListParser
     private boolean hasAttachments(Node xdNode)
     {
         Element docElement = (Element) xdNode;
-        NodeList connsNode = docElement.getElementsByTagName("x:binaryData");
-        // if a sample/experiment/project node has binaryData element, it can only be because of attachments
-        return connsNode.getLength() == 1;
+        return docElement.getElementsByTagName("x:attachment").getLength() > 0;
+    }
+
+    /**
+     * A sample/experiment/data set can have several sibling {@code x:binaryData} blocks (attachments, AFS files, and, for data sets,
+     * physical/linked data file listings). The AFS one is the one tagged {@code source="afs"} by {@link ch.ethz.sis.openbis.generic.server.dss
+     * .plugins.sync.datasource.AfsDataWriter} - find it explicitly rather than assuming there is only one block.
+     */
+    private Element findAfsBinaryDataElement(Node xdNode)
+    {
+        Element docElement = (Element) xdNode;
+        NodeList binaryDataNodes = docElement.getElementsByTagName("x:binaryData");
+        for (int i = 0; i < binaryDataNodes.getLength(); i++)
+        {
+            Element binaryDataElement = (Element) binaryDataNodes.item(i);
+            if ("afs".equals(binaryDataElement.getAttribute("source")))
+            {
+                return binaryDataElement;
+            }
+        }
+        return null;
+    }
+
+    private Element findLinkedDataBinaryDataElement(Node xdNode)
+    {
+        Element docElement = (Element) xdNode;
+        NodeList binaryDataNodes = docElement.getElementsByTagName("x:binaryData");
+        for (int i = 0; i < binaryDataNodes.getLength(); i++)
+        {
+            Element binaryDataElement = (Element) binaryDataNodes.item(i);
+            if ("afs".equals(binaryDataElement.getAttribute("source")) == false)
+            {
+                return binaryDataElement;
+            }
+        }
+        return null;
+    }
+
+    private List<IncomingAfsFile> parseAfsFiles(Node xdNode)
+    {
+        return parseAfsFileNodes(xdNode, false);
+    }
+
+    /**
+     * Files currently in the data source's AFS trash ({@code x:fileNode} paths under {@code /.afs.trash/...}). Used to
+     * sync the harvester's own trash, not treated as live content.
+     */
+    private List<IncomingAfsFile> parseTrashedAfsFiles(Node xdNode)
+    {
+        return parseAfsFileNodes(xdNode, true);
+    }
+
+    private List<IncomingAfsFile> parseAfsFileNodes(Node xdNode, boolean trashed)
+    {
+        Element afsBinaryDataElement = findAfsBinaryDataElement(xdNode);
+        if (afsBinaryDataElement == null)
+        {
+            return Collections.emptyList();
+        }
+        List<IncomingAfsFile> afsFiles = new ArrayList<>();
+        NodeList fileNodes = afsBinaryDataElement.getElementsByTagName("x:fileNode");
+        for (int i = 0; i < fileNodes.getLength(); i++)
+        {
+            Element fileElement = (Element) fileNodes.item(i);
+            String path = fileElement.getAttribute("path");
+            // Snapshots are parsed separately.
+            if (isBackupPath(path) || isInSnapshots(path) || isInTrash(path) != trashed)
+            {
+                continue;
+            }
+            afsFiles.add(new IncomingAfsFile(path,
+                    Long.parseLong(fileElement.getAttribute("length")),
+                    fileElement.getAttribute("lastModified"),
+                    fileElement.getAttribute("hash")));
+        }
+        return afsFiles;
+    }
+
+    /** Parses file history stored below {@code .afs.snapshots}. */
+    private List<IncomingAfsFile> parseAfsFileSnapshots(Node xdNode)
+    {
+        Element afsBinaryDataElement = findAfsBinaryDataElement(xdNode);
+        if (afsBinaryDataElement == null)
+        {
+            return Collections.emptyList();
+        }
+        List<IncomingAfsFile> snapshots = new ArrayList<>();
+        NodeList fileNodes = afsBinaryDataElement.getElementsByTagName("x:fileNode");
+        for (int i = 0; i < fileNodes.getLength(); i++)
+        {
+            Element fileElement = (Element) fileNodes.item(i);
+            String path = fileElement.getAttribute("path");
+            if (isBackupPath(path) || isInSnapshots(path) == false)
+            {
+                continue;
+            }
+            snapshots.add(new IncomingAfsFile(path,
+                    Long.parseLong(fileElement.getAttribute("length")),
+                    fileElement.getAttribute("lastModified"),
+                    fileElement.getAttribute("hash")));
+        }
+        return snapshots;
+    }
+
+    /**
+     * Empty directories on the data source's AFS store, as {@code x:dirNode} paths. Directories that aren't empty don't
+     * need an entry - their files already imply they exist.
+     */
+    private List<String> parseAfsDirectories(Node xdNode)
+    {
+        return parseAfsDirNodes(xdNode, false);
+    }
+
+    /**
+     * Empty directories currently in the data source's AFS trash ({@code x:dirNode} paths under {@code /.afs.trash/...}).
+     * Used to trash the matching directory on the harvester side, not treated as live content.
+     */
+    private List<String> parseTrashedAfsDirectories(Node xdNode)
+    {
+        return parseAfsDirNodes(xdNode, true);
+    }
+
+    private List<String> parseAfsDirNodes(Node xdNode, boolean trashed)
+    {
+        Element afsBinaryDataElement = findAfsBinaryDataElement(xdNode);
+        if (afsBinaryDataElement == null)
+        {
+            return Collections.emptyList();
+        }
+        List<String> afsDirectories = new ArrayList<>();
+        NodeList dirNodes = afsBinaryDataElement.getElementsByTagName("x:dirNode");
+        for (int i = 0; i < dirNodes.getLength(); i++)
+        {
+            Element dirElement = (Element) dirNodes.item(i);
+            String path = dirElement.getAttribute("path");
+            // Internal AFS directories are not ordinary empty directories.
+            if (path.equals(TRASH_FOLDER_PATH) || isBackupPath(path) || isInSnapshots(path))
+            {
+                continue;
+            }
+            if (isInTrash(path) != trashed)
+            {
+                continue;
+            }
+            afsDirectories.add(path);
+        }
+        return afsDirectories;
+    }
+
+    // Duplicated to avoid a dependency on lib-transactional-file-system.
+    private static final String TRASH_FOLDER_PATH = "/.afs.trash";
+
+    private static final String SNAPSHOTS_DIRECTORY = ".afs.snapshots";
+
+    private static final String BACKUP_PATH_PREFIX = "/.afs-sync-backup-";
+
+    private static boolean isInTrash(String path)
+    {
+        return path.equals(TRASH_FOLDER_PATH) || path.startsWith(TRASH_FOLDER_PATH + "/");
+    }
+
+    private static boolean isInSnapshots(String path)
+    {
+        return path.contains("/" + SNAPSHOTS_DIRECTORY + "/") || path.endsWith("/" + SNAPSHOTS_DIRECTORY);
+    }
+
+    private static boolean isBackupPath(String path)
+    {
+        return path.startsWith(BACKUP_PATH_PREFIX);
     }
 
     private List<NewProperty> parseDataSetProperties(Node xdNode)
@@ -667,6 +857,11 @@ public class ResourceListParser
         data.getExperimentsToProcess().put(permId, incomingExperiment);
         incomingExperiment.setConnections(parseConnections(xdNode));
         incomingExperiment.setHasAttachments(hasAttachments(xdNode));
+        incomingExperiment.setAfsFiles(parseAfsFiles(xdNode));
+        incomingExperiment.setAfsDirectories(parseAfsDirectories(xdNode));
+        incomingExperiment.setTrashedAfsFiles(parseTrashedAfsFiles(xdNode));
+        incomingExperiment.setTrashedAfsDirectories(parseTrashedAfsDirectories(xdNode));
+        incomingExperiment.setAfsFileSnapshots(parseAfsFileSnapshots(xdNode));
         setTimestampsAndUsers(xdNode, incomingExperiment);
         newExp.setProperties(parseProperties(xdNode));
     }
@@ -710,6 +905,11 @@ public class ResourceListParser
         IncomingSample incomingSample = new IncomingSample(newSample, frozenFlags, lastModificationDate);
         data.getSamplesToProcess().put(permId, incomingSample);
         incomingSample.setHasAttachments(hasAttachments(xdNode));
+        incomingSample.setAfsFiles(parseAfsFiles(xdNode));
+        incomingSample.setAfsDirectories(parseAfsDirectories(xdNode));
+        incomingSample.setTrashedAfsFiles(parseTrashedAfsFiles(xdNode));
+        incomingSample.setTrashedAfsDirectories(parseTrashedAfsDirectories(xdNode));
+        incomingSample.setAfsFileSnapshots(parseAfsFileSnapshots(xdNode));
         incomingSample.setConnections(parseConnections(xdNode));
         setTimestampsAndUsers(xdNode, incomingSample);
         newSample.setProperties(parseProperties(xdNode));

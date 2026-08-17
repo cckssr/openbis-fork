@@ -45,6 +45,8 @@ public class SynchronizationConfigReader
 
     private static final String DATA_SOURCE_DSS_URL_PROPERTY_NAME = "data-source-dss-url";
 
+    private static final String HARVESTER_AFS_URL_PROPERTY_NAME = "harvester-afs-url";
+
     private static final String DATA_SOURCE_SPACES_PROPERTY_NAME = "data-source-spaces";
 
     private static final String DATA_SOURCE_ALIAS_PROPERTY_NAME = "data-source-alias";
@@ -144,6 +146,7 @@ public class SynchronizationConfigReader
             config.setDataSourceURI(reader.getString(section, DATA_SOURCE_URL_PROPERTY_NAME, null, true));
             config.setDataSourceOpenbisURL(reader.getString(section, DATA_SOURCE_OPENBIS_URL_PROPERTY_NAME, null, true));
             config.setDataSourceDSSURL(reader.getString(section, DATA_SOURCE_DSS_URL_PROPERTY_NAME, null, true));
+            config.setHarvesterAfsURL(reader.getString(section, HARVESTER_AFS_URL_PROPERTY_NAME, null, false));
             String realm = reader.getString(section, DATA_SOURCE_AUTH_REALM_PROPERTY_NAME, null, true);
             String dataSourceUser = reader.getString(section, DATA_SOURCE_AUTH_USER_PROPERTY_NAME, null, true);
             String dataSourcePassword = reader.getString(section, DATA_SOURCE_AUTH_PASS_PROPERTY_NAME, null, true);

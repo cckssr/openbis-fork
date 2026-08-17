@@ -36,9 +36,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
 {
 
+    private final AfsDataWriter afsDataWriter;
+
     SampleDeliverer(DeliveryContext context)
     {
         super(context, "sample", ExportableKind.SAMPLE);
+        afsDataWriter = new AfsDataWriter(context);
     }
 
     @Override
@@ -76,6 +79,7 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
             connectionsBuilder.addComponents(sample.getComponents());
             connectionsBuilder.writeTo(writer);
             addAttachments(writer, sample.getAttachments());
+            afsDataWriter.write(writer, permId, sessionToken);
             writer.writeEndElement();
             writer.writeEndElement();
             count++;

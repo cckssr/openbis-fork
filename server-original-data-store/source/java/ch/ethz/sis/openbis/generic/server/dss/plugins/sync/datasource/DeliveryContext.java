@@ -39,6 +39,8 @@ class DeliveryContext
 
     private File fileServiceRepository;
 
+    private String afsUrl;
+
     public String getServerUrl()
     {
         return serverUrl;
@@ -107,6 +109,16 @@ class DeliveryContext
     public void setFileServiceRepository(File fileServiceRepository)
     {
         this.fileServiceRepository = fileServiceRepository;
+    }
+
+    public String getAfsUrl()
+    {
+        return afsUrl;
+    }
+
+    public void setAfsUrl(String afsUrl)
+    {
+        this.afsUrl = afsUrl;
     }
 
 }

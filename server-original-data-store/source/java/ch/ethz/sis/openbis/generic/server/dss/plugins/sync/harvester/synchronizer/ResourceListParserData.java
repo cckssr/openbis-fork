@@ -38,6 +38,9 @@ public class ResourceListParserData
     // retrieving the resource list.
     private Date resourceListTimestamp;
 
+    // the AFS server the data source is paired with, as published in the resource list's rs:ln[@rel='afs-service-url'] link
+    private String dataSourceAfsUrl;
+
     private Set<String> harvesterSpaceList = new HashSet<>();
 
     private MasterData masterData;
@@ -72,6 +75,16 @@ public class ResourceListParserData
     public void setResourceListTimestamp(Date resourceListTimestamp)
     {
         this.resourceListTimestamp = resourceListTimestamp;
+    }
+
+    public String getDataSourceAfsUrl()
+    {
+        return dataSourceAfsUrl;
+    }
+
+    public void setDataSourceAfsUrl(String dataSourceAfsUrl)
+    {
+        this.dataSourceAfsUrl = dataSourceAfsUrl;
     }
     
     public Map<String, byte[]> getFileToProcess()

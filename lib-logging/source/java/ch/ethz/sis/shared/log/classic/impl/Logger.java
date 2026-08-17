@@ -189,7 +189,10 @@ public class Logger {
     public void removeAllHandlers()
     {
         Arrays.stream(julLogger.getHandlers())
-                .forEach(julLogger::removeHandler);
+                .forEach(handler -> {
+                    handler.close();
+                    julLogger.removeHandler(handler);
+                });
     }
 
     public Handler getHandler(String name) {

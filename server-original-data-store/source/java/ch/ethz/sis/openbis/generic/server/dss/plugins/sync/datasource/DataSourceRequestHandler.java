@@ -160,6 +160,14 @@ public class DataSourceRequestHandler implements IRequestHandler
             writer.writeAttribute("href", createDownloadUrl(context.getDeliveryContext(), verb));
             writer.writeAttribute("rel", up == null ? "describedby" : "up");
             writer.writeEndElement();
+            String afsUrl = context.getDeliveryContext().getAfsUrl();
+            if (afsUrl != null && afsUrl.isBlank() == false)
+            {
+                writer.writeStartElement("rs:ln");
+                writer.writeAttribute("href", afsUrl);
+                writer.writeAttribute("rel", "afs-service-url");
+                writer.writeEndElement();
+            }
             writer.writeStartElement("rs:md");
             if (withAt)
             {
@@ -327,6 +335,12 @@ public class DataSourceRequestHandler implements IRequestHandler
         return values != null && values.isEmpty() == false && Boolean.parseBoolean(values.get(0));
     }
 
+    static Set<String> getVerbs(Map<String, List<String>> parameterMap)
+    {
+        List<String> verbs = parameterMap.get("verb");
+        return new HashSet<>(verbs == null ? Collections.emptyList() : verbs);
+    }
+
     private IDeliverer deliverer;
 
     private DeliveryContext deliveryContext;
@@ -343,6 +357,7 @@ public class DataSourceRequestHandler implements IRequestHandler
         deliveryContext.setV3api(ServiceProvider.getV3ApplicationService());
         deliveryContext.setContentProvider(ServiceProvider.getHierarchicalContentProvider());
         deliveryContext.setOpenBisDataSourceName(properties.getProperty("openbis-data-source-name", "openbis-db"));
+        deliveryContext.setAfsUrl(properties.getProperty("afs-url"));
         Deliverers deliverers = new Deliverers();
         deliverers.addDeliverer(new MasterDataDeliverer(deliveryContext));
         deliverers.addDeliverer(new SpaceDeliverer(deliveryContext));
@@ -374,7 +389,7 @@ public class DataSourceRequestHandler implements IRequestHandler
                     "https://sis.id.ethz.ch/software/#openbis/xdterms/ ./xml/xdterms.xsd https://sis.id.ethz.ch/software/#openbis/xmdterms/");
             String sessionToken = session.getSessionToken();
             Date requestTimestamp = getRequestTimestamp(queryService);
-            Set<String> verbs = new HashSet<>(parameterMap.get("verb"));
+            Set<String> verbs = getVerbs(parameterMap);
             Capability capability = findMatchingCapability(verbs);
             WritingContext writingContext = new WritingContext();
             writingContext.setWriter(writer);

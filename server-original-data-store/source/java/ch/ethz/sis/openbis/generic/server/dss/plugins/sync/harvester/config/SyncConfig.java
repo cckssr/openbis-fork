@@ -60,6 +60,16 @@ public class SyncConfig
         this.dataSourceDSSURL = dataSourceDSSURL;
     }
 
+    public String getHarvesterAfsURL()
+    {
+        return harvesterAfsURL;
+    }
+
+    public void setHarvesterAfsURL(String harvesterAfsURL)
+    {
+        this.harvesterAfsURL = harvesterAfsURL;
+    }
+
     public String getLastSyncTimestampFileName()
     {
         return lastSyncTimestampFileName;
@@ -203,6 +213,8 @@ public class SyncConfig
     private String dataSourceOpenbisURL;
 
     private String dataSourceDSSURL;
+
+    private String harvesterAfsURL;
 
     private String lastSyncTimestampFileName;
 

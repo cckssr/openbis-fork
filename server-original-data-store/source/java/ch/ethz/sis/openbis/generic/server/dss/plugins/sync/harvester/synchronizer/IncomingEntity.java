@@ -32,6 +32,16 @@ public class IncomingEntity<T> extends AbstractTimestampsAndUserHolder
 
     private boolean hasAttachments;
 
+    private List<IncomingAfsFile> afsFiles = new ArrayList<IncomingAfsFile>();
+
+    private List<String> afsDirectories = new ArrayList<String>();
+
+    private List<IncomingAfsFile> trashedAfsFiles = new ArrayList<IncomingAfsFile>();
+
+    private List<String> trashedAfsDirectories = new ArrayList<String>();
+
+    private List<IncomingAfsFile> afsFileSnapshots = new ArrayList<IncomingAfsFile>();
+
     public List<Connection> getConnections()
     {
         return connections;
@@ -56,6 +66,66 @@ public class IncomingEntity<T> extends AbstractTimestampsAndUserHolder
     public void setHasAttachments(boolean hasAttachments)
     {
         this.hasAttachments = hasAttachments;
+    }
+
+    public List<IncomingAfsFile> getAfsFiles()
+    {
+        return afsFiles;
+    }
+
+    public void setAfsFiles(List<IncomingAfsFile> afsFiles)
+    {
+        this.afsFiles = afsFiles;
+    }
+
+    public boolean hasAfsFiles()
+    {
+        return afsFiles.isEmpty() == false;
+    }
+
+    public List<String> getAfsDirectories()
+    {
+        return afsDirectories;
+    }
+
+    public void setAfsDirectories(List<String> afsDirectories)
+    {
+        this.afsDirectories = afsDirectories;
+    }
+
+    public List<IncomingAfsFile> getTrashedAfsFiles()
+    {
+        return trashedAfsFiles;
+    }
+
+    public void setTrashedAfsFiles(List<IncomingAfsFile> trashedAfsFiles)
+    {
+        this.trashedAfsFiles = trashedAfsFiles;
+    }
+
+    public List<String> getTrashedAfsDirectories()
+    {
+        return trashedAfsDirectories;
+    }
+
+    public void setTrashedAfsDirectories(List<String> trashedAfsDirectories)
+    {
+        this.trashedAfsDirectories = trashedAfsDirectories;
+    }
+
+    public boolean hasAfsDirectories()
+    {
+        return afsDirectories.isEmpty() == false;
+    }
+
+    public List<IncomingAfsFile> getAfsFileSnapshots()
+    {
+        return afsFileSnapshots;
+    }
+
+    public void setAfsFileSnapshots(List<IncomingAfsFile> afsFileSnapshots)
+    {
+        this.afsFileSnapshots = afsFileSnapshots;
     }
 
     public T getEntity()
