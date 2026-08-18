@@ -51,7 +51,7 @@ export const getAutoSaveAction = () => {
 		isAllowed: true,
 		visibility: [
 			{
-				mode: FormMode.EDIT,
+				mode: [FormMode.EDIT, FormMode.CREATE]
 			},
 		],
 	};

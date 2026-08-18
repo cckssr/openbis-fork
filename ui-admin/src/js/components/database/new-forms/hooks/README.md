@@ -180,7 +180,7 @@ const { loadFromStorage, clearStorage } = useAutoSave({
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 });
 
-// Restoration is handled separately by useAutoSaveRestore hook
+// Restoration (EDIT and CREATE) is handled via useEntityAutoSaveFlow's pending-draft dialog
 // Clear storage after successful save
 const handleSave = async () => {
   await saveForm(form);
@@ -256,7 +256,7 @@ Feature-level hook that orchestrates the complete auto-save flow for a single fo
 **Features**:
 - Per-entity auto-save preference (stored in localStorage, defaults to false)
 - Integrates `useAutoSave` for draft saving
-- Integrates `useAutoSaveRestore` for restoration logic
+- Offers restoration (EDIT and CREATE alike) via a pending-draft restore/discard dialog, rather than auto-applying silently
 - Provides `actionOverrides` for UI integration (auto-save toggle switch)
 - Clears draft storage when disabled or after successful save
 

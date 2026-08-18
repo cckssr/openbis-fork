@@ -104,6 +104,8 @@ export class ObjectFormModel {
       actions: [
         getSaveAction(),
         getCancelAction(true),
+        getDividerAction(FormMode.CREATE),
+        getAutoSaveAction(),
       ],
     }
   }

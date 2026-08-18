@@ -338,6 +338,5 @@ export class ObjectFormController implements IFormController {
 		if (!result.success) {
 			throw new Error(result.error || 'Failed to move object');
 		}
-		return Promise.resolve();
 	}
 }

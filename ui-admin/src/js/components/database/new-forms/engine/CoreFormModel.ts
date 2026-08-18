@@ -67,8 +67,7 @@ export class CoreFormModel {
 			};
 			context.externalAppController.closeForm(params);
 		};
-		// New forms are never auto-saved (auto-save applies to EDIT only), so always confirm.
-		if (context.requestUnsavedConfirmation) {
+		if (!context.isAutoSaveEnabled && context.requestUnsavedConfirmation) {
 			context.requestUnsavedConfirmation(performCancel);
 		} else {
 			performCancel();

@@ -61,8 +61,13 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
   const handleConfirm = async () => {
     setLoading(true);
     setError(null);
-    const result = await entityFormController?.move(form, null, { target: selectedTarget, moveDescendants: moveDescendants });
-    onConfirm({ success: true, ...getTargetIdentifier(selectedTarget)});
+    try {
+      await entityFormController?.move(form, null, {target: selectedTarget, moveDescendants: moveDescendants});
+      onConfirm({ success: true, ...getTargetIdentifier(selectedTarget)});
+    } catch (e: any) {
+      setError(e.message);
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {

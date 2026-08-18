@@ -29,19 +29,16 @@ export const useFormState = ({
   const [mode, setMode] = useState<FormMode>(initialMode);
   const [originalForm, setOriginalForm] = useState<Form | null>(initialForm);
 
-  // Update original form when form changes externally
+  // A direct value passed to `setForm` (e.g. after loading from the server, or resetting to the
+  // original state on Cancel) represents a new baseline, so `originalForm` is updated to match.
+  // A function updater represents an incremental change applied on top of the current form (the
+  // documented pattern for "complex updates", e.g. a bulk field edit from a custom action) and
+  // must NOT touch `originalForm` - doing so would make the change invisible to dirty-tracking
+  // (`isDirty`, auto-save's dirty-field diff), silently treating a real unsaved edit as pristine.
   const handleSetForm = useCallback((newForm: React.SetStateAction<Form | null>) => {
     if (typeof newForm === 'function') {
-      // Handle function updates
-      setForm(prevForm => {
-        const updatedForm = newForm(prevForm);
-        if (updatedForm) {
-          setOriginalForm(updatedForm);
-        }
-        return updatedForm;
-      });
+      setForm(newForm);
     } else {
-      // Handle direct value updates
       setForm(newForm);
       if (newForm) {
         setOriginalForm(newForm);

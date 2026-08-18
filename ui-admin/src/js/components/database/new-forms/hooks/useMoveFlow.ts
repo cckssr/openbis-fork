@@ -59,11 +59,12 @@ export const useMoveFlow = ({
       }
 
       closeMoveDialog();
-      setSaving(true);
-      clearError();
 
       try {
         if (moveResult && moveResult.success) {
+          setSaving(true);
+          clearError();
+
           await loadForm();
           actionToastContext?.raiseSuccess(`Entity successfully moved to ${moveResult.targetKind}: ${moveResult.targetIdentifier} `);
           if (externalAppController?.objectMove) {
@@ -72,7 +73,8 @@ export const useMoveFlow = ({
             });
           }
         } else {
-          await loadForm();
+          // noinspection ExceptionCaughtLocallyJS
+          throw moveResult.error;
         }
       } catch (error: any) {
         const errorMessage = getErrorMessage(error, 'Failed to move entity');

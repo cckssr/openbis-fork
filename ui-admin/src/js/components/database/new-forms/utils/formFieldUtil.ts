@@ -1,6 +1,6 @@
 import { Form, FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import objectType from "@src/js/common/consts/objectType";
-import { EntityKind } from "@src/js/components/database/new-forms/types/formEnums.ts";
+import { EntityKind, FormSection } from "@src/js/components/database/new-forms/types/formEnums.ts";
 import { setPropertyValue } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 
 export function findFormFieldById(fields: FormField[], permId: string, label: string, onlyValue: boolean = false): FormField | string | null {
@@ -80,7 +80,9 @@ export function getChangedEditableFieldValues(
 
 			// Apply to DTO using datatype-specific setter when possible.
 			// We only do this when the key matches the property code (`field.name`).
-			if (dto && field.name && key === field.name) {
+			// Identification-info fields (code, permId, space, project, ...) are structural
+			// entity fields, not property-type properties, so they're excluded here.
+			if (dto && field.name && key === field.name && field.section !== FormSection.IDENTIFICATION_INFO) {
 				setPropertyValue(dto, key, field.value, field.dataType, field.isMultiValue);
 			}
 		}

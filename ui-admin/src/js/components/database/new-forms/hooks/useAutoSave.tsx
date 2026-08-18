@@ -99,6 +99,11 @@ export const useAutoSave = ({
         if (dirtyFields.includes(field.id)) {
           return {
             id: field.id,
+            // `name` is a stable, permId-independent field identifier (e.g. "code",
+            // a property code). CREATE-mode `id`s are prefixed with the tab-local tmp
+            // permId, so restoring a draft into a *different* CREATE-mode tab (see
+            // useEntityAutoSaveFlow's shared-slot restore) has to match on `name`.
+            name: field.name,
             value: field.value
           };
         }

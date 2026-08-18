@@ -68,6 +68,8 @@ export class ProjectFormModel {
 			actions: [
 				getSaveAction(),
 				getCancelAction(true),
+				getDividerAction(FormMode.CREATE),
+				getAutoSaveAction(),
 			],
 		}
 	}
