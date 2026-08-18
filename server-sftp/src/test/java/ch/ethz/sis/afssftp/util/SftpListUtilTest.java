@@ -330,15 +330,50 @@ public class SftpListUtilTest extends TestCase {
                 .username("u5er")
                 .sessionToken("53551on")
                 .build();
-        OpenBIS.AfsServerFacade afsClientProxyMock = Mockito.mock(
+        OpenBIS.AfsServerFacade afsClientFacadeMock = Mockito.mock(
                 OpenBIS.AfsServerFacade.class
         );
-        Mockito.doReturn(afsClientProxyMock).when(openBISClientUtil).getAfsClient(user);
+        Mockito.doReturn(afsClientFacadeMock).when(openBISClientUtil).getAfsClient(user);
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
+        File[] listedFiles = {
+                new File("entity-id", "/dir/file3", "file3", false, 1004L, Instant.now().atOffset(ZoneOffset.UTC)),
+                new File("entity-id", "/dir/subdir", "subdir", true, 0L, Instant.now().atOffset(ZoneOffset.UTC)),
+                new File("entity-id", "/dir/file", "file", false, 1005L, Instant.now().atOffset(ZoneOffset.UTC)),
+                new File("entity-id", "/dir/file2", "file2", false, 1006L, Instant.now().atOffset(ZoneOffset.UTC)),
+        };
+
+        Mockito.doReturn(listedFiles).when(afsClientFacadeMock).list("entity-id", "/dir", false);
+
+        Optional<File> file1 = sftpListUtil.getAfsFilePresence("entity-id", "/dir/file");
+        assertEquals(Optional.of(listedFiles[2]), file1);
+
+        Mockito.verify(afsClientFacadeMock, Mockito.times(1)).list("entity-id", "/dir", false);
+        Mockito.verify(openBISClientUtil, Mockito.times(1)).getAfsClient(user);
+
+        Mockito.clearInvocations(afsClientFacadeMock, openBISClientUtil);
+
+        Optional<File> file2 = sftpListUtil.getAfsFilePresence("entity-id", "/dir/file-other");
+        assertEquals(Optional.empty(), file2);
+
+        Mockito.verify(afsClientFacadeMock, Mockito.times(1)).list("entity-id", "/dir", false);
+        Mockito.verify(openBISClientUtil, Mockito.times(1)).getAfsClient(user);
+
+        Mockito.doThrow(new RuntimeException("NoSuchFileException")).when(afsClientFacadeMock).list("entity-id", "/dir", false);
+        Optional<File> file3 = sftpListUtil.getAfsFilePresence("entity-id", "/dir/file");
+        assertEquals(Optional.empty(), file3);
+
+        Mockito.doThrow(new RuntimeException()).when(afsClientFacadeMock).list("entity-id", "/dir", false);
+        Exception ex = null;
         try {
             sftpListUtil.getAfsFilePresence("entity-id", "/dir/file");
-        } catch (Exception e) {}
-        Mockito.verify(openBISClientUtil, Mockito.times(1)).getAfsClient(user);
+        } catch (Exception e) {
+            ex = e;
+        }
+        assertEquals(RuntimeException.class, ex.getClass());
+
+        Mockito.doReturn(new File[0]).when(afsClientFacadeMock).list("entity-id", "/", false);
+        Optional<File> root = sftpListUtil.getAfsFilePresence("entity-id", "/");
+        assertEquals("/", root.get().getPath());
     }
 
     public void testGetDefaultAfsFileAttributes() {

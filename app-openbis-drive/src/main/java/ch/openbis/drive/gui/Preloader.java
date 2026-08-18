@@ -1,5 +1,7 @@
 package ch.openbis.drive.gui;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.gui.util.DisplaySettings;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -16,6 +18,7 @@ import javafx.stage.StageStyle;
 import java.util.Objects;
 
 public class Preloader extends javafx.application.Preloader {
+    private Logger logger = LogManager.getLogger(this.getClass());
     private ProgressBar progressBar;
     private Stage stage;
 
@@ -35,7 +38,7 @@ public class Preloader extends javafx.application.Preloader {
             image.setFitWidth(DisplaySettings.DEFAULT_INITIAL_WINDOW_WIDTH * 0.9);
             image.setPreserveRatio(true);
         } catch (Exception e) {
-            System.err.println("Error loading initial logo");
+            logger.catching(new RuntimeException("Error loading initial logo", e));
         }
 
         if (image != null) {

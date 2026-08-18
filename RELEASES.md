@@ -14,7 +14,7 @@ A General Availability release will be made available later this year.
 
 Installing Prerequisites:
 - JDK 21
-- Postgres 17
+- Postgres 18
 
 [openbis-installer-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/eyKK8nBaALwEYEc)
 
@@ -56,7 +56,10 @@ To upgrade to **7.x** is a prerequisite to remove Material entities and File ent
 
 To prepare for the upgrade:
 
-1. Upgrade to the latest available **20.10.x** release.
+1. Install OpenJDK 21 and PostgreSQL 18. 
+- For small databases dumping the current database and restoring it using pg_dump and pg_restore is fast and allows to keep a dump.
+- For large databases pg_upgrade.
+2. Upgrade to the latest available **20.10.x** release.
 2. Open the Core UI (available only in **20.10.x**), navigate to **File Types**, and delete all file entity types.
 3. Run the **[MaterialsMigration](https://openbis.readthedocs.io/en/20.10.12-plus/system-documentation/configuration/maintenance-tasks.html#materialsmigration)** maintenance task to convert Materials into Objects.
 

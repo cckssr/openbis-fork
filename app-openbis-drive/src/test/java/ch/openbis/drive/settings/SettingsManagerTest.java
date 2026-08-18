@@ -1,5 +1,6 @@
 package ch.openbis.drive.settings;
 
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.model.Settings;
@@ -19,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RunWith(JUnit4.class)
-public class SettingsManagerTest {
+public class SettingsManagerTest extends DriveTestCase {
 
     @Test
     synchronized public void setAndGetSettingsTest() throws Exception {

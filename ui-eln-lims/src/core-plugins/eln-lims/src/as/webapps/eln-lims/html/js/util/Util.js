@@ -1019,6 +1019,67 @@ var Util = new function() {
         }
         return "{" + json.join(',') + "}";
     }
+
+	/**
+	 * Parse a JWT without verifying its signature.
+	 * Returns { header, payload, signature } or throws on malformed input.
+	 *
+	 * NOTE: This only DECODES the token. It does not verify the signature,
+	 * which requires the secret or public key and should be
+	 * done server-side. Never trust a parsed payload for authorization on
+	 * the client.
+	 */
+	this.parseJwt = function(token) {
+		if (typeof token !== "string") {
+			throw new TypeError("JWT must be a string");
+		}
+
+		const parts = token.split(".");
+		if (parts.length !== 3) {
+			throw new Error(`Invalid JWT: expected 3 parts, got ${parts.length}`);
+		}
+
+		const [headerB64, payloadB64, signature] = parts;
+
+		/** base64url -> UTF-8 string. Works in browsers and Node. */
+		var base64UrlDecode = function(str) {
+			// Convert base64url to standard base64
+			let b64 = str.replace(/-/g, "+").replace(/_/g, "/");
+			// Re-add padding
+			const pad = b64.length % 4;
+			if (pad === 2) b64 += "==";
+			else if (pad === 3) b64 += "=";
+			else if (pad === 1) throw new Error("Invalid base64url string");
+
+			if (typeof atob === "function") {
+				// Browser: atob gives a binary string; re-decode as UTF-8
+				const binary = atob(b64);
+				const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+				return new TextDecoder("utf-8").decode(bytes);
+			}
+			return Buffer.from(b64, "base64").toString("utf-8");
+		}
+
+		/** Decode one base64url JSON segment into an object. */
+		var decodeSegment = function(segment) {
+			const json = base64UrlDecode(segment);
+			try {
+				return JSON.parse(json);
+			} catch {
+				throw new Error("Invalid JWT: segment is not valid JSON");
+			}
+		}
+
+
+
+		return {
+			header: decodeSegment(headerB64),
+			payload: decodeSegment(payloadB64),
+			signature, // still base64url-encoded; raw bytes are meaningless as text
+		};
+	}
+
+
 }
 
 

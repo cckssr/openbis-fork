@@ -1,8 +1,10 @@
 package ch.openbis.drive;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.gui.i18n.I18n;
-import ch.openbis.drive.model.Settings;
+import ch.openbis.drive.logging.Logging;
 import ch.openbis.drive.protobuf.DriveAPIGrpcImpl;
 import ch.openbis.drive.util.OsDetectionUtil;
 import ch.openbis.drive.util.SystemTrayUtil;
@@ -20,34 +22,45 @@ import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Locale;
-import java.util.Optional;
 
 public class DriveAPIService {
     public static final String LOCK_FILE_NAME = ".openbis-drive.lock";
     public static final String SOCKET_FILE_NAME = ".openbis-drive.socket";
 
+    static Logger logger;
+
     public static void main(String[] args) throws Exception {
+        Logging.initializeBackgroundServiceLogging();
+        logger = LogManager.getLogger(DriveAPIService.class);
+
         DriveAPIService driveAPIService;
         try {
             driveAPIService = new DriveAPIService();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.catching(e);
             return;
         }
 
-        driveAPIService.start();
+        logger.info("STARTING BACKGROUND SERVICE");
 
-        Runtime.getRuntime().addShutdownHook( new Thread(
-                new Runnable() {
-                    @Override
-                    @SneakyThrows
-                    public void run() {
-                        driveAPIService.server.shutdownNow();
+        try {
+            driveAPIService.start();
+
+            Runtime.getRuntime().addShutdownHook( new Thread(
+                    new Runnable() {
+                        @Override
+                        @SneakyThrows
+                        public void run() {
+                            driveAPIService.server.shutdownNow();
+                        }
                     }
-                }
-        ));
+            ));
 
-        driveAPIService.awaitTermination();
+            driveAPIService.awaitTermination();
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
+        }
     }
 
     final Configuration configuration;
@@ -104,7 +117,7 @@ public class DriveAPIService {
                     case Unknown -> throw new IllegalStateException("Unknown operating-system");
                 }
             } catch ( Exception e ) {
-                e.printStackTrace();
+                logger.catching(e);
             }
             started = true;
         }
@@ -122,7 +135,7 @@ public class DriveAPIService {
             }
             System.exit(0);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.catching(e);
             System.exit(1);
         }
     }

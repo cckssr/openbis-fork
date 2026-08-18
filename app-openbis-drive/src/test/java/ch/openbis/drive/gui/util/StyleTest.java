@@ -1,5 +1,6 @@
 package ch.openbis.drive.gui.util;
 
+import ch.openbis.drive.DriveTestCase;
 import javafx.scene.paint.Color;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,7 +11,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 @RunWith(JUnit4.class)
-public class StyleTest {
+public class StyleTest extends DriveTestCase {
     @Test
     public void testToCssValue() {
         for (String colour : List.of(

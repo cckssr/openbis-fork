@@ -1,5 +1,7 @@
 package ch.openbis.drive.db;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.model.SyncJobEvent;
 import lombok.NonNull;
@@ -11,6 +13,7 @@ import java.sql.*;
 import java.util.*;
 
 public class SyncJobEventDAOImp implements SyncJobEventDAO {
+    private final Logger logger = LogManager.getLogger(SyncJobEventDAOImp.class);
     static {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -189,7 +192,7 @@ public class SyncJobEventDAOImp implements SyncJobEventDAO {
                             }
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.catching(e);
                     }
                 }
                 index++;

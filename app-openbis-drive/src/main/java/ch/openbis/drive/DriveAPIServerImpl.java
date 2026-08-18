@@ -1,5 +1,7 @@
 package ch.openbis.drive;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.db.SyncJobEventDAOImp;
@@ -19,6 +21,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DriveAPIServerImpl implements DriveAPI {
+    private final Logger logger = LogManager.getLogger(this.getClass());
+
     private final SettingsManager settingsManager;
     private final NotificationManager notificationManager;
     private final TaskManager taskManager;
@@ -46,67 +50,124 @@ public class DriveAPIServerImpl implements DriveAPI {
     }
 
     synchronized public void start() {
-        Settings settings = settingsManager.getSettings();
-        setSettings(Optional.ofNullable(settings).orElse(Settings.defaultSettings()));
+        try {
+            Settings settings = settingsManager.getSettings();
+            setSettings(Optional.ofNullable(settings).orElse(Settings.defaultSettings()));
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
+        }
     }
 
     synchronized public void setSettings(@NonNull Settings settings) {
-        settingsManager.setSettings(settings);
-        taskManager.clear();
-        taskManager.addSyncJobs(settings.getJobs(), settings.getSyncInterval());
+        try {
+            settingsManager.setSettings(settings);
+            taskManager.clear();
+            taskManager.addSyncJobs(settings.getJobs(), settings.getSyncInterval());
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
+        }
     }
 
     synchronized public @NonNull Settings getSettings() {
-        return settingsManager.getSettings();
+        try {
+            return settingsManager.getSettings();
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
+        }
     }
 
     synchronized public @NonNull List<@NonNull SyncJob> getSyncJobs() {
-        return settingsManager.getSyncJobs();
+        try {
+            return settingsManager.getSyncJobs();
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
+        }
     }
 
     synchronized public void addSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
-        settingsManager.addSyncJobs(syncJobs);
-        taskManager.addSyncJobs(syncJobs, getSettings().getSyncInterval());
+        try {
+            settingsManager.addSyncJobs(syncJobs);
+            taskManager.addSyncJobs(syncJobs, getSettings().getSyncInterval());
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
+        }
     }
 
     synchronized public void removeSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
-        settingsManager.removeSyncJobs(syncJobs);
-        taskManager.removeSyncJobs(syncJobs);
+        try {
+            settingsManager.removeSyncJobs(syncJobs);
+            taskManager.removeSyncJobs(syncJobs);
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
+        }
     }
 
     synchronized public void startSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
-        Settings currentSettings = getSettings();
-        ArrayList<@NonNull SyncJob> disabledJobsOnly = syncJobs.stream().filter(syncJob -> currentSettings.getJobs().contains(syncJob) && !syncJob.isEnabled()).collect(Collectors.toCollection(ArrayList::new));
-        currentSettings.getJobs().removeAll(disabledJobsOnly);
-        for (SyncJob syncJob:disabledJobsOnly) {
-            syncJob.setEnabled(true);
+        try {
+            Settings currentSettings = getSettings();
+            ArrayList<@NonNull SyncJob> disabledJobsOnly = syncJobs.stream().filter(syncJob -> currentSettings.getJobs().contains(syncJob) && !syncJob.isEnabled()).collect(Collectors.toCollection(ArrayList::new));
+            currentSettings.getJobs().removeAll(disabledJobsOnly);
+            for (SyncJob syncJob:disabledJobsOnly) {
+                syncJob.setEnabled(true);
+            }
+            currentSettings.getJobs().addAll(disabledJobsOnly);
+            setSettings(currentSettings);
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
         }
-        currentSettings.getJobs().addAll(disabledJobsOnly);
-        setSettings(currentSettings);
+
     }
 
     synchronized public void stopSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
-        Settings currentSettings = getSettings();
-        ArrayList<@NonNull SyncJob> enabledJobsOnly = syncJobs.stream().filter(syncJob -> currentSettings.getJobs().contains(syncJob) && syncJob.isEnabled()).collect(Collectors.toCollection(ArrayList::new));
-        currentSettings.getJobs().removeAll(enabledJobsOnly);
-        for (SyncJob syncJob:enabledJobsOnly) {
-            syncJob.setEnabled(false);
+        try {
+            Settings currentSettings = getSettings();
+            ArrayList<@NonNull SyncJob> enabledJobsOnly = syncJobs.stream().filter(syncJob -> currentSettings.getJobs().contains(syncJob) && syncJob.isEnabled()).collect(Collectors.toCollection(ArrayList::new));
+            currentSettings.getJobs().removeAll(enabledJobsOnly);
+            for (SyncJob syncJob:enabledJobsOnly) {
+                syncJob.setEnabled(false);
+            }
+            currentSettings.getJobs().addAll(enabledJobsOnly);
+            setSettings(currentSettings);
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
         }
-        currentSettings.getJobs().addAll(enabledJobsOnly);
-        setSettings(currentSettings);
+
     }
 
     @SneakyThrows
     synchronized public @NonNull List<? extends Event> getEvents(@NonNull Integer limit) {
-        return syncJobEventDAO.selectMostRecent(limit);
+        try {
+            return syncJobEventDAO.selectMostRecent(limit);
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
+        }
     }
 
     synchronized public @NonNull List<Notification> getNotifications(@NonNull Integer limit) {
-        return notificationManager.getNotifications(limit);
+        try {
+            return notificationManager.getNotifications(limit);
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
+        }
     }
 
     synchronized public @NonNull List<@NonNull SyncJobLive> getSyncJobsLive() {
-        return taskManager.getSyncJobsLive();
+        try {
+            return taskManager.getSyncJobsLive();
+        } catch (Error e) {
+            logger.catching(e);
+            throw e;
+        }
     }
 
     // NON-PUBLIC METHODS

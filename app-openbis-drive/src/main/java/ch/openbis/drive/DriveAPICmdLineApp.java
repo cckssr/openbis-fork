@@ -1,6 +1,9 @@
 package ch.openbis.drive;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.conf.Configuration;
+import ch.openbis.drive.logging.Logging;
 import ch.openbis.drive.model.Event;
 import ch.openbis.drive.model.Notification;
 import ch.openbis.drive.model.Settings;
@@ -17,7 +20,6 @@ import org.apache.commons.cli.*;
 import java.io.File;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -26,6 +28,8 @@ import java.util.*;
 import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
 
 public class DriveAPICmdLineApp {
+
+    private Logger logger = LogManager.getLogger(this.getClass());
 
     /**
      * ./drive-app help
@@ -62,6 +66,7 @@ public class DriveAPICmdLineApp {
      * ./drive-app events -limit=100 (default: 100)
      */
     public static void main(String[] args) throws Exception {
+        Logging.initializeCommandLineLogging();
         DriveAPICmdLineApp driveAPICmdLineApp = new DriveAPICmdLineApp();
 
         if(args.length >= 1) {
@@ -405,6 +410,7 @@ public class DriveAPICmdLineApp {
                     }
                 }
             } catch (Exception e) {
+                logger.catching(e);
                 System.out.println("Error reading new ignored path-patterns\n");
                 printHelp();
                 return;
@@ -416,6 +422,7 @@ public class DriveAPICmdLineApp {
                         StandardCharsets.UTF_8
                 );
             } catch (Exception e) {
+                logger.catching(e);
                 System.out.println("Error reading new ignored path-patterns from file\n");
                 printHelp();
                 return;
@@ -529,6 +536,7 @@ public class DriveAPICmdLineApp {
                     }
                 }
             } catch (Exception e) {
+                logger.catching(e);
                 System.out.println("Error reading new ignored path-patterns\n");
                 printHelp();
                 return;
@@ -540,6 +548,7 @@ public class DriveAPICmdLineApp {
                         StandardCharsets.UTF_8
                 );
             } catch (Exception e) {
+                logger.catching(e);
                 System.out.println("Error reading new ignored path-patterns from file\n");
                 printHelp();
                 return;
@@ -602,11 +611,7 @@ public class DriveAPICmdLineApp {
                 printSyncJob(syncJob);
             }
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -625,11 +630,7 @@ public class DriveAPICmdLineApp {
             driveAPIClient.setSettings(settings);
             printConfig();
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -648,11 +649,7 @@ public class DriveAPICmdLineApp {
             driveAPIClient.addSyncJobs(Collections.singletonList(newSyncJob));
             printJobs();
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -670,11 +667,7 @@ public class DriveAPICmdLineApp {
 
             printJobs();
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -692,11 +685,7 @@ public class DriveAPICmdLineApp {
 
             printJobs();
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -714,11 +703,7 @@ public class DriveAPICmdLineApp {
 
             printJobs();
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -738,11 +723,7 @@ public class DriveAPICmdLineApp {
             System.out.println("----------");
 
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
 
     }
@@ -766,11 +747,7 @@ public class DriveAPICmdLineApp {
             }
 
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -799,11 +776,7 @@ public class DriveAPICmdLineApp {
                 }
 
             } catch (Exception e) {
-                if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                    System.out.println("OpenBIS Drive Service is not running.");
-                } else {
-                    System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-                }
+                catchAndPrintClientServerCommunicationErrorMessage(e);
             }
         } else {
             System.out.println("Bad ignored path-patterns");
@@ -825,11 +798,7 @@ public class DriveAPICmdLineApp {
                 showGlobalIgnoredPathPatterns();
 
             } catch (Exception e) {
-                if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                    System.out.println("OpenBIS Drive Service is not running.");
-                } else {
-                    System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-                }
+                catchAndPrintClientServerCommunicationErrorMessage(e);
             }
         } else {
             System.out.println("Bad ignored path-patterns");
@@ -846,11 +815,7 @@ public class DriveAPICmdLineApp {
             showGlobalIgnoredPathPatterns();
 
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -862,6 +827,7 @@ public class DriveAPICmdLineApp {
                         String trimmed = ignoredPathPattern.trim();
                         GlobUtil.compileIgnoredPathGlob(trimmed);
                     } catch (Exception e) {
+                        logger.catching(e);
                         System.out.println(String.format("Wrong glob expression: %s", ignoredPathPattern));
                         return false;
                     }
@@ -880,11 +846,7 @@ public class DriveAPICmdLineApp {
                 printSyncJob(syncJob);
             }
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -897,11 +859,7 @@ public class DriveAPICmdLineApp {
                 printNotification(notification);
             }
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -927,11 +885,7 @@ public class DriveAPICmdLineApp {
                 printEvent(event);
             }
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
         }
     }
 
@@ -998,11 +952,16 @@ public class DriveAPICmdLineApp {
             System.out.println("OpenBIS Drive Service is running with this configuration:");
             printConfig();
         } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            catchAndPrintClientServerCommunicationErrorMessage(e);
+        }
+    }
+
+    private void catchAndPrintClientServerCommunicationErrorMessage(Exception e) {
+        logger.catching(e);
+        if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+            System.out.println("OpenBIS Drive Service is not running.");
+        } else {
+            System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
         }
     }
 }

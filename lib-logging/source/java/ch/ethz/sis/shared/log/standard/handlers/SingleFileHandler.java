@@ -18,7 +18,6 @@
 package ch.ethz.sis.shared.log.standard.handlers;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -70,7 +69,7 @@ public class SingleFileHandler extends AbstractFileHandler
                 throw new IOException("Failed to delete existing log file: " + currentFile);
             }
         }
-        outputStream = new FileOutputStream(currentFile, append || forceReInit);
+        outputStream = openFile(currentFile, append || forceReInit);
         currentSize = currentFile.exists() ? currentFile.length() : 0;
     }
 
@@ -86,7 +85,7 @@ public class SingleFileHandler extends AbstractFileHandler
         close();
 
         currentFile = new File(currentFilePath);
-        outputStream = new FileOutputStream(currentFile, false);
+        outputStream = openFile(currentFile, false);
         currentSize = 0;
 
     }

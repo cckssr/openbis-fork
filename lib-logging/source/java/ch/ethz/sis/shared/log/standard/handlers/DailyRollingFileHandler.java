@@ -75,7 +75,7 @@ public class DailyRollingFileHandler extends AbstractFileHandler
                 throw new IOException("Failed to delete existing log file: " + currentFile);
             }
         }
-        outputStream = new FileOutputStream(currentFile, append);
+        outputStream = openFile(currentFile, append);
         currentSize = currentFile.exists() ? currentFile.length() : 0;
     }
 

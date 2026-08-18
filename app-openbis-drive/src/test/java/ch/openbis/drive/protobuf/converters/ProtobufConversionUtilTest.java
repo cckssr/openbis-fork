@@ -1,5 +1,6 @@
 package ch.openbis.drive.protobuf.converters;
 
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.model.Event;
 import ch.openbis.drive.model.Notification;
 import ch.openbis.drive.model.Settings;
@@ -15,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(JUnit4.class)
-public class ProtobufConversionUtilTest {
+public class ProtobufConversionUtilTest extends DriveTestCase {
 
     @Test
     public void fromProtobufSettings() {

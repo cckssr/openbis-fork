@@ -23,7 +23,7 @@ public class DisplaySettings {
 
     public static final double SYNC_TASK_PANEL_TOP_BUTTON_WIDTH = 130;
     public static final double SYNC_TASK_PANEL_TOP_BUTTON_HEIGHT = 40;
-    public static final double SYNC_TASK_PANEL_JOB_CARD_HEIGHT = 125;
+    public static final double SYNC_TASK_PANEL_JOB_CARD_HEIGHT = 155;
     public static final int SYNC_JOB_CARD_SPACING = 12;
 
     public static final double TOP_CONTROL_WIDTH = 130;
@@ -31,9 +31,11 @@ public class DisplaySettings {
 
     public static final String MAIN_CONTENT_PADDED_FRAME_CLASS = "main-content-frame";
     public static final String SYNC_JOB_CARD_CLASS = "sync-job-card";
+    public static final String SYNC_JOB_CARD_ERROR_CLASS = "sync-job-card-error";
     public static final String TEXT_AREA_TABLE_CELL_CLASS = "text-area-table-cell";
     public static final String HIDDEN_DISPLAY_STYLE_CLASS = "hidden";
     public static final String ERROR_STYLE_CLASS = "error";
+    public static final String GREYED_TEXT_FIELD_STYLE_CLASS = "greyed";
     public static final String NOTIFICATION_TABLE_ICON_COLUMN_CLASS = "notification-icon-table-column";
     public static final String FONT_AWESOME_CLASS = "font-awesome-7-free-solid";
 

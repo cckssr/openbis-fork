@@ -1,9 +1,9 @@
 package ch.openbis.drive.gui.maincontent;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.gui.i18n.I18n;
-import ch.openbis.drive.gui.maincontent.syncjobs.SyncJobCard;
-import ch.openbis.drive.gui.maincontent.syncjobs.SyncJobDeleteDialog;
-import ch.openbis.drive.gui.maincontent.syncjobs.SyncJobDialog;
+import ch.openbis.drive.gui.maincontent.syncjobs.*;
 import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.ErrorLabel;
 import ch.openbis.drive.gui.util.ServiceCallHandler;
@@ -39,6 +39,7 @@ import java.util.*;
 import static ch.openbis.drive.gui.util.DisplaySettings.SYNC_JOB_CARD_SPACING;
 
 public class SynchronizationTasksPanel extends ResizablePanel {
+    private Logger logger = LogManager.getLogger(this.getClass());
     private final VBox mainVBox;
     private final Button addButton;
     private final HBox editButtonGroup;
@@ -234,7 +235,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
         Optional<SyncJob> selectedSyncJob = getSelectedSyncJob();
         if (selectedSyncJob.isPresent()) {
             SyncJob syncJob = selectedSyncJob.get();
-            SyncJobDialog syncJobDialog = new SyncJobDialog(syncJob, (Stage) this.getScene().getWindow(), syncJobs.getValue());
+            SyncJobDialog syncJobDialog = new SyncJobDialog(selectedSyncJob.get(), syncJobs.get(), (Stage) this.getScene().getWindow());
             syncJobDialog.setResizable(true);
             Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
             if (newSyncJob.isPresent()) {
@@ -253,7 +254,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
     }
 
     private void openCreationDialogForNewSyncJob() {
-        SyncJobDialog syncJobDialog = new SyncJobDialog(null, (Stage) this.getScene().getWindow(), syncJobs.getValue());
+        SyncJobDialog syncJobDialog = new SyncJobDialog(null, syncJobs.get(), (Stage) this.getScene().getWindow());
         syncJobDialog.setResizable(true);
         Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
         if (newSyncJob.isPresent()) {
@@ -327,7 +328,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
                     }
                 }
             } else {
-                syncJobsLiveResult.getErr().printStackTrace();
+                logger.catching(syncJobsLiveResult.getErr());
             }
         }));
         timeline.setCycleCount(Animation.INDEFINITE);
@@ -345,7 +346,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
                 try {
                     syncJobCard.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.catching(e);
                 }
             });
         }

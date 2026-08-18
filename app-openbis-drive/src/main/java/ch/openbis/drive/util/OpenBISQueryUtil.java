@@ -23,24 +23,52 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperime
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionResults;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.PersonalAccessToken;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.create.PersonalAccessTokenCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.fetchoptions.PersonalAccessTokenFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.id.PersonalAccessTokenPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.search.PersonalAccessTokenSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperationResult;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
+import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.tasks.SyncOperation;
+import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
 import com.google.common.collect.Streams;
 import lombok.NonNull;
+import org.springframework.remoting.RemoteAccessException;
 
+import java.net.ConnectException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class OpenBISQueryUtil {
+    private final Logger logger = LogManager.getLogger(this.getClass());
+    private static final OpenBISQueryUtil INSTANCE = new OpenBISQueryUtil();
+
     static final int AFS_MAX_READ_SIZE_BYTES = 10485760;
     static final int AFS_CLIENT_TIMEOUT = 30000;
+
+    public static final String DRIVE_PAT_SESSION_NAME = "OPENBIS_DRIVE_GENERATED_SESSION";
+    static final long PAT_MINIMUM_LEFT_VALIDITY_MILLIS = 1000L * 60 * 60 * 24 * 7;
+    static final long GENERATED_PAT_DURATION_MILLIS = 1000L * 60 * 60 * 24 * 365;
+
+    public static @NonNull OpenBISQueryUtil getInstance() {
+        return INSTANCE;
+    }
 
     public static String getDisplayName(AbstractEntity entity) {
         String identifier =  null;
@@ -102,16 +130,213 @@ public class OpenBISQueryUtil {
         return false;
     }
 
+    public enum PATCheckResultEnum {
+        OK,
+        INVALID_SESSION,
+        ERROR_REACHING_SERVER,
+        UNKNOWN_ERROR
+    }
+    public record PATCheckResult(
+        @NonNull PATCheckResultEnum result,
+        String user,
+        Date validUntil
+    ) {}
+    public @NonNull PATCheckResult checkPAT(@NonNull String openBISUrl, @NonNull String personalAccessToken) {
+        PersonalAccessTokenPermId patPermId = new PersonalAccessTokenPermId(personalAccessToken);
+        try {
+            return CompletableFuture.supplyAsync(
+                    () -> {
+                        PersonalAccessToken pat;
+                        try {
+                            OpenBIS openbis = getOpenbisClient(openBISUrl);
+                            openbis.setSessionToken(personalAccessToken);
 
-    public static List<AbstractEntity> searchSynchronizableOpenBISEntities(@NonNull String openBISUrl, @NonNull String personalAccessToken, @NonNull String searchText) throws Exception {
+                            PersonalAccessTokenFetchOptions patFetchOptions = new PersonalAccessTokenFetchOptions();
+                            patFetchOptions.withOwner();
+                            pat = openbis.getPersonalAccessTokens(Collections.singletonList(patPermId), patFetchOptions)
+                                    .get(patPermId);
+                        } catch (InvalidSessionException invalidSessionException) {
+                            return new PATCheckResult(PATCheckResultEnum.INVALID_SESSION, null, null);
+                        } catch (Exception e) {
+                            logger.catching(e);
+                            if (e instanceof RemoteAccessException ||
+                                    e instanceof ConnectException ||
+                                    e instanceof SocketException ||
+                                    e instanceof SocketTimeoutException
+                            ) {
+                                return new PATCheckResult(PATCheckResultEnum.ERROR_REACHING_SERVER, null, null);
+                            } else {
+                                return new PATCheckResult(PATCheckResultEnum.UNKNOWN_ERROR, null, null);
+                            }
+                        }
+                        if (pat != null) {
+                            return new PATCheckResult(PATCheckResultEnum.OK, pat.getOwner().getUserId(), pat.getValidToDate());
+                        } else {
+                            return new PATCheckResult(PATCheckResultEnum.INVALID_SESSION, null, null);
+                        }
+                    }
+            ).get(5000, TimeUnit.SECONDS);
+        } catch (ExecutionException | InterruptedException e) {
+            logger.catching(e);
+            return new PATCheckResult(PATCheckResultEnum.UNKNOWN_ERROR, null, null);
+        } catch (TimeoutException e) {
+            logger.catching(e);
+            return new PATCheckResult(PATCheckResultEnum.ERROR_REACHING_SERVER, null, null);
+        }
+    }
+
+    public record AvailableSession(
+            @NonNull String username,
+            @NonNull String openBISUrl,
+            @NonNull String personalAccessToken,
+            ZonedDateTime validUntil
+    ) {}
+    public @NonNull Set<AvailableSession> getAvailableSessions(@NonNull List<SyncJob> syncJobs) {
+        ConcurrentHashMap<List<String>, AvailableSession> availableSessions = new ConcurrentHashMap<>();
+
+        try {
+            CompletableFuture.allOf(syncJobs.stream().map(
+                    (syncJob) -> CompletableFuture.supplyAsync(
+                            () -> {
+                                PATCheckResult patCheckResult = checkPAT(syncJob.getOpenBisUrl(), syncJob.getOpenBisPersonalAccessToken());
+                                if (patCheckResult.result() == PATCheckResultEnum.OK) {
+                                    availableSessions.compute(List.of(patCheckResult.user(), syncJob.getOpenBisUrl()),
+                                        (sessionKey, currentRelatedSession) -> {
+                                            if (
+                                                    currentRelatedSession == null ||
+                                                    currentRelatedSession.validUntil() == null ||
+                                                    (
+                                                        patCheckResult.validUntil() != null &&
+                                                        currentRelatedSession.validUntil().toInstant()
+                                                                .isBefore(patCheckResult.validUntil().toInstant())
+                                                    )
+                                            ) {
+                                                return new AvailableSession(
+                                                        patCheckResult.user(),
+                                                        syncJob.getOpenBisUrl(),
+                                                        syncJob.getOpenBisPersonalAccessToken(),
+                                                        Optional.ofNullable(patCheckResult.validUntil())
+                                                                .map(Date::toInstant)
+                                                                .map(instant -> instant.atZone(ZoneId.systemDefault()))
+                                                                .orElse(null)
+                                                );
+                                            } else {
+                                                return currentRelatedSession;
+                                            }
+                                        }
+                                    );
+                                }
+                                return patCheckResult;
+                            },
+                            ParallelExecutionUtil.EXECUTOR_SERVICE
+                    )
+            ).toArray(CompletableFuture[]::new)).get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            logger.catching(e);
+        }
+
+        return new HashSet<>(availableSessions.values());
+    }
+
+    public enum NewSessionResultEnum {
+        OK,
+        BAD_CREDENTIALS,
+        ERROR_REACHING_SERVER,
+        UNKNOWN_ERROR
+    }
+    public record NewSessionResult (
+            @NonNull NewSessionResultEnum result,
+            AvailableSession availableSession
+    ){}
+    public NewSessionResult getNewSession(
+            @NonNull String openBISUrl,
+            @NonNull String username,
+            @NonNull String password
+    ) {
+        try {
+            OpenBIS openbis = getOpenbisClient(openBISUrl);
+            String sessionToken = openbis.login(username, password);
+            if (sessionToken == null) {
+                return new NewSessionResult(NewSessionResultEnum.BAD_CREDENTIALS, null);
+            }
+
+            PersonalAccessTokenFetchOptions patFetchOptions = new PersonalAccessTokenFetchOptions();
+            PersonalAccessTokenSearchCriteria personalAccessTokenSearchCriteria = new PersonalAccessTokenSearchCriteria();
+            personalAccessTokenSearchCriteria.withOwner().withUserId().thatEquals(username);
+            personalAccessTokenSearchCriteria.withSessionName().thatEquals(DRIVE_PAT_SESSION_NAME);
+            SearchResult<PersonalAccessToken> pats = openbis.searchPersonalAccessTokens(personalAccessTokenSearchCriteria, patFetchOptions);
+
+            PersonalAccessToken alreadyAvailableSession = pats.getObjects().stream().filter(
+                pat -> pat.getValidFromDate().before(new Date()) &&
+                    pat.getValidToDate().after(
+                        new Date(System.currentTimeMillis() + PAT_MINIMUM_LEFT_VALIDITY_MILLIS)
+                    )
+            ).findFirst().orElse(null);
+
+            if (alreadyAvailableSession != null) {
+                return new NewSessionResult(
+                        NewSessionResultEnum.OK,
+                        new AvailableSession(
+                            username,
+                            openBISUrl,
+                            alreadyAvailableSession.getPermId().getPermId(),
+                            Optional.ofNullable(alreadyAvailableSession.getValidToDate())
+                                    .map(Date::toInstant)
+                                    .map(instant -> instant.atZone(ZoneId.systemDefault()))
+                                    .orElse(null)
+                        )
+                );
+            } else {
+                PersonalAccessTokenCreation personalAccessTokenCreation = new PersonalAccessTokenCreation();
+                personalAccessTokenCreation.setSessionName(DRIVE_PAT_SESSION_NAME);
+                personalAccessTokenCreation.setOwnerId(new PersonPermId(username));
+                personalAccessTokenCreation.setValidFromDate(new Date());
+                Date validToDate = new Date(System.currentTimeMillis() + GENERATED_PAT_DURATION_MILLIS);
+                personalAccessTokenCreation.setValidToDate(validToDate);
+
+                PersonalAccessTokenPermId generatedPat = openbis.createPersonalAccessTokens(Collections.singletonList(personalAccessTokenCreation)).getFirst();
+
+                return new NewSessionResult(
+                        NewSessionResultEnum.OK,
+                        new AvailableSession(
+                                username,
+                                openBISUrl,
+                                generatedPat.getPermId(),
+                                Optional.of(validToDate)
+                                        .map(Date::toInstant)
+                                        .map(instant -> instant.atZone(ZoneId.systemDefault()))
+                                        .orElse(null)
+                        )
+                );
+            }
+        } catch (Exception e) {
+            logger.catching(e);
+            if (e instanceof RemoteAccessException ||
+                    e instanceof ConnectException ||
+                    e instanceof SocketException ||
+                    e instanceof SocketTimeoutException
+            ) {
+                return new NewSessionResult(NewSessionResultEnum.ERROR_REACHING_SERVER, null);
+            } else {
+                return new NewSessionResult(NewSessionResultEnum.UNKNOWN_ERROR, null);
+            }
+        }
+    }
+
+    @NonNull OpenBIS getOpenbisClient(@NonNull String openBISUrl) {
         OpenBIS openbis;
         if (isOpenbisDriveLocalDevelopmentAsAndAfsUrl(openBISUrl)
         ) {
             openbis = getOpenBISForLocalDevelopment(openBISUrl);
         } else {
             openbis = new OpenBIS(openBISUrl);
-            openbis.setSessionToken(personalAccessToken);
         }
+        return openbis;
+    }
+
+    public List<AbstractEntity> searchSynchronizableOpenBISEntities(@NonNull String openBISUrl, @NonNull String personalAccessToken, @NonNull String searchText) throws Exception {
+        OpenBIS openbis = getOpenbisClient(openBISUrl);
+        openbis.setSessionToken(personalAccessToken);
 
         // Unified server call
         SearchSamplesOperation searchSamplesOperation = new SearchSamplesOperation(setEntityCriteria(new SampleSearchCriteria(), searchText), setEntityFetchOptions(new SampleFetchOptions()));
@@ -181,6 +406,7 @@ public class OpenBISQueryUtil {
     }
 
     public static class SearchUnit implements AutoCloseable {
+        private final Logger logger = LogManager.getLogger(this.getClass());
         private String openBISUrl = null;
         private String personalAccessToken = null;
 
@@ -241,10 +467,13 @@ public class OpenBISQueryUtil {
 
                         try {
                             List<AbstractEntity> result =
-                                    searchSynchronizableOpenBISEntities(this.openBISUrl, this.personalAccessToken, this.searchText);
+                                OpenBISQueryUtil.getInstance()
+                                    .searchSynchronizableOpenBISEntities(
+                                            this.openBISUrl, this.personalAccessToken, this.searchText
+                                    );
                             resultListener.apply(result, null);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.catching(e);
                             resultListener.apply(null, e);
                         } finally {
                             this.searching = false;
@@ -273,6 +502,7 @@ public class OpenBISQueryUtil {
     }
 
     public static class AfsSearchUnit implements AutoCloseable {
+        private Logger logger = LogManager.getLogger(this.getClass());
         private String openBISUrl = null;
         private String personalAccessToken = null;
         private String entityId = null;
@@ -345,7 +575,7 @@ public class OpenBISQueryUtil {
                                     searchOpenBISEntityAfsDirectories(this.openBISUrl, this.personalAccessToken, this.entityId, this.searchText);
                             resultListener.apply(result, null);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.catching(e);
                             resultListener.apply(null, e);
                         } finally {
                             this.searching = false;

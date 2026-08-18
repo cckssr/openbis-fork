@@ -1,8 +1,11 @@
 package ch.openbis.drive.conf;
 
 import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.openbis.drive.util.OpenBISDriveUtil;
 import ch.openbis.drive.util.OsDetectionUtil;
+import jakarta.annotation.Nullable;
 import lombok.NonNull;
 
 import java.io.FileInputStream;
@@ -12,9 +15,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 public class Configuration {
     public static final String LOCAL_OPENBIS_HIDDEN_DIRECTORY = "openbis-drive";
@@ -26,14 +31,30 @@ public class Configuration {
     public static final String OPENBIS_DRIVE_MANUAL_INSTALLATION_PROPERTY = "ch.openbis.drive.manualInstallation";
     public static final String OPENBIS_DRIVE_PROPERTIES_FILE = "openbis-drive.properties";
     public static final String OPENBIS_DRIVE_CLIENT_SECRET_FILE = "openbis-drive.secret";
+    public static final String OPENBIS_DRIVE_LOG_LEVEL_PROPERTY = "ch.openbis.drive.loglevel";
 
     @NonNull
     private final Path localAppDirectory;
     private final int openbisDrivePort;
     final AtomicReference<byte[]> clientSecret = new AtomicReference<>(null);
 
+    private @Nullable Logger logger;
+    {
+        //This check is needed because LogFactory is not initialized yet,
+        //when Configuration is used to initialize it
+        try {
+            logger = LogManager.getLogger(this.getClass());
+        } catch (Exception e) {
+            logger = null;
+        }
+    }
+    private void tryLogInfo(@NonNull String message) {
+        if (logger != null) { logger.info(message); }
+    }
+
     public Configuration() throws IOException {
         this(System.getenv());
+        tryLogInfo("Configuration with env: " + System.getenv());
     }
 
     public Configuration(@NonNull Map<String, String> env) throws IOException {
@@ -85,10 +106,30 @@ public class Configuration {
         if (Files.exists(localAppDirectory.resolve(OPENBIS_DRIVE_PROPERTIES_FILE))) {
             Properties properties = new Properties();
             properties.load(new FileInputStream(localAppDirectory.resolve(OPENBIS_DRIVE_PROPERTIES_FILE).toFile()));
+            tryLogInfo("Read openBIS-Drive properties: " + properties);
             if (properties.getProperty(AfsClient.NO_TLS_CERT_CHECK_SYSTEM_PROPERTY) != null) {
                 setSystemProperty(AfsClient.NO_TLS_CERT_CHECK_SYSTEM_PROPERTY, properties.getProperty(AfsClient.NO_TLS_CERT_CHECK_SYSTEM_PROPERTY));
                 setSystemProperty("jdk.internal.httpclient.disableHostnameVerification", "true");
             }
+        }
+    }
+
+    public Optional<Level> readOpenbisDriveLogLevel() throws IOException {
+        if (Files.exists(localAppDirectory.resolve(OPENBIS_DRIVE_PROPERTIES_FILE))) {
+            Properties properties = new Properties();
+            properties.load(new FileInputStream(localAppDirectory.resolve(OPENBIS_DRIVE_PROPERTIES_FILE).toFile()));
+
+            if (properties.getProperty(OPENBIS_DRIVE_LOG_LEVEL_PROPERTY) != null) {
+                try {
+                    return Optional.ofNullable(Level.parse(properties.getProperty(OPENBIS_DRIVE_LOG_LEVEL_PROPERTY)));
+                } catch (Exception e) {
+                    return Optional.empty();
+                }
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
         }
     }
 

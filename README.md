@@ -167,7 +167,7 @@ They need to be set to run using IntelliJ.
 The project does not uses modules yet. Add '--add-opens' statements manually when launching the tests as shown below.
 !["IntelliJ Configuration 3"](./docs/readme/intellij-config-3.png "IntelliJ Configuration 3")
 
-## Development of NG UI
+## Development of Admin UI
 
 1. Generate openBIS JS bundle by running in command line
     1. cd /<OPENBIS_PROJECT_ROOT>/api-openbis-javascript

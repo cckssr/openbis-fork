@@ -71,7 +71,7 @@ var EntityLinkWidget = new function()
         }
     }
 
-    this.getEntityLinkContainer = function($container, model) {
+    this.getEntityLinkContainer = function($container, model, customLinkCompiler) {
         if (model.mode === FormMode.VIEW &&
             model.v3_sample.metaData &&
             model.v3_sample.metaData['ENTITY_LINK.URL']) {
@@ -83,7 +83,14 @@ var EntityLinkWidget = new function()
                 'width': '100%'
             })
             var frameId = 'linked-frame-' + id;
-            var $frame = $("<iframe>", {'src': model.v3_sample.metaData['ENTITY_LINK.URL'], 'id': frameId});
+
+            var $frame = $("<iframe>", { 'id': frameId});
+            if(customLinkCompiler) {
+                customLinkCompiler($frame, model.v3_sample.metaData['ENTITY_LINK.URL']);
+            } else {
+                $frame.attr('src', model.v3_sample.metaData['ENTITY_LINK.URL']);
+            }
+
             $frame.css({
                 'width': '100%',
                 // 'height': '100%',

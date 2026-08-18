@@ -1,6 +1,7 @@
 package ch.openbis.drive.protobuf;
 
 import ch.openbis.drive.DriveAPIServerImpl;
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.converters.EventClientDto;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(JUnit4.class)
-public class DriveAPIGrpcImplTest {
+public class DriveAPIGrpcImplTest extends DriveTestCase {
 
     final DriveAPIServerImpl driveAPIServer = Mockito.mock(DriveAPIServerImpl.class);
     final DriveAPIGrpcImpl driveAPIGrpc = new DriveAPIGrpcImpl(driveAPIServer, new Configuration(Path.of("/fake-local-app-directory"), "seCReT".getBytes(StandardCharsets.UTF_8)));

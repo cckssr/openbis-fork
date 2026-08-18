@@ -1,5 +1,6 @@
 package ch.openbis.drive.db;
 
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.model.SyncJobEvent;
 import lombok.SneakyThrows;
@@ -17,7 +18,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @RunWith(JUnit4.class)
-public class SyncJobEventDAOImpTest {
+public class SyncJobEventDAOImpTest extends DriveTestCase {
     private final String localDirectoryRoot = Path.of(
             this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent()
             .resolve("sync-job-event-dao-impl-test")

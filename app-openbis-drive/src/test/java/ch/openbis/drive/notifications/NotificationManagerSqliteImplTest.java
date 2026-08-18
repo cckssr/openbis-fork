@@ -1,5 +1,6 @@
 package ch.openbis.drive.notifications;
 
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.model.Notification;
 import ch.openbis.drive.model.SyncJob;
@@ -15,7 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @RunWith(JUnit4.class)
-public class NotificationManagerSqliteImplTest {
+public class NotificationManagerSqliteImplTest extends DriveTestCase {
 
     Configuration configuration;
     NotificationManager notificationManager;

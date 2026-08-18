@@ -1,6 +1,6 @@
 package ch.openbis.drive.model;
 
-import junit.framework.TestCase;
+import ch.openbis.drive.DriveTestCase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RunWith(JUnit4.class)
-public class SettingsTest extends TestCase {
+public class SettingsTest extends DriveTestCase {
     @Test
     public void testGettingSyncJobs() {
         Settings settings = new Settings(true, "it", 60, null, new ArrayList<>(List.of("aaa", "bbb")));

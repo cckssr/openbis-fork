@@ -1,12 +1,12 @@
 package ch.openbis.drive.tasks;
 
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.notifications.NotificationManager;
 import ch.openbis.drive.settings.SettingsManager;
 import ch.openbis.drive.util.SystemTrayUtil;
-import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 @RunWith(JUnit4.class)
-public class TaskManagerImplTest extends TestCase {
+public class TaskManagerImplTest extends DriveTestCase {
 
     private final SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
     private final NotificationManager notificationManager = Mockito.mock(NotificationManager.class);

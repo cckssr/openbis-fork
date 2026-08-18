@@ -21,6 +21,8 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceC
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id import EntityTypePermId
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id import ExperimentIdentifier
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create import SampleCreation
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update import SampleUpdate
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id import SamplePermId
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id import SpacePermId
 
 import traceback
@@ -51,8 +53,8 @@ OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
 REQUIRED_PUBLICATION_PROPS = ["NAME", "PUBLICATION.DESCRIPTION", "PUBLICATION.ABSTRACT", "PUBLICATION.CREATOR", "PUBLICATION.PUBLISHER"]
 SEMI_REQUIRED_PROPS = {
-    "PUBLICATION.TYPE" : "--PLACEHOLDER--",
-    "PUBLICATION.STATUS" : "--PLACEHOLDER--",
+    "PUBLICATION.TYPE" : "DRAFT",
+    "PUBLICATION.STATUS" : "PRIVATE",
     "PUBLICATION.PUBLICATION_YEAR" : datetime.date.today().strftime('%Y-%m-%d'),
 }
 
@@ -71,11 +73,14 @@ def exportSciCat(context, params):
         dateStr = date.strftime('%Y-%m-%dT%H:%M:%S')
         print("SciCat export thread started on: " + dateStr + " by", sessionToken)
         OPERATION_LOG.info("SciCat export thread started on "+dateStr+" by: " + sessionToken)
-
-        exportSciCat_withEmail(context, params, date)
-
-        print("SciCat export thread done. Starting time: " + dateStr + " token: "+sessionToken)
-        OPERATION_LOG.info("SciCat export thread done. Starting time: " + date + " token: "+sessionToken)
+        try:
+            exportSciCat_withEmail(context, params, date)
+        except Throwable as e:
+            print("SciCat export thread failed:" + e)
+            OPERATION_LOG.error("SciCat export thread failed %s" % e)
+        finally:
+            print("SciCat export thread done. Starting time: " + dateStr + " token: "+sessionToken)
+            OPERATION_LOG.info("SciCat export thread done. Starting time: " + date + " token: "+sessionToken)
 
     t = threading.Thread(target=worker)
     t.start()
@@ -84,8 +89,8 @@ def exportSciCat(context, params):
 
 
 
-def createNewPublication(sessionToken, v3, properties):
-
+def createNewPublication(sessionToken, v3, properties, collectorIds):
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportableKind
     groupPrefix = ''
     # groupPrefix = 'ERROR_'
     sampleCreation = SampleCreation()
@@ -112,6 +117,13 @@ def createNewPublication(sessionToken, v3, properties):
         if sampleCreation.getProperty(property) is None:
             sampleCreation.setProperty(property, SEMI_REQUIRED_PROPS[property])
 
+    sampleIds = []
+
+    for exportablePermId in collectorIds.getPermIds():
+        if exportablePermId.getExportableKind() == ExportableKind.SAMPLE:
+            sampleIds.append(exportablePermId.getPermId())
+    sampleCreation.setProperty('PUBLICATION.OPENBIS_RELATED_OBJECTS', sampleIds)
+    print("SAMPLE_CREATION", sampleCreation.getProperties())
     try:
         id = v3.createSamples(sessionToken, [sampleCreation])
         print("ID:", id)
@@ -121,6 +133,15 @@ def createNewPublication(sessionToken, v3, properties):
         OPERATION_LOG.error("Creation of publication sample for SciCat failed %s" % e)
         return resultDict(None, e)
 
+def updateDOI(sessionToken, v3, permId, doi, link=None):
+    update = SampleUpdate()
+    id = SamplePermId(permId)
+    update.setSampleId(id)
+    update.setProperty('PUBLICATION.IDENTIFIER', doi)
+    if link is not None:
+        update.getMetaData().put('ENTITY_LINK.URL', link)
+    v3.updateSamples(sessionToken, [update])
+
 
 def exportSciCat_withEmail(context, params, date):
     dateStr = date.strftime('%Y-%m-%d-%H-%M-%S')
@@ -129,10 +150,12 @@ def exportSciCat_withEmail(context, params, date):
     userEmail = v3.getSessionInformation(sessionToken).getPerson().getEmail()
     mailClient = CommonServiceProvider.createEMailClient()
 
+    collectorIds = collectExportIds(v3, sessionToken, params.get('exportData'))
+
     publicationProps = params.get('exportData')["publicationProps"]
     print("Received publication properties:", publicationProps)
     OPERATION_LOG.info("Received publication properties:" + str(publicationProps))
-    publicationResult = createNewPublication(sessionToken, v3, publicationProps)
+    publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds)
     print("PUBLICATION_RESULT", publicationResult)
     OPERATION_LOG.info("PUBLICATION_RESULT" + str(publicationResult))
     if publicationResult["error"] is not None:
@@ -167,7 +190,6 @@ def exportSciCat_withEmail(context, params, date):
     OPERATION_LOG.info("Sending Ro-Crate to SciCat.")
     sciCatOutput = sendToSciCat(context, Map.of("accessToken", params.get("accessToken"), "fileName", download_result["result"]))
 
-    print("SCI_CAT_OUTPUT", sciCatOutput)
     OPERATION_LOG.info("SCI-CAT Output: " + str(sciCatOutput))
 
 
@@ -175,18 +197,28 @@ def exportSciCat_withEmail(context, params, date):
         sendMailFailure(mailClient, userEmail, "SciCat export failed during sending data with exception:\n" + sciCatOutput["error"])
         return
 
-    sendMail(mailClient, userEmail, "Your export has been received by SciCat, once it is imported, you will receive another email.", "SciCat received your export:\n")
+    # sendMail(mailClient, userEmail, "Your export has been received by SciCat, once it is imported, you will receive another email.", "SciCat received your export:\n")
 
     response = sciCatOutput["result"]
     status = response.statusCode()
     body = json.loads(response.body())
     if status == 201:
-        sciCatDetailUrl = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.detail.url') + "/detail/"
+        sciCatDetailUrl = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.detail.url') + "/publishedDatasets/"
+        sciCatDatasetUrl = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.detail.url') + "/datasets/"
         links = ""
         for key in body.keys():
             value = str(body[key])
-            links += "\t" + key + " -> " + sciCatDetailUrl + URLEncoder.encode(value, "UTF-8") + "\n"
-        sendMail(mailClient, userEmail, links, "SciCat export results:\n")
+            if key.startswith("/"):
+                publishedDatasetLink = sciCatDetailUrl + URLEncoder.encode(value, "UTF-8")
+                links += "\t" + key + " -> " + publishedDatasetLink + "\n"
+                groupPrefix = ''
+                publicationPrefix = '/' + groupPrefix + 'PUBLICATIONS/' + groupPrefix + 'PUBLIC_REPOSITORIES/'
+                if key.startswith(publicationPrefix):
+                    OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermId))
+                    updateDOI(sessionToken, v3, publicationPermId, value, publishedDatasetLink)
+            else:
+                links += "\t" + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
+        sendMail(mailClient, userEmail, links, "Your export has been received by SciCat:\n")
     elif status == 202:
 
         jobId = body["jobId"]
@@ -203,6 +235,49 @@ def exportSciCat_withEmail(context, params, date):
         status = "Status:" + str(status) + "\n"
         sendMailFailure(mailClient, userEmail, "SciCat returned unexpected response:\n" + status + body)
 
+
+def collectExportIds(v3, sessionToken, exportData):
+    from ch.ethz.sis.openbis.generic.asapi.v3.exporter import ExportEntityCollector
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportData
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportableKind
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportablePermId
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import AllFields
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options import ExportOptions
+
+    nodeExportList = exportData['nodeExportList']
+    exportIds = []
+    for exportItem in nodeExportList:
+        kind = None
+        kindStr = exportItem['kind']
+        if kindStr == 'SPACE':
+            kind = ExportableKind.SPACE
+        elif kindStr == 'PROJECT':
+            kind = ExportableKind.PROJECT
+        elif kindStr == 'PROJECT':
+            kind = ExportableKind.PROJECT
+        elif kindStr == 'EXPERIMENT':
+            kind = ExportableKind.EXPERIMENT
+        elif kindStr == 'SAMPLE':
+            kind = ExportableKind.SAMPLE
+        elif kindStr == 'DATASET':
+            kind = ExportableKind.DATASET
+
+        if kind is not None:
+            exportIds.append(ExportablePermId(kind, exportItem['permId']))
+
+
+    exportDataObj = ExportData(exportIds, AllFields.INSTANCE)
+    exportOptions = ExportOptions()
+    exportOptions.setWithLevelsAbove(True)
+
+    exportOptions.setWithLevelsBelow(exportData['withLevelsBelow'] == True)
+    exportOptions.setWithObjectsAndDataSetsParents(exportData['withObjectsAndDataSetsParents'] == True)
+    exportOptions.setWithObjectsAndDataSetsChildren(exportData['withObjectsAndDataSetsChildren'] == True)
+    exportOptions.setWithObjectsAndDataSetsOtherSpaces(exportData['withObjectsAndDataSetsOtherSpaces'] == True)
+    collectorResult = ExportEntityCollector.collectEntities(v3, sessionToken, exportDataObj, exportOptions)
+    print("Collector results", collectorResult)
+    OPERATION_LOG.info("Collector results: %s" % collectorResult)
+    return collectorResult
 
 def getRoCrateExportToWorkspace(context, params):
 
@@ -266,24 +341,24 @@ def sendToSciCat(context, params):
 
     print("Session Workspace:", file_path)
 
-    sciCatUrl = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.export.url') + "/api/v1/ro-crate"
+    sciCatUrlBase = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.export.url') + "/api/v1/ro-crate"
     httpProxyURL = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.http.proxy.url')
     httpProxyPort = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.http.proxy.port')
 
-    sciCatUrl = sciCatUrl + "/import"
+    sciCatUrl = sciCatUrlBase + "/import"
+    OPERATION_LOG.info("SciCat URL: %s" % sciCatUrl)
+    print("SciCat URL:", sciCatUrl)
     output = upload_file_with_proxy(sciCatUrl, file_path.toString(), accessToken, proxy_host=httpProxyURL, proxy_port=httpProxyPort)
 
-
     # print("Validation flow")
-    # sciCatUrl = sciCatUrl + "/validate"
+    # sciCatUrl = sciCatUrlBase + "/validate"
+    # print("DEBUG|> SciCat URL:", sciCatUrl)
     # output = upload_file_with_proxy(sciCatUrl, file_path.toString(), accessToken, proxy_host=httpProxyURL, proxy_port=httpProxyPort)
-    #
-    # jobId = output['result']["jobId"]
-    # print("JOB_ID:", jobId)
-    # pollResult = pollSciCatImport(context, Map.of("jobId", jobId, "accessToken", params.get("accessToken")))
-    # print("POLL_RESULT:", pollResult)
-
-
+    # print("PRE-OUTPUT", output)
+    # output = json.loads(output)
+    # print("OUTPUT", output)
+    # errors = output["errors"]
+    # print("ERRORS", len(errors), errors)
 
     return output
 
@@ -372,18 +447,26 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
             .build()
 
     BodyPublishers = HttpRequest.BodyPublishers
-    request = (HttpRequest.newBuilder()
-           .uri(URI.create(url))
-           .header("Content-Type", 'application/zip')
-           .header('api-key', accessToken)
-           .POST(BodyPublishers.ofFile(path))
-           # .POST(BodyPublishers.concat(BodyPublishers.ofFile(path)))
-           .build())
+    if "validate" in url:
+        request = (HttpRequest.newBuilder()
+                   .uri(URI.create(url))
+                   .header("Content-Type", 'application/zip')
+                   .POST(BodyPublishers.ofFile(path))
+                   .build())
+    else:
+        request = (HttpRequest.newBuilder()
+               .uri(URI.create(url))
+               .header("Content-Type", 'application/zip')
+               .header('api-key', accessToken)
+               .POST(BodyPublishers.ofFile(path))
+               # .POST(BodyPublishers.concat(BodyPublishers.ofFile(path)))
+               .build())
 
     response = client.send(request, HttpResponse.BodyHandlers.ofString())
 
     status = response.statusCode()
     print("UPLOAD_RESPONSE", status, response.body())
+    OPERATION_LOG.info("SciCat status: %s upload response: %s" % (status, response.body()))
     if status >= 300:
         if response.body() == u'':
             error_message = "HTTP status:" + str(status)
@@ -393,6 +476,7 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
                 error_message = body['message']
             else:
                 error_message = body['errors'][0]['message']
+                # error_message = body['errors']
             print(error_message)
         return {
             "error": error_message
@@ -404,6 +488,7 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
 
 
 def https_get(base_url, headers, message=None, proxy_host=None, proxy_port=None):
+    conn = None
     try:
         if message is not None:
             # URL-encode the message to make it safe for query strings
@@ -452,9 +537,11 @@ def https_get(base_url, headers, message=None, proxy_host=None, proxy_port=None)
             if line is not None:
                 output += line
 
-        conn.disconnect()
-
         return code, output
     except Throwable as e:
         OPERATION_LOG.error("Error occurred: %s" % e, e)
         return 999, e
+    finally:
+        if conn is not None:
+            conn.disconnect()
+

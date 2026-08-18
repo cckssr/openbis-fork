@@ -1,5 +1,6 @@
 package ch.openbis.drive.db;
 
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.model.Notification;
 import org.junit.Assert;
@@ -14,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RunWith(JUnit4.class)
-public class NotificationDAOImpTest {
+public class NotificationDAOImpTest extends DriveTestCase {
     private final String localDirectoryRoot = Path.of(
             this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent()
             .resolve("notification-dao-impl-test")

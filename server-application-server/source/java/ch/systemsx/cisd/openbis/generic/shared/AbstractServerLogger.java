@@ -15,16 +15,16 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 import ch.ethz.sis.shared.log.standard.core.Level;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler;
 import ch.systemsx.cisd.authentication.ILogMessagePrefixGenerator;
 import ch.systemsx.cisd.authentication.ISessionManager;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
@@ -185,7 +185,24 @@ public abstract class AbstractServerLogger implements IServer
 
     protected final void logStatistics(final String sessionToken, final String commandName)
     {
-        logMessage(statisticsLog, Level.INFO, sessionToken, commandName, "", new Object[0]);
+        statisticsLogMessage(statisticsLog, sessionToken, commandName);
+    }
+
+    // formatter that matches 2026-08-17 12:24:38
+    private final DateTimeFormatter STATISTICS_DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
+
+    private final void statisticsLogMessage(final Logger logger, final String sessionToken, final String commandName)
+    {
+        String timestamp = STATISTICS_DTF.format(Instant.now());
+        Session session = sessionManagerOrNull.tryGetSession(sessionToken);
+        String userId = session.tryGetPerson() != null ? session.tryGetPerson().getUserId() : null;
+
+        String elapsedTimeMessage = "-1";
+        if (context.invocationFinished())
+        {
+            elapsedTimeMessage = getElapsedTimeMessage();
+        }
+        logger.log(Level.INFO, String.format("%s %s %s %s", timestamp, elapsedTimeMessage, userId, commandName));
     }
 
     private final void logMessage(final Logger logger, final Level level,

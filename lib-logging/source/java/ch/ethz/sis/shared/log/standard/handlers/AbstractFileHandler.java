@@ -19,6 +19,7 @@ package ch.ethz.sis.shared.log.standard.handlers;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -33,12 +34,15 @@ public abstract class AbstractFileHandler extends Handler
     public static final Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
     public static final int DEFAULT_MAX_LOG_FILE_SIZE = -1;
 
+    public static final int BEFORE_FLUSH_BUFFER_SIZE_BYTES = 32 * 1024; // 32 KB
+    public static final int BEFORE_FLUSH_ELAPSED_TIME_MILLIS = 10000; // 10 seconds
+
     protected final int maxLogFileSize;
     protected final boolean append;
     protected final String logFileName;
     protected long currentSize;
     protected File currentFile;
-    protected FileOutputStream outputStream;
+    protected OutputStream outputStream;
     protected final Charset encoding;
     protected final ReentrantLock lock = new ReentrantLock();
 
@@ -152,4 +156,9 @@ public abstract class AbstractFileHandler extends Handler
         }
     }
 
+    protected OutputStream openFile(File currentFile, boolean append) throws IOException
+    {
+        return new TimedBufferedOutputStream(new FileOutputStream(currentFile, append),
+                BEFORE_FLUSH_BUFFER_SIZE_BYTES, BEFORE_FLUSH_ELAPSED_TIME_MILLIS);
+    }
 }

@@ -604,7 +604,21 @@
 			$sampleFormTop.append(entityLinkDiv);
 			mainController.serverFacade.isSciCatEnabled((isEnabled) => {
 				if(isEnabled && isEnabled === "true") {
-					var entityLink = EntityLinkWidget.getEntityLinkContainer(entityLinkDiv, _this._sampleFormModel);
+					var compiler = function(frame, url) {
+						mainController.serverFacade.getSetting("personal-sci-cat-api-token", function(accessToken) {
+
+							const { header, payload } = Util.parseJwt(accessToken)
+							var urlObj = new URL(url);
+							var newUrl = new URL("auth-callback", urlObj.origin)
+							newUrl.searchParams.append("access-token", accessToken);
+							var pathname = urlObj.pathname
+							newUrl.searchParams.append("returnUrl", pathname);
+							newUrl.searchParams.append("user-id", payload.userId);
+
+							frame.attr('src', newUrl.href);
+						});
+					}
+					var entityLink = EntityLinkWidget.getEntityLinkContainer(entityLinkDiv, _this._sampleFormModel, compiler);
 					if(entityLink) {
 						_refreshableFields.push(entityLink);
 					}

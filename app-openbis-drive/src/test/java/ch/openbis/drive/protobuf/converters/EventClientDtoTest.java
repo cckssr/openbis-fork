@@ -1,5 +1,6 @@
 package ch.openbis.drive.protobuf.converters;
 
+import ch.openbis.drive.DriveTestCase;
 import ch.openbis.drive.model.Event;
 import ch.openbis.drive.protobuf.DriveApiService;
 import org.junit.Assert;
@@ -10,7 +11,7 @@ import org.junit.runners.JUnit4;
 import static org.junit.Assert.*;
 
 @RunWith(JUnit4.class)
-public class EventClientDtoTest {
+public class EventClientDtoTest extends DriveTestCase {
     @Test
     public void test() {
         DriveApiService.Event protobufEvent = DriveApiService.Event.newBuilder().setSyncDirection(DriveApiService.Event.SyncDirection.UP)

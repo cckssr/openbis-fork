@@ -1,5 +1,6 @@
 package ch.openbis.drive.gui.i18n;
 
+import ch.openbis.drive.logging.Logging;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -68,7 +69,7 @@ public class I18n {
         try {
             return Locale.forLanguageTag(normalizeLanguageLabel(languageTag));
         } catch (Exception e) {
-            System.err.printf("Could not get Locale for language-tag: %s%n", languageTag);
+            Logging.tryCatchErrorInStaticMethod(I18n.class, new RuntimeException(String.format("Could not get Locale for language-tag: %s%n", languageTag), e));
             return getDefaultLocale();
         }
     }
@@ -77,7 +78,7 @@ public class I18n {
         try {
             return ResourceBundle.getBundle("message", getLocaleForLanguageTagOrDefault(languageTag));
         } catch (Exception e) {
-            System.err.printf("Could not get ResourceBundle for language-tag: %s%n", languageTag);
+            Logging.tryCatchErrorInStaticMethod(I18n.class, new RuntimeException(String.format("Could not get ResourceBundle for language-tag: %s%n", languageTag), e));
             return ResourceBundle.getBundle("message", getDefaultLocale());
         }
     }

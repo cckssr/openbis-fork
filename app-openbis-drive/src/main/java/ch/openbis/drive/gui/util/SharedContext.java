@@ -1,6 +1,7 @@
 package ch.openbis.drive.gui.util;
 
 import ch.openbis.drive.gui.i18n.I18n;
+import ch.openbis.drive.logging.Logging;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
 import javafx.application.HostServices;
 import javafx.scene.Node;
@@ -37,7 +38,7 @@ public class SharedContext {
            try {
                staticInstance.driveAPIClient.close();
            } catch (Exception e) {
-               e.printStackTrace();
+               Logging.tryCatchErrorInStaticMethod(SharedContext.class, e);
            }
             closed.set(true);
         } else {

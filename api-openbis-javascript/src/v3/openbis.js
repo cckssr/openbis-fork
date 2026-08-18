@@ -566,10 +566,11 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 		this._read = async function(chunks) {
 			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
+				const encodedChunks = AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks)
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
                         "method" : "read",
-                        "params" : [ Array.from(AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks)) ]
+                        "params" : [ base64URLEncode(unit8ArrayToString(encodedChunks)) ]
                     }
                 }).then(function(chunksAsString){
                     var chunks = AfsServer.prototype.Private.ChunkEncoderDecoder.decodeChunks(chunksAsString); // Decode Chunks
@@ -590,12 +591,13 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 		this._write = async function(chunks){
 			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
+				const encodedChunks = AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks)
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
                         "method" : "write",
 		                // use base64 url version of encoding that produces url safe characters only (default version of base64 produces "+" and "/" which need to be further converted by encodeURIComponent to "%2B" and "%2F" and therefore they unnecessarily increase the request size)
 
-                        "params" : [ Array.from(AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks)) ]
+                        "params" : [ base64URLEncode(unit8ArrayToString(encodedChunks)) ]
                     }
                 })
             }else{
