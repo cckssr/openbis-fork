@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts'
 import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts'
 import { useAutoSave } from '@src/js/components/database/new-forms/hooks/useAutoSave.tsx'
-import { useAutoSaveRestore } from '@src/js/components/database/new-forms/hooks/useAutoSaveRestore.tsx'
 
+// 24 hours for maximal draft age.
 const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000
 
 // Liveness heartbeat for the shared CREATE-mode auto-save slot (see below). Written on the
@@ -45,7 +45,7 @@ interface UseEntityAutoSaveFlowResult {
   actionOverrides: Record<string, any>
   /** Clears the saved draft (form data) from localStorage */
   clearStorage: () => void
-  /** True while a CREATE-mode draft for this entity type was found and is awaiting the
+  /** True while a draft for this entity type was found and is awaiting the
    * user's restore/discard decision (see `restorePendingDraft` / `discardPendingDraft`). */
   hasPendingDraft: boolean
   /** Applies the pending draft's field values to the current form and dismisses the prompt. */
@@ -83,6 +83,7 @@ export function useEntityAutoSaveFlow({
   onAutoSaveBlocked
 }: UseEntityAutoSaveFlowProps): UseEntityAutoSaveFlowResult {
   const isCreateMode = mode === FormMode.CREATE
+  const isEditMode = mode === FormMode.EDIT
 
   // ----- Preference (per entity, or per entity-type slot in CREATE mode) -----
   // `entityKind` alone (e.g. "newObject") is the same for every concrete sample/experiment/
@@ -232,22 +233,13 @@ export function useEntityAutoSaveFlow({
     maxAge: DRAFT_MAX_AGE_MS
   })
 
-  useAutoSaveRestore({
-    form,
-    mode,
-    isEnabled: isAutoSaveEnabled,
-    loadFromStorage,
-    onRestore,
-    onClearStorage: clearStorage
-  })
-
-  // ----- CREATE mode: offer to restore an existing draft, rather than auto-applying it -----
-  // A not-yet-saved entity has no stable identity of its own, so - unlike EDIT, where a draft
-  // is silently restored the moment the user re-enters EDIT mode - restoring here means
-  // pulling in another tab's draft (or a previous session's, after a refresh). That should be
-  // an explicit choice, not something that happens invisibly the moment the form opens.
+  // ----- CREATE/EDIT mode: offer to restore an existing draft, rather than auto-applying it -----
+  // Restoring means pulling in a draft saved by another tab, an earlier Edit/Cancel cycle in
+  // this tab, or a previous session (after a refresh). That should be an explicit choice, not
+  // something that happens invisibly the moment the form opens.
   const [pendingDraft, setPendingDraft] = useState<Form | null>(null)
   const hasCheckedForDraftRef = useRef(false)
+  const previousModeRef = useRef(mode)
 
   useEffect(() => {
     hasCheckedForDraftRef.current = false
@@ -255,7 +247,16 @@ export function useEntityAutoSaveFlow({
   }, [storageKey])
 
   useEffect(() => {
-    if (!isCreateMode || !form || hasCheckedForDraftRef.current) {
+    // Re-arm the check on every (re-)entry into EDIT mode - e.g. Cancel takes the form back to
+    // VIEW and the user clicks Edit again in the same tab - not just once per mount/storageKey,
+    // so a draft saved during an earlier Edit/Cancel cycle isn't silently missed.
+    const enteringEditMode = isEditMode && previousModeRef.current !== FormMode.EDIT
+    if (enteringEditMode) {
+      hasCheckedForDraftRef.current = false
+    }
+    previousModeRef.current = mode
+
+    if ((!isCreateMode && !isEditMode) || !form || hasCheckedForDraftRef.current) {
       return
     }
     hasCheckedForDraftRef.current = true
@@ -301,7 +302,7 @@ export function useEntityAutoSaveFlow({
     } catch (e: any) {
       console.warn('Corrupted draft found.', e)
     }
-  }, [isCreateMode, form, storageKey, isSlotTakenByAnother])
+  }, [isCreateMode, isEditMode, mode, form, storageKey, isSlotTakenByAnother])
 
   const restorePendingDraft = useCallback(() => {
     if (pendingDraft) {

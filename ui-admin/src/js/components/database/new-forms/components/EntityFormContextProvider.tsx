@@ -242,7 +242,7 @@ export const EntityFormContextProvider = ({
     actionToastContext,
   });
 
-  // Handle actions by creating them from dispatcher
+  // Handle actions by creating them from a dispatcher
   const handleAction = useCallback(async (actionName: string) => {
     console.log(`[EntityFormContextProvider] Handling action: ${actionName}`);
 

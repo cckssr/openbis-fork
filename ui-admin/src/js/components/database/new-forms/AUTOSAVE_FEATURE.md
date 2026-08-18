@@ -30,9 +30,6 @@ Core goals:
 - **`useAutoSave`** (`hooks/useAutoSave.tsx`)
   - Responsible for **saving/loading/clearing** the draft data (selective: dirty fields only).
 
-- **`useAutoSaveRestore`** (`hooks/useAutoSaveRestore.tsx`)
-  - Responsible for **restoration logic** (when to restore, how to avoid loops).
-
 - **`SwitchActionRenderer`** (`components/actions/SwitchActionRenderer.tsx`)
   - Renders toggle actions (like auto-save). Uses `action.value` as “checked”.
 
@@ -74,7 +71,7 @@ Value:
 
 **Purpose**: Store the **unsaved draft data** (only dirty fields) for the current entity.
 
-Used by: `useAutoSave` / `useAutoSaveRestore`
+Used by: `useAutoSave`
 
 Key format:
 - EDIT/VIEW: `form-data-${entityKind}-${permId || 'new'}-${user}`
@@ -125,18 +122,7 @@ Auto-save triggers on:
 
 ## Restoration strategy
 
-### EDIT mode: silent, automatic (`useAutoSaveRestore`)
-
-Restore is attempted only when:
-- mode is `EDIT`
-- preference is enabled
-- a draft exists for this entity
-
-Restore triggers when the form transitions into `EDIT` (e.g. clicking "Edit" on a `VIEW` form) -
-silently, no user prompt, since the draft can only ever belong to *this* entity (EDIT-mode
-`permId` is a real, stable server identity, so there's nothing to disambiguate).
-
-### CREATE mode: explicit, via a restore/discard dialog
+### CREATE/EDIT mode: explicit, via a restore/discard dialog
 
 CREATE-mode drafts are **not** auto-applied. Because the draft key is shared by every open tab
 creating that entity type (see below), silently applying whatever happens to be in storage could
