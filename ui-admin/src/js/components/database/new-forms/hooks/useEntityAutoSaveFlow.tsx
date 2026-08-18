@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts'
 import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts'
 import { useAutoSave } from '@src/js/components/database/new-forms/hooks/useAutoSave.tsx'
+import { getTabInstanceId } from '@src/js/components/database/new-forms/utils/tabIdentityUtil.ts'
 
 // 24 hours for maximal draft age.
 const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000
@@ -85,6 +86,18 @@ export function useEntityAutoSaveFlow({
   const isCreateMode = mode === FormMode.CREATE
   const isEditMode = mode === FormMode.EDIT
 
+  // Identity used for the CREATE-mode slot heartbeat below. `permId` (the tab-local tmp permId,
+  // e.g. "1-newObject") is NOT usable for this: it's a small counter reset per page load (see
+  // AppController.objectNew), so two independently opened browser tabs each creating the first
+  // entity of a given type will both compute the same value. `tabInstanceId` is generated once
+  // per browser tab (sessionStorage-backed) and can't collide across tabs, so it's what actually
+  // distinguishes "my tab" from "another tab" for ownership arbitration.
+  const tabInstanceIdRef = useRef<string | null>(null)
+  if (tabInstanceIdRef.current === null) {
+    tabInstanceIdRef.current = getTabInstanceId()
+  }
+  const tabInstanceId = tabInstanceIdRef.current
+
   // ----- Preference (per entity, or per entity-type slot in CREATE mode) -----
   // `entityKind` alone (e.g. "newObject") is the same for every concrete sample/experiment/
   // dataset type - `entityType` (e.g. "YEAST" vs "PLASMID") is the real per-type discriminator,
@@ -115,20 +128,21 @@ export function useEntityAutoSaveFlow({
     return `new-forms:auto-save-heartbeat:${user}:${entityKind}:${entityType}`
   }, [user, entityKind, entityType])
 
-  // Returns the entityPermId that currently, live-ly owns the shared CREATE slot, or null.
-  const readSlotOwner = useCallback((): string | null => {
+  // Returns the {tabInstanceId, entityPermId} pair that currently, live-ly owns the shared CREATE slot, or null.
+  const readSlotOwner = useCallback((): {tabId: string | null, entityPermId: string | null} => {
+    const emptyValue = { tabId: null, entityPermId: null};
     try {
-      const raw = localStorage.getItem(heartbeatKey)
+      const raw: string | null = localStorage.getItem(heartbeatKey)
       if (!raw) {
-        return null
+        return emptyValue
       }
       const parsed = JSON.parse(raw)
       if (typeof parsed?.timestamp !== 'number' || Date.now() - parsed.timestamp > HEARTBEAT_STALE_AFTER_MS) {
-        return null
+        return emptyValue
       }
-      return parsed?.entityPermId || null
+      return { tabId: parsed?.tabId, entityPermId: parsed?.entityPermId }
     } catch {
-      return null
+      return emptyValue
     }
   }, [heartbeatKey])
 
@@ -137,8 +151,16 @@ export function useEntityAutoSaveFlow({
       return false
     }
     const owner = readSlotOwner()
-    return !!owner && owner !== permId
-  }, [isCreateMode, readSlotOwner, permId])
+    if (!owner.tabId && !owner.entityPermId) {
+      return false // no live heartbeat
+    }
+    // The slot is owned by *this* form instance only if both the browser tab (tabId) and the
+    // form instance within that tab (entityPermId) match. Either one differing means a
+    // different owner - e.g. a second "New Object" form opened in this same browser tab has a
+    // different entityPermId but the same tabId, and must still be treated as "another" owner.
+    const isSameOwner = owner.tabId === tabInstanceId && owner.entityPermId === permId
+    return !isSameOwner
+  }, [isCreateMode, readSlotOwner, tabInstanceId, permId])
 
   const [isAutoSaveEnabled, setAutoSaveEnabledState] = useState(false)
 
@@ -192,7 +214,10 @@ export function useEntityAutoSaveFlow({
 
     const writeHeartbeat = () => {
       try {
-        localStorage.setItem(heartbeatKey, JSON.stringify({ entityPermId: permId, timestamp: Date.now() }))
+        localStorage.setItem(
+          heartbeatKey,
+          JSON.stringify({ entityPermId: permId, tabId: tabInstanceId, timestamp: Date.now() })
+        )
       } catch {
         // ignore persistence failures (quota/private mode)
       }
@@ -205,7 +230,7 @@ export function useEntityAutoSaveFlow({
           return
         }
         const parsed = JSON.parse(raw)
-        if (parsed?.entityPermId === permId) {
+        if (parsed?.tabId === tabInstanceId && parsed?.entityPermId === permId) {
           localStorage.removeItem(heartbeatKey)
         }
       } catch {
@@ -222,7 +247,7 @@ export function useEntityAutoSaveFlow({
       window.removeEventListener('beforeunload', releaseHeartbeat)
       releaseHeartbeat()
     }
-  }, [isCreateMode, isDraftFlowEnabled, heartbeatKey, permId])
+  }, [isCreateMode, isDraftFlowEnabled, heartbeatKey, permId, tabInstanceId])
 
   const { loadFromStorage, clearStorage } = useAutoSave({
     form,

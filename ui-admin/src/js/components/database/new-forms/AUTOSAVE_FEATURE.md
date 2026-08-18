@@ -204,7 +204,18 @@ every other tab from ever enabling auto-save for that entity type.
 To answer "does the owning tab actually still exist" instead of "does a draft still exist",
 ownership is tracked by a **separate heartbeat key**
 (`new-forms:auto-save-heartbeat:${user}:${entityKind}:${entityType}`, value
-`{ entityPermId, timestamp }`), decoupled from the draft content key:
+`{ entityPermId, tabId, timestamp }`), decoupled from the draft content key:
+
+**Ownership identity is `tabId`, not `entityPermId`.** A CREATE-mode `permId` is a small counter
+reset per page load (`AppController.objectNew` counts currently-open tabs of that type *within
+that page's own in-memory state*) - it is not synchronized across separate browser tabs/windows.
+Two independently opened tabs each creating the first entity of a given type will therefore both
+compute the identical tmp permId (e.g. `"1-newObject"`), which would make them indistinguishable
+to the ownership check. `tabId` (`utils/tabIdentityUtil.ts`, `getTabInstanceId()`) is instead a
+random id generated once per browser tab and cached in that tab's `sessionStorage` - stable across
+reloads/navigation within the tab, but never shared with (or colliding with) another tab, which is
+what ownership arbitration actually needs. `entityPermId` is still written to the heartbeat, but
+only for debugging - it plays no role in the "taken by another" comparison.
 - While a CREATE-mode tab is actively driving the draft flow (`isDraftFlowEnabled`), it writes its
   own `entityPermId` + `Date.now()` to the heartbeat key immediately and then every
   `HEARTBEAT_INTERVAL_MS` (5s, same cadence as the draft auto-save).
