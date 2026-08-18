@@ -177,7 +177,7 @@ public class MainViewController {
         ImageView image = null;
         try {
             image = new ImageView(new Image(
-                    Objects.requireNonNull(MainViewController.class.getClassLoader().getResourceAsStream("images/openbis-drive-logo-transparent-medium.png"))
+                    Objects.requireNonNull(MainViewController.class.getClassLoader().getResourceAsStream("images/openbis-drive-logo-transparent-small-medium.png"))
             ));
             image.setSmooth(true);
             image.setPreserveRatio(true);
