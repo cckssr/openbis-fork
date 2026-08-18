@@ -147,6 +147,13 @@ available) whether a non-stale draft exists for the shared key, and if so expose
 this, offering **Restore Draft** / **Discard Draft** - the user decides, nothing happens
 automatically.
 
+This check is gated by the same `isSlotTakenByAnother()` liveness check the auto-save toggle uses
+(see "Ownership" below): if another tab of this exact entity type is currently live, the prompt is
+skipped entirely - that draft is still being actively worked on there, not an abandoned one to
+recover, and offering to "restore" it into a second tab would just create two tabs editing the
+same content. Once that other tab is no longer live (closed, refreshed, or its heartbeat timed
+out), a freshly opened tab of that type will see the prompt as normal.
+
 #### Matching draft fields across tabs: `name`, not `id`
 
 A CREATE-mode form's field `id`s are prefixed with that tab's ephemeral tmp `permId` (e.g.

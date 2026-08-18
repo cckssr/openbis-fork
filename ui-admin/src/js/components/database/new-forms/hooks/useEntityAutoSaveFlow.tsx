@@ -260,6 +260,13 @@ export function useEntityAutoSaveFlow({
     }
     hasCheckedForDraftRef.current = true
 
+    // Same rule as the auto-save toggle: if another live tab of this exact entity type
+    // already owns the shared slot, don't offer its draft here either - it's still being
+    // actively edited/auto-saved there, not an abandoned draft to recover.
+    if (isSlotTakenByAnother()) {
+      return
+    }
+
     try {
       const raw = localStorage.getItem(storageKey)
       if (!raw) {
@@ -291,10 +298,10 @@ export function useEntityAutoSaveFlow({
       if (matchedAny) {
         setPendingDraft({ ...form, fields: mergedFields })
       }
-    } catch {
-      // ignore corrupted draft - nothing to offer
+    } catch (e: any) {
+      console.warn('Corrupted draft found.', e)
     }
-  }, [isCreateMode, form, storageKey])
+  }, [isCreateMode, form, storageKey, isSlotTakenByAnother])
 
   const restorePendingDraft = useCallback(() => {
     if (pendingDraft) {
