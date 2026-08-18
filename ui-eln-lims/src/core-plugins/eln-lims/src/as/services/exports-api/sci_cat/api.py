@@ -21,6 +21,8 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceC
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id import EntityTypePermId
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id import ExperimentIdentifier
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create import SampleCreation
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update import SampleUpdate
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id import SamplePermId
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id import SpacePermId
 
 import traceback
@@ -131,6 +133,15 @@ def createNewPublication(sessionToken, v3, properties, collectorIds):
         OPERATION_LOG.error("Creation of publication sample for SciCat failed %s" % e)
         return resultDict(None, e)
 
+def updateDOI(sessionToken, v3, permId, doi, link=None):
+    update = SampleUpdate()
+    id = SamplePermId(permId)
+    update.setSampleId(id)
+    update.setProperty('PUBLICATION.IDENTIFIER', doi)
+    if link is not None:
+        update.getMetaData().put('ENTITY_LINK.URL', link)
+    v3.updateSamples(sessionToken, [update])
+
 
 def exportSciCat_withEmail(context, params, date):
     dateStr = date.strftime('%Y-%m-%d-%H-%M-%S')
@@ -186,7 +197,7 @@ def exportSciCat_withEmail(context, params, date):
         sendMailFailure(mailClient, userEmail, "SciCat export failed during sending data with exception:\n" + sciCatOutput["error"])
         return
 
-    sendMail(mailClient, userEmail, "Your export has been received by SciCat, once it is imported, you will receive another email.", "SciCat received your export:\n")
+    # sendMail(mailClient, userEmail, "Your export has been received by SciCat, once it is imported, you will receive another email.", "SciCat received your export:\n")
 
     response = sciCatOutput["result"]
     status = response.statusCode()
@@ -198,10 +209,16 @@ def exportSciCat_withEmail(context, params, date):
         for key in body.keys():
             value = str(body[key])
             if key.startswith("/"):
-                links += "\t" + key + " -> " + sciCatDetailUrl + URLEncoder.encode(value, "UTF-8") + "\n"
+                publishedDatasetLink = sciCatDetailUrl + URLEncoder.encode(value, "UTF-8")
+                links += "\t" + key + " -> " + publishedDatasetLink + "\n"
+                groupPrefix = ''
+                publicationPrefix = '/' + groupPrefix + 'PUBLICATIONS/' + groupPrefix + 'PUBLIC_REPOSITORIES/'
+                if key.startswith(publicationPrefix):
+                    OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermId))
+                    updateDOI(sessionToken, v3, publicationPermId, value, publishedDatasetLink)
             else:
                 links += "\t" + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
-        sendMail(mailClient, userEmail, links, "SciCat export results:\n")
+        sendMail(mailClient, userEmail, links, "Your export has been received by SciCat:\n")
     elif status == 202:
 
         jobId = body["jobId"]
@@ -471,6 +488,7 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
 
 
 def https_get(base_url, headers, message=None, proxy_host=None, proxy_port=None):
+    conn = None
     try:
         if message is not None:
             # URL-encode the message to make it safe for query strings
@@ -519,9 +537,11 @@ def https_get(base_url, headers, message=None, proxy_host=None, proxy_port=None)
             if line is not None:
                 output += line
 
-        conn.disconnect()
-
         return code, output
     except Throwable as e:
         OPERATION_LOG.error("Error occurred: %s" % e, e)
         return 999, e
+    finally:
+        if conn is not None:
+            conn.disconnect()
+
