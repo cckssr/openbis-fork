@@ -333,14 +333,8 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
             builder.append(DELIM).append(distinctApiColumns);
         }
         builder.append("\n");
-        Map<String, GroupInfo> groupInfos = initializeGroupInfos(usageAndGroupsInfo);
-        Map<String, GroupInfo> individualInfos = new TreeMap<>();
-        for (String user : usageAndGroupsInfo.getUsageByUsersAndSpaces().keySet())
-        {
-            GroupInfo groupInfo = new GroupInfo(Arrays.asList(user));
-            groupInfo.setApiUsage(apiUsage.get(user));
-            individualInfos.put(user, groupInfo);
-        }
+        Map<String, GroupInfo> groupInfos = initializeGroupInfos(usageAndGroupsInfo, apiUsage);
+        Map<String, GroupInfo> individualInfos = initializeUserInfos(usageAndGroupsInfo, apiUsage);
 
         handleUsageAndGroupInfos(usageAndGroupsInfo, groupInfos, individualInfos, new IUsageInfoHandler()
             {
@@ -421,13 +415,59 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
             }
         }
     }
+    private Map<String, GroupInfo> initializeUserInfos(UsageAndGroupsInfo usageAndGroupsInfo, Map<String, Map<String, Long>> apiUsage)
+    {
+        Map<String, GroupInfo> individualInfos = new HashMap<>();
+        for (String user : usageAndGroupsInfo.getUsageByUsersAndSpaces().keySet())
+        {
+            GroupInfo groupInfo = new GroupInfo(Arrays.asList(user));
+            Map<String, Long> userApiUsage = apiUsage.get(user);
+            if (userApiUsage == null) {
+                userApiUsage = new HashMap<>();
+                apiUsage.put(user, userApiUsage);
+            }
+            groupInfo.setApiUsage(userApiUsage);
+            individualInfos.put(user, groupInfo);
+        }
 
-    private Map<String, GroupInfo> initializeGroupInfos(UsageAndGroupsInfo usageAndGroupsInfo)
+        return individualInfos;
+    }
+
+    private Map<String, GroupInfo> initializeGroupInfos(UsageAndGroupsInfo usageAndGroupsInfo, Map<String, Map<String, Long>> apiUsage)
     {
         Map<String, GroupInfo> groupInfos = new TreeMap<>();
         for (Entry<String, Set<String>> entry : usageAndGroupsInfo.getUsersByGroups().entrySet())
         {
             groupInfos.put(entry.getKey(), new GroupInfo(entry.getValue()));
+        }
+        for (String groupKey:groupInfos.keySet()) {
+            GroupInfo groupUsageStatistics = groupInfos.get(groupKey);
+            // Group Api Usage Initialization
+            Map<String, Long> groupApiUsage = groupUsageStatistics.getApiUsage();
+            if (groupApiUsage == null) {
+                groupApiUsage = new HashMap<>();
+                groupUsageStatistics.setApiUsage(groupApiUsage);
+            }
+            for (String groupUser:usageAndGroupsInfo.getUsersByGroups().get(groupKey)) {
+                // Group Api Usage Update
+                Map<String, Long> userApiUsage = apiUsage.get(groupUser);
+                if (userApiUsage != null) {
+                    for (String column:userApiUsage.keySet()) {
+                        Long groupUsageCount = groupApiUsage.get(column);
+                        if (groupUsageCount == null)
+                        {
+                            groupUsageCount = 0L;
+                        }
+                        Long userUsageCount = userApiUsage.get(column);
+                        if (userUsageCount == null)
+                        {
+                            userUsageCount = 0L;
+                        }
+                        groupUsageCount += userUsageCount;
+                        groupApiUsage.put(column, groupUsageCount);
+                    }
+                }
+            }
         }
         groupInfos.put("", new GroupInfo(usageAndGroupsInfo.getUsageByUsersAndSpaces().keySet()));
         return groupInfos;
