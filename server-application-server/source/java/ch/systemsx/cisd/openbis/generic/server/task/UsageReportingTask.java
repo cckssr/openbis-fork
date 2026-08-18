@@ -130,9 +130,21 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
 
     private List<String> logFolderNames = List.of("targets", "logs");
     private List<String> statisticsLogNames = List.of("openbis_statistics.log");
-    Set<String> statisticsLogApiFunctions = Set.of(
-            "get-spaces", "get-projects", "get-experiments", "get-samples", "get-data-sets",
-            "search-spaces", "search-projects", "search-experiments", "search-samples", "search-data-sets");
+    List<String> statisticsLogApiColumns = List.of(
+            "space access", "project access", "experiment access", "sample access", "data sets access");
+    Map<String, String> statisticsLogApiFunctionsToColumns = Map.of(
+            "get-spaces", "space access",
+            "get-projects", "project access",
+            "get-experiments", "experiment access",
+            "get-samples", "sample access",
+            "get-data-sets", "data sets access",
+            "search-spaces", "space access",
+            "search-projects", "project access",
+            "search-experiments", "experiment access",
+            "search-samples", "sample access",
+            "search-data-sets", "data sets access"
+    );
+
     @Override
     protected void setUpSpecific(Properties properties)
     {
@@ -225,13 +237,14 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
                                 stringLongMap = new HashMap<>();
                                 apiUsage.put(user, stringLongMap);
                             }
-                            Long l = stringLongMap.get(function);
+                            String column = statisticsLogApiFunctionsToColumns.get(function);
+                            Long l = stringLongMap.get(column);
                             if (l == null)
                             {
                                 l = 0L;
                             }
                             l++;
-                            stringLongMap.put(function, l);
+                            stringLongMap.put(column, l);
                         });
                     } catch (IOException e)
                     {
@@ -316,8 +329,8 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
             builder.append(DELIM).append("total number of entities");
         }
 
-        for (String distinctApiKey:statisticsLogApiFunctions) {
-            builder.append(DELIM).append(distinctApiKey);
+        for (String distinctApiColumns:statisticsLogApiColumns) {
+            builder.append(DELIM).append(distinctApiColumns);
         }
         builder.append("\n");
         Map<String, GroupInfo> groupInfos = initializeGroupInfos(usageAndGroupsInfo);
@@ -443,11 +456,11 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
                 {
                     builder.append(DELIM).append(info.getNumberOfEntities());
                 }
-                for (String distinctApiKey:statisticsLogApiFunctions)
+                for (String column:statisticsLogApiColumns)
                 {
                     if (info.getApiUsage() != null)
                     {
-                        builder.append(DELIM).append(info.getApiUsage().get(distinctApiKey));
+                        builder.append(DELIM).append(info.getApiUsage().get(column));
                     } else {
                         builder.append(DELIM);
                     }
