@@ -337,15 +337,15 @@ public class SftpListUtilTest extends TestCase {
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
         File[] listedFiles = {
                 new File("entity-id", "/dir/file3", "file3", false, 1004L, Instant.now().atOffset(ZoneOffset.UTC)),
-                new File("entity-id", "/dir/subdir", "file3", true, 0L, Instant.now().atOffset(ZoneOffset.UTC)),
+                new File("entity-id", "/dir/subdir", "subdir", true, 0L, Instant.now().atOffset(ZoneOffset.UTC)),
                 new File("entity-id", "/dir/file", "file", false, 1005L, Instant.now().atOffset(ZoneOffset.UTC)),
-                new File("entity-id", "/dir/file2", "file", false, 1006L, Instant.now().atOffset(ZoneOffset.UTC)),
+                new File("entity-id", "/dir/file2", "file2", false, 1006L, Instant.now().atOffset(ZoneOffset.UTC)),
         };
 
         Mockito.doReturn(listedFiles).when(afsClientFacadeMock).list("entity-id", "/dir", false);
 
-        Optional<File> file = sftpListUtil.getAfsFilePresence("entity-id", "/dir/file");
-        assertEquals(Optional.of(listedFiles[2]), file);
+        Optional<File> file1 = sftpListUtil.getAfsFilePresence("entity-id", "/dir/file");
+        assertEquals(Optional.of(listedFiles[2]), file1);
 
         Mockito.verify(afsClientFacadeMock, Mockito.times(1)).list("entity-id", "/dir", false);
         Mockito.verify(openBISClientUtil, Mockito.times(1)).getAfsClient(user);
