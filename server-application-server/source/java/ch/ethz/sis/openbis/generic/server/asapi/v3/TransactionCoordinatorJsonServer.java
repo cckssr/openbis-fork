@@ -255,14 +255,9 @@ public class TransactionCoordinatorJsonServer extends AbstractApiJsonServiceExpo
         private byte[] convertEncodedChunksOperationArgument(Object operationArgument) {
             if(operationArgument instanceof byte[]) {
                 return (byte[]) operationArgument;
-            } else if (operationArgument instanceof List){
-                byte[] encodedChunksAsBytes = new byte[((List<?>) operationArgument).size()];
-                int i = 0;
-                for(Number item : (List<? extends Number>) operationArgument) {
-                    encodedChunksAsBytes[i] = item.byteValue();
-                    i++;
-                }
-                return encodedChunksAsBytes;
+            } else if (operationArgument instanceof String)
+            {
+                return Base64.getUrlDecoder().decode((String) operationArgument);
             } else {
                 throw new IllegalArgumentException(String.format("Illegal type for operationArgument of encoded chunks: %s", operationArgument.getClass()));
             }
