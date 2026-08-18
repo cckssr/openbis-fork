@@ -1,6 +1,7 @@
 package ch.ethz.sis.afssftp.util;
 
 import ch.ethz.sis.afsapi.dto.File;
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
 import ch.ethz.sis.afssftp.authentication.User;
 import ch.ethz.sis.afssftp.conf.Parameters;
@@ -43,6 +44,7 @@ import ch.ethz.sis.shared.log.standard.Logger;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
+import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
 import java.time.Instant;
@@ -300,11 +302,28 @@ public class SftpListUtil {
 
     @SneakyThrows
     public Optional<File> getAfsFilePresence(@NonNull String afsEntityId, @NonNull String absoluteAfsFilePath) {
-        return AfsClientUploadHelper.getServerFilePresence(
-                openBISClientUtil.getAfsClient(user),
-                afsEntityId,
-                absoluteAfsFilePath
-        );
+        Path parentPath = Path.of(absoluteAfsFilePath).getParent();
+
+        if (parentPath != null) {
+            try {
+                File[] siblings = openBISClientUtil.getAfsClient(user).list(afsEntityId, parentPath.toString(), false);
+                return Arrays.stream(siblings).filter(
+                        sibling -> absoluteAfsFilePath.equals(sibling.getPath())
+                ).findFirst();
+            } catch (Exception e) {
+                if (AfsClientUploadHelper.isPathNotInStoreError(e)) {
+                    return Optional.empty();
+                } else {
+                    throw e;
+                }
+            }
+        } else {
+            return AfsClientUploadHelper.getServerFilePresence(
+                    openBISClientUtil.getAfsClient(user),
+                    afsEntityId,
+                    absoluteAfsFilePath
+            );
+        }
     }
 
     @SneakyThrows
