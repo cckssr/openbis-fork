@@ -47,7 +47,6 @@ public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogC
 
         VBox progressIndicatorBox = new VBox();
         progressIndicatorBox.setSpacing(20);
-        progressIndicatorBox.setPadding(new Insets(0, 0, 0, 150));
         progressIndicatorBox.setAlignment(Pos.CENTER);
         ProgressIndicator progressIndicator = new ProgressIndicator();
         progressIndicator.setVisible(true);
@@ -77,6 +76,9 @@ public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogC
         gridPane.add(scrollPane, 1, 1, 4, 1);
 
         scrollPane.setContent(progressIndicatorBox);
+        scrollPane.widthProperty().addListener((obs, oldValue, newValue) -> {
+            progressIndicatorBox.setPrefWidth(newValue.doubleValue() - 5);
+        });
 
         baseVerticalBox.getChildren().addAll(
                 MainViewController.getOpenBisDriveBigRectangleLogo(500),
