@@ -66,9 +66,9 @@ class PropertyReformatter:
                     result = []
                     for sample in value:
                         if not isinstance(sample, str):
-                            result += sample.permId
+                            result.append(sample.permId)
                         else:
-                            result += [sample]
+                            result.append(sample)
                     properties[key] = result
                 else:
                     if not isinstance(value, str):

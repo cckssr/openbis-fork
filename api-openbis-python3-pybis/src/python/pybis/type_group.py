@@ -103,8 +103,8 @@ class TypeGroup(
             "managedInternally",
         ]
 
-        pas = self.openbis.search_type_group_assignment(type_group=self.id, sample_type="*")
-        pas = pas['objects']
+        assignments_response = self.openbis.search_type_group_assignments(type_group=self.id, sample_type="*")
+        assignments_response = assignments_response['objects']
 
 
         def create_data_frame(attrs, props, response):
@@ -139,9 +139,9 @@ class TypeGroup(
             single_item_method=self.openbis.get_type_group,
             identifier_name="typeGroup",
             start_with=1,
-            count=len(pas),
-            totalCount=len(pas),
-            response=pas,
+            count=len(assignments_response),
+            totalCount=len(assignments_response),
+            response=assignments_response,
             df_initializer=create_data_frame,
             objects_initializer=create_objects,
             attrs=attrs

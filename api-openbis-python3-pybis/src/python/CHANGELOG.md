@@ -5,12 +5,15 @@
 - Added AFS api handling
 - Improvements to dataset symlinks
 - Added basic functionalities for RO-Crate server communication
+- Added handling of Type Groups
+- Refactored logging
 
 ## Changes with pybis-1.37.5
 
 - Fixes to parents/children addition/deletion
 - Fixed execute_custom_as_service method
 - Fixed metaData attribute for internal types
+- Improvements to dataset archiving methods
 
 
 ## Changes with pybis-1.37.4
