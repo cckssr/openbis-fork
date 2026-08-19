@@ -16,7 +16,8 @@ individual terms.
       "@type": "rdf:Property",
       "schema:rangeIncludes": {
         "@id": "openBIS:termINSTRUMENT"
-      }
+      },
+      "rdfs:comment": "Specific instrument used."
     },
     {
       "@id": "openBIS:termINSTRUMENT",
@@ -56,6 +57,8 @@ interface IVocabularyType
 {
     String getId();
 
+    String getDescription();
+
     String getLabel();
 
     List<IVocabularyTerm> getTerms();
@@ -66,6 +69,8 @@ interface IVocabularyTerm
     String getId();
 
     String getLabel();
+
+    String getDescription();
 }
 
 
@@ -77,7 +82,7 @@ interface IVocabularyTerm
 interface IPropertyType
 {
 
-    void addVocabularyType(IVocabularyType);
+    void addVocabularyType(IVocabularyType type);
 
 }
 
