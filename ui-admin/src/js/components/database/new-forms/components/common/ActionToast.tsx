@@ -30,7 +30,7 @@ class ActionToastCtx {
     const [alertList, setAlertList] = this.alertListState;
 
     const newAlert = <Alert
-          onClose={()=>{}}
+          onClose={()=>this.remove(newAlert)}
           severity={severity}
           variant="filled"
           sx={{ width: '100%' }}
