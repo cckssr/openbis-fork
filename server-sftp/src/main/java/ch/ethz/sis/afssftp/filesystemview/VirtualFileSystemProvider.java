@@ -91,7 +91,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
             String entityId = entityDescriptor.afsEntity().identifier().orElseThrow();
             String afsPath = entityDescriptor.afsPath();
-            boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
+            boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().entityBasicInfo().mutable();
 
             if ( entityId != null && afsPath != null ) {
                 return sftpFileUtil.createAfsFileChannel(
@@ -138,7 +138,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
             String entityId = entityDescriptor.afsEntity().identifier().orElseThrow();
             String afsPath = entityDescriptor.afsPath();
-            boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
+            boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().entityBasicInfo().mutable();
 
             if (isAfsEntityDataMutable) {
                 sftpListUtil.tryToCreateAfsFileRootIfNecessary(entityId);
@@ -196,7 +196,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
             String entityId = entityDescriptor.afsEntity().identifier().orElseThrow();
             String afsPath = entityDescriptor.afsPath();
-            boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
+            boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().entityBasicInfo().mutable();
 
             if (isAfsEntityDataMutable) {
                 if ( entityId != null && afsPath != null ) {
@@ -252,7 +252,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
 
             String entityId2 = entityDescriptor2.afsEntity().identifier().orElseThrow();
             String afsPath2 = entityDescriptor2.afsPath();
-            boolean isAfsEntity2DataMutable = entityDescriptor2.afsEntity().mutable();
+            boolean isAfsEntity2DataMutable = entityDescriptor2.afsEntity().entityBasicInfo().mutable();
 
             if (isAfsEntity2DataMutable) {
                 if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
@@ -287,11 +287,11 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         ) {
             String entityId1 = entityDescriptor1.afsEntity().identifier().orElseThrow();
             String afsPath1 = entityDescriptor1.afsPath();
-            boolean isAfsEntity1DataMutable = entityDescriptor1.afsEntity().mutable();
+            boolean isAfsEntity1DataMutable = entityDescriptor1.afsEntity().entityBasicInfo().mutable();
 
             String entityId2 = entityDescriptor2.afsEntity().identifier().orElseThrow();
             String afsPath2 = entityDescriptor2.afsPath();
-            boolean isAfsEntity2DataMutable = entityDescriptor2.afsEntity().mutable();
+            boolean isAfsEntity2DataMutable = entityDescriptor2.afsEntity().entityBasicInfo().mutable();
 
             if (isAfsEntity1DataMutable && isAfsEntity2DataMutable) {
                 if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {

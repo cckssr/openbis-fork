@@ -604,12 +604,8 @@ public class SftpListUtilTest extends TestCase {
                     }
 
                     Mockito.clearInvocations(openBISClientMock);
-                    FtpPathLister.EntityDescriptor spaceEntityDescriptor = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.SPACE,
-                            Optional.of("space_1"), Optional.empty(), Optional.empty(), Optional.empty(),
-                            Optional.of("space_1"), Optional.empty(), false, null, null
-                    );
-                    SftpListUtil.EntityBasicInfo spaceBasicInfo = sftpListUtil.checkExistence(spaceEntityDescriptor);
+                    Optional<String> spaceIdentifier = Optional.of("space_1");
+                    SftpListUtil.EntityBasicInfo spaceBasicInfo = sftpListUtil.checkExistence(SftpNode.Type.SPACE, spaceIdentifier);
                     assertEquals(exists, spaceBasicInfo.exists());
                     assertEquals(exists ? modificationTs : null, spaceBasicInfo.lastModificationMillis());
                     assertEquals(exists ? registrationTs : null, spaceBasicInfo.registrationMillis());
@@ -618,12 +614,8 @@ public class SftpListUtilTest extends TestCase {
                     assertEquals("SPACE_1", ((SpacePermId) getSpacesArg.getValue().get(0)).getPermId());
 
                     Mockito.clearInvocations(openBISClientMock);
-                    FtpPathLister.EntityDescriptor projectEntityDescriptor = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.PROJECT,
-                            Optional.of("space_1"), Optional.of("project_1"), Optional.empty(), Optional.empty(),
-                            Optional.of("/SPACE_1/PROJECT_1"), Optional.empty(), false, null, null
-                    );
-                    SftpListUtil.EntityBasicInfo projectBasicInfo = sftpListUtil.checkExistence(projectEntityDescriptor);
+                    Optional<String> projectIdentifier = Optional.of("/space_1/project_1");
+                    SftpListUtil.EntityBasicInfo projectBasicInfo = sftpListUtil.checkExistence(SftpNode.Type.PROJECT, projectIdentifier);
                     assertEquals(exists, projectBasicInfo.exists());
                     assertEquals(exists ? modificationTs : null, projectBasicInfo.lastModificationMillis());
                     assertEquals(exists ? registrationTs : null, projectBasicInfo.registrationMillis());
@@ -632,12 +624,8 @@ public class SftpListUtilTest extends TestCase {
                     assertEquals("/SPACE_1/PROJECT_1", ((ProjectIdentifier) getProjectsArg.getValue().get(0)).getIdentifier());
 
                     Mockito.clearInvocations(openBISClientMock);
-                    FtpPathLister.EntityDescriptor experimentEntityDescriptor = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.EXPERIMENT,
-                            Optional.of("space_1"), Optional.of("project_1"), Optional.of("experiment_1"), Optional.empty(),
-                            Optional.of("experiment_1"), Optional.of("experiment_name"), false, null, null
-                    );
-                    SftpListUtil.EntityBasicInfo experimentBasicInfo = sftpListUtil.checkExistence(experimentEntityDescriptor);
+                    Optional<String> experimentIdentifier = Optional.of("experiment_1");
+                    SftpListUtil.EntityBasicInfo experimentBasicInfo = sftpListUtil.checkExistence(SftpNode.Type.EXPERIMENT, experimentIdentifier);
                     assertEquals(exists, experimentBasicInfo.exists());
                     assertEquals(exists ? modificationTs : null, experimentBasicInfo.lastModificationMillis());
                     assertEquals(exists ? registrationTs : null, experimentBasicInfo.registrationMillis());
@@ -646,24 +634,16 @@ public class SftpListUtilTest extends TestCase {
                     assertEquals("EXPERIMENT_1", ((ExperimentPermId) getExperimentsArg.getValue().get(0)).getPermId());
 
                     Mockito.clearInvocations(openBISClientMock);
-                    FtpPathLister.EntityDescriptor experimentEntityDescriptorWithoutId = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.EXPERIMENT,
-                            Optional.of("space_1"), Optional.of("project_1"), Optional.of("experiment_1"), Optional.empty(),
-                            Optional.empty(), Optional.of("experiment_name"), false, null, null
-                    );
-                    experimentBasicInfo = sftpListUtil.checkExistence(experimentEntityDescriptorWithoutId);
+                    Optional<String> experimentIdentifierEmpty = Optional.empty();
+                    experimentBasicInfo = sftpListUtil.checkExistence(SftpNode.Type.EXPERIMENT, experimentIdentifierEmpty);
                     assertFalse(experimentBasicInfo.exists());
                     assertEquals(null, experimentBasicInfo.lastModificationMillis());
                     assertEquals(null, experimentBasicInfo.registrationMillis());
                     Mockito.verify(openBISClientMock, Mockito.times(0)).getExperiments(Mockito.any(), Mockito.any());
 
                     Mockito.clearInvocations(openBISClientMock);
-                    FtpPathLister.EntityDescriptor sampleEntityDescriptor = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.SAMPLE,
-                            Optional.of("space_1"), Optional.of("project_1"), Optional.of("experiment_1"), Optional.empty(),
-                            Optional.of("sample_1"), Optional.of("sample_name"), false, null, null
-                    );
-                    SftpListUtil.EntityBasicInfo sampleBasicInfo = sftpListUtil.checkExistence(sampleEntityDescriptor);
+                    Optional<String> sampleIdentifier = Optional.of("sample_1");
+                    SftpListUtil.EntityBasicInfo sampleBasicInfo = sftpListUtil.checkExistence(SftpNode.Type.SAMPLE, sampleIdentifier);
                     assertEquals(exists, sampleBasicInfo.exists());
                     assertEquals(exists ? modificationTs : null, sampleBasicInfo.lastModificationMillis());
                     assertEquals(exists ? registrationTs : null, sampleBasicInfo.registrationMillis());
@@ -672,24 +652,16 @@ public class SftpListUtilTest extends TestCase {
                     assertEquals("SAMPLE_1", ((SamplePermId) getSamplesArg.getValue().get(0)).getPermId());
 
                     Mockito.clearInvocations(openBISClientMock);
-                    FtpPathLister.EntityDescriptor sampleEntityDescriptorWithoutId = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.SAMPLE,
-                            Optional.of("space_1"), Optional.of("project_1"), Optional.of("experiment_1"), Optional.empty(),
-                            Optional.empty(), Optional.of("sample_name"), false, null, null
-                    );
-                    sampleBasicInfo = sftpListUtil.checkExistence(sampleEntityDescriptorWithoutId);
+                    Optional<String> sampleIdentifierEmpty = Optional.empty();
+                    sampleBasicInfo = sftpListUtil.checkExistence(SftpNode.Type.SAMPLE, sampleIdentifierEmpty);
                     assertFalse(sampleBasicInfo.exists());
                     assertEquals(null, sampleBasicInfo.lastModificationMillis());
                     assertEquals(null, sampleBasicInfo.registrationMillis());
                     Mockito.verify(openBISClientMock, Mockito.times(0)).getSamples(Mockito.any(), Mockito.any());
 
                     Mockito.clearInvocations(openBISClientMock);
-                    FtpPathLister.EntityDescriptor folderEntityDescriptor = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.FOLDER,
-                            Optional.of("space_1"), Optional.of("project_1"), Optional.of("experiment_1"), Optional.empty(),
-                            Optional.of("folder_1"), Optional.of("folder_name"), false, null, null
-                    );
-                    SftpListUtil.EntityBasicInfo folderBasicInfo = sftpListUtil.checkExistence(folderEntityDescriptor);
+                    Optional<String> folderIdentifier = Optional.of("folder_1");
+                    SftpListUtil.EntityBasicInfo folderBasicInfo = sftpListUtil.checkExistence(SftpNode.Type.FOLDER, folderIdentifier);
                     assertEquals(exists, folderBasicInfo.exists());
                     assertEquals(exists ? modificationTs : null, folderBasicInfo.lastModificationMillis());
                     assertEquals(exists ? registrationTs : null, folderBasicInfo.registrationMillis());
@@ -698,24 +670,16 @@ public class SftpListUtilTest extends TestCase {
                     assertEquals("FOLDER_1", ((SamplePermId) getFolderArg.getValue().get(0)).getPermId());
 
                     Mockito.clearInvocations(openBISClientMock);
-                    FtpPathLister.EntityDescriptor folderEntityDescriptorWithoutId = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.FOLDER,
-                            Optional.of("space_1"), Optional.of("project_1"), Optional.of("experiment_1"), Optional.empty(),
-                            Optional.empty(), Optional.of("folder_name"), false, null, null
-                    );
-                    folderBasicInfo = sftpListUtil.checkExistence(folderEntityDescriptorWithoutId);
+                    Optional<String> folderIdentifierEmpty = Optional.empty();
+                    folderBasicInfo = sftpListUtil.checkExistence(SftpNode.Type.FOLDER, folderIdentifierEmpty);
                     assertFalse(folderBasicInfo.exists());
                     assertEquals(null, folderBasicInfo.lastModificationMillis());
                     assertEquals(null, folderBasicInfo.registrationMillis());
                     Mockito.verify(openBISClientMock, Mockito.times(0)).getSamples(Mockito.any(), Mockito.any());
 
                     Mockito.clearInvocations(openBISClientMock);
-                    FtpPathLister.EntityDescriptor datasetEntityDescriptor = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.DATA_SET,
-                            Optional.of("space_1"), Optional.of("project_1"), Optional.of("experiment_1"), Optional.of("sample_1"),
-                            Optional.of("dataset_1"), Optional.empty(), false, null, null
-                    );
-                    SftpListUtil.EntityBasicInfo datasetBasicInfo = sftpListUtil.checkExistence(datasetEntityDescriptor);
+                    Optional<String> datasetIdentifier = Optional.of("dataset_1");
+                    SftpListUtil.EntityBasicInfo datasetBasicInfo = sftpListUtil.checkExistence(SftpNode.Type.DATA_SET, datasetIdentifier);
                     assertEquals(exists, datasetBasicInfo.exists());
                     assertEquals(exists ? modificationTs : null, datasetBasicInfo.lastModificationMillis());
                     assertEquals(exists ? registrationTs : null, datasetBasicInfo.registrationMillis());
@@ -724,12 +688,8 @@ public class SftpListUtilTest extends TestCase {
                     assertEquals("DATASET_1", ((DataSetPermId) getDatasetsArg.getValue().get(0)).getPermId());
 
                     Mockito.clearInvocations(openBISClientMock);
-                    FtpPathLister.EntityDescriptor datasetEntityDescriptorWithoutId = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.DATA_SET,
-                            Optional.of("space_1"), Optional.of("project_1"), Optional.of("experiment_1"), Optional.of("sample_1"),
-                            Optional.empty(), Optional.empty(), false, null, null
-                    );
-                    assertFalse(sftpListUtil.checkExistence(datasetEntityDescriptorWithoutId).exists());
+                    Optional<String> datasetIdentifierEmpty = Optional.empty();
+                    assertFalse(sftpListUtil.checkExistence(SftpNode.Type.DATA_SET, datasetIdentifierEmpty).exists());
                     Mockito.verify(openBISClientMock, Mockito.times(0)).getDataSets(Mockito.any(), Mockito.any());
                 }
             }

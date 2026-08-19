@@ -1,5 +1,6 @@
 package ch.ethz.sis.afssftp.filesystemview;
 
+import ch.ethz.sis.afssftp.util.SftpListUtil;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -50,16 +51,12 @@ public interface FtpPathLister {
             // in cases like entity creation or renaming, it represents the desired new name
             Optional<String> name,
 
-            // This property is required only for types:
-            // FOLDER, SAMPLE, EXPERIMENT, DATA_SET
-            // and specifically means: whether the entity is mutable-data.
-            // If cases, when the identifier of the entity is missing, like for example
-            // at creation of FOLDER, SAMPLE, EXPERIMENT, DATA_SET,
-            // this is not relevant
-            boolean mutable,
-
             // These properties are required only for type AFS_FILE
             EntityDescriptor afsEntity,
-            String afsPath
+            String afsPath,
+
+            // This property is required (and makes sense) only for types:
+            // SPACE, PROJECT, FOLDER, SAMPLE, EXPERIMENT, DATA_SET
+            SftpListUtil.EntityBasicInfo entityBasicInfo
     ){}
 }

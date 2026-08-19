@@ -265,29 +265,6 @@ public class SftpListUtil {
         };
     }
 
-    public boolean isAfsEntityMutable(@NonNull String entityPermId, @NonNull SftpNode.Type type) {
-        return switch (type) {
-            case SAMPLE, FOLDER -> {
-                OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
-
-                SamplePermId sampleId = new SamplePermId(entityPermId);
-                yield  Optional.ofNullable(
-                                openBIS.getSamples(List.of(sampleId), new SampleFetchOptions()).get(sampleId)
-                        ).map(sample -> !sample.isImmutableData()).orElse(false);
-            }
-            case EXPERIMENT -> {
-                OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
-
-                ExperimentPermId experimentId = new ExperimentPermId(entityPermId);
-                yield  Optional.ofNullable(
-                                openBIS.getExperiments(List.of(experimentId), new ExperimentFetchOptions()).get(experimentId)
-                        ).map(exp -> !exp.isImmutableData()).orElse(false);
-            }
-            case DATA_SET -> false;
-            default -> false;
-        };
-    }
-
     public @NonNull File[] listAfsFiles(@NonNull String afsEntityId, @NonNull String absoluteAfsFilePath) {
         try {
             return openBISClientUtil.getAfsClient(user).list(afsEntityId, absoluteAfsFilePath, false);
@@ -465,10 +442,10 @@ public class SftpListUtil {
         ).map(String::trim).filter(str -> !str.isEmpty()).orElse(null);
     }
 
-    public EntityBasicInfo checkExistence(@NonNull FtpPathLister.EntityDescriptor entityDescriptor) {
-        return switch (entityDescriptor.type()) {
+    public EntityBasicInfo checkExistence(@NonNull SftpNode.Type type, @NonNull Optional<String> identifier) {
+        return switch (type) {
             case SPACE -> {
-                SpacePermId spacePermId = new SpacePermId(entityDescriptor.identifier().orElseThrow());
+                SpacePermId spacePermId = new SpacePermId(identifier.orElseThrow());
                 Space space = openBISClientUtil.getOpenBISClient(user).getSpaces(
                         Collections.singletonList(
                                 spacePermId
@@ -484,12 +461,13 @@ public class SftpListUtil {
                         Optional.ofNullable(space)
                                 .map(Space::getModificationDate)
                                 .map(Date::getTime)
-                                .orElse(null)
+                                .orElse(null),
+                        false
                 );
             }
             case PROJECT -> {
                 ProjectIdentifier projectIdentifier = new ProjectIdentifier(
-                        entityDescriptor.identifier().orElseThrow()
+                        identifier.orElseThrow()
                 );
                 Project project = openBISClientUtil.getOpenBISClient(user).getProjects(
                         Collections.singletonList(
@@ -506,12 +484,13 @@ public class SftpListUtil {
                         Optional.ofNullable(project)
                                 .map(Project::getModificationDate)
                                 .map(Date::getTime)
-                                .orElse(null)
+                                .orElse(null),
+                        false
                 );
             }
             case EXPERIMENT -> {
-                if (entityDescriptor.identifier().isEmpty()) yield new EntityBasicInfo(false, null, null);
-                ExperimentPermId experimentPermId = new ExperimentPermId(entityDescriptor.identifier().orElseThrow());
+                if (identifier.isEmpty()) yield new EntityBasicInfo(false, null, null, false);
+                ExperimentPermId experimentPermId = new ExperimentPermId(identifier.orElseThrow());
                 Experiment experiment = openBISClientUtil.getOpenBISClient(user).getExperiments(
                         Collections.singletonList(
                                 experimentPermId
@@ -527,12 +506,13 @@ public class SftpListUtil {
                         Optional.ofNullable(experiment)
                                 .map(Experiment::getModificationDate)
                                 .map(Date::getTime)
-                                .orElse(null)
+                                .orElse(null),
+                        experiment != null && !experiment.isImmutableData()
                 );
             }
             case SAMPLE, FOLDER -> {
-                if (entityDescriptor.identifier().isEmpty()) yield new EntityBasicInfo(false, null, null);
-                SamplePermId samplePermId = new SamplePermId(entityDescriptor.identifier().orElseThrow());
+                if (identifier.isEmpty()) yield new EntityBasicInfo(false, null, null, false);
+                SamplePermId samplePermId = new SamplePermId(identifier.orElseThrow());
                 Sample sample = openBISClientUtil.getOpenBISClient(user).getSamples(
                         Collections.singletonList(
                                 samplePermId
@@ -548,12 +528,13 @@ public class SftpListUtil {
                         Optional.ofNullable(sample)
                                 .map(Sample::getModificationDate)
                                 .map(Date::getTime)
-                                .orElse(null)
+                                .orElse(null),
+                        sample != null && !sample.isImmutableData()
                 );
             }
             case DATA_SET -> {
-                if (entityDescriptor.identifier().isEmpty()) yield new EntityBasicInfo(false, null, null);
-                DataSetPermId dataSetPermId = new DataSetPermId(entityDescriptor.identifier().orElseThrow());
+                if (identifier.isEmpty()) yield new EntityBasicInfo(false, null, null, false);
+                DataSetPermId dataSetPermId = new DataSetPermId(identifier.orElseThrow());
                 DataSet dataSet = openBISClientUtil.getOpenBISClient(user).getDataSets(
                             Collections.singletonList(
                                     dataSetPermId
@@ -569,10 +550,11 @@ public class SftpListUtil {
                         Optional.ofNullable(dataSet)
                                 .map(DataSet::getModificationDate)
                                 .map(Date::getTime)
-                                .orElse(null)
+                                .orElse(null),
+                        false
                 );
             }
-            default -> new EntityBasicInfo(false, null, null);
+            default -> new EntityBasicInfo(false, null, null, false);
         };
     }
 
@@ -776,6 +758,7 @@ public class SftpListUtil {
     public record EntityBasicInfo(
             boolean exists,
             Long registrationMillis,
-            Long lastModificationMillis
+            Long lastModificationMillis,
+            boolean mutable
     ) {}
 }
