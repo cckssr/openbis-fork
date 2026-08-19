@@ -174,7 +174,7 @@ Manages automatic saving of form data to localStorage.
 const { loadFromStorage, clearStorage } = useAutoSave({
   form,
   originalForm,
-  storageKey: `form-data-${entityKind}-${permId}-${user}`,
+  storageKey: `form-data:${entityKind}:${permId}:${user}`,
   isEnabled: isAutoSaveEnabled,
   interval: 5000, // 5 seconds
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
@@ -296,7 +296,7 @@ const handleSave = async () => {
 
 **Key Implementation Details**:
 - Preference key format: `new-forms:auto-save-enabled:${user}:${entityKind}:${permId || 'unknown'}`
-- Draft key format: `form-data-${entityKind}-${permId || 'new'}-${user}`
+- Draft key format: `form-data:${entityKind}:${permId || 'new'}:${user}`
 - Preference is removed (not set to false) when disabled to keep localStorage clean
 - Draft is cleared when preference is disabled
 - See [AUTOSAVE_FEATURE.md](../AUTOSAVE_FEATURE.md) for complete documentation
