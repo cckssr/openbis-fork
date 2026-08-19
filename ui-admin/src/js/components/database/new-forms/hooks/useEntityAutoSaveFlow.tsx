@@ -114,8 +114,8 @@ export function useEntityAutoSaveFlow({
   const storageKey = useMemo(() => {
     // Draft (auto-saved form data) key — keep separate from preference key.
     return isCreateMode
-      ? `form-data-${entityKind}-${entityType}-${user}`
-      : `form-data-${entityKind}-${permId || 'new'}-${user}`
+      ? `form-data:${entityKind}:${entityType}:${user}`
+      : `form-data:${entityKind}:${permId || 'new'}:${user}`
   }, [entityKind, entityType, permId, user, isCreateMode])
 
   // ----- Slot ownership heartbeat (CREATE mode only) -----

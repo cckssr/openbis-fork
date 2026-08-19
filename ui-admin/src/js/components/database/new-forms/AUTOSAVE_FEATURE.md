@@ -74,8 +74,8 @@ Value:
 Used by: `useAutoSave`
 
 Key format:
-- EDIT/VIEW: `form-data-${entityKind}-${permId || 'new'}-${user}`
-- CREATE: `form-data-${entityKind}-${entityType}-${user}` (no `permId`, but `entityType` instead —
+- EDIT/VIEW: `form-data:${entityKind}:${permId || 'new'}:${user}`
+- CREATE: `form-data:${entityKind}:${entityType}:${user}` (no `permId`, but `entityType` instead —
   see "CREATE mode" below)
 
 Value (shape):
