@@ -76,7 +76,7 @@ def exportSciCat(context, params):
         try:
             exportSciCat_withEmail(context, params, date)
         except Throwable as e:
-            print("SciCat export thread failed:" + e)
+            print("SciCat export thread failed: %s" % e)
             OPERATION_LOG.error("SciCat export thread failed %s" % e)
         finally:
             print("SciCat export thread done. Starting time: " + dateStr + " token: "+sessionToken)
@@ -123,13 +123,15 @@ def createNewPublication(sessionToken, v3, properties, collectorIds):
         if exportablePermId.getExportableKind() == ExportableKind.SAMPLE:
             sampleIds.append(exportablePermId.getPermId())
     sampleCreation.setProperty('PUBLICATION.OPENBIS_RELATED_OBJECTS', sampleIds)
-    print("SAMPLE_CREATION", sampleCreation.getProperties())
+
+    print("Creation of publication sample for SciCat: " + str(sampleCreation))
+    OPERATION_LOG.info("Creation of publication sample for SciCat %s" % sampleCreation)
     try:
         id = v3.createSamples(sessionToken, [sampleCreation])
         print("ID:", id)
         return resultDict(id.get(0).getPermId())
     except Throwable as e:
-        print("Creation of publication sample failed:" + e)
+        print("Creation of publication sample for SciCat failed %s" % e)
         OPERATION_LOG.error("Creation of publication sample for SciCat failed %s" % e)
         return resultDict(None, e)
 
@@ -156,16 +158,14 @@ def exportSciCat_withEmail(context, params, date):
     print("Received publication properties:", publicationProps)
     OPERATION_LOG.info("Received publication properties:" + str(publicationProps))
     publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds)
-    print("PUBLICATION_RESULT", publicationResult)
-    OPERATION_LOG.info("PUBLICATION_RESULT" + str(publicationResult))
+    OPERATION_LOG.info("Publication creation result: " + str(publicationResult))
     if publicationResult["error"] is not None:
-        sendMailFailure(mailClient, userEmail, "SciCat export failed during creation of publication with exception:\n" + publicationResult["error"])
+        errorStr = str(publicationResult["error"])
+        sendMailFailure(mailClient, userEmail, "SciCat export failed during creation of publication with exception:\n" + errorStr)
         return
 
-    print("PUBLICATION_RESULT", publicationResult)
-
     publicationPermId = publicationResult["result"]
-    OPERATION_LOG.info("PUBLICATION_PERMID: " + publicationPermId)
+    OPERATION_LOG.info("PUBLICATION_PERMID: %s" % publicationPermId)
 
     exportData = params.get("exportData")
     nodeExportList = exportData['nodeExportList']
@@ -173,28 +173,30 @@ def exportSciCat_withEmail(context, params, date):
     print("nodeExportList", nodeExportList)
 
     roCrateExport = exportRoCrate(context, params, False)
-    OPERATION_LOG.info("RO_CRATE_RESULT: " + str(roCrateExport))
+    OPERATION_LOG.info("RO_CRATE_RESULT: %s" % str(roCrateExport))
 
     if roCrateExport["error"] is not None:
-        sendMailFailure(mailClient, userEmail, "SciCat export failed during RO-Crate step with exception:\n" + roCrateExport["error"])
+        errorStr = str(roCrateExport["error"])
+        sendMailFailure(mailClient, userEmail, "SciCat export failed during RO-Crate step with exception:\n" + errorStr)
         return
 
     jobId = roCrateExport["result"]["jobId"]
     download_result = getRoCrateExportToWorkspace(context, Map.of("jobId", jobId, 'openbis.job.time', dateStr))
-    OPERATION_LOG.info("RO_CRATE_DOWNLOAD: " + str(download_result))
+    OPERATION_LOG.info("RO_CRATE_DOWNLOAD: %s" % str(download_result))
 
     if download_result["error"] is not None:
-        sendMailFailure(mailClient, userEmail, "SciCat export failed while getting RO-Crate export with exception:\n" + download_result["error"])
+        errorStr = str(download_result["error"])
+        sendMailFailure(mailClient, userEmail, "SciCat export failed while getting RO-Crate export with exception:\n" + errorStr)
         return
 
     OPERATION_LOG.info("Sending Ro-Crate to SciCat.")
     sciCatOutput = sendToSciCat(context, Map.of("accessToken", params.get("accessToken"), "fileName", download_result["result"]))
 
-    OPERATION_LOG.info("SCI-CAT Output: " + str(sciCatOutput))
-
+    OPERATION_LOG.info("SCI-CAT Output: %s" % str(sciCatOutput))
 
     if "error" in sciCatOutput:
-        sendMailFailure(mailClient, userEmail, "SciCat export failed during sending data with exception:\n" + sciCatOutput["error"])
+        errorStr = str(sciCatOutput["error"])
+        sendMailFailure(mailClient, userEmail, "SciCat export failed during sending data with exception:\n" + errorStr)
         return
 
     # sendMail(mailClient, userEmail, "Your export has been received by SciCat, once it is imported, you will receive another email.", "SciCat received your export:\n")
@@ -233,7 +235,7 @@ def exportSciCat_withEmail(context, params, date):
 
     else:
         status = "Status:" + str(status) + "\n"
-        sendMailFailure(mailClient, userEmail, "SciCat returned unexpected response:\n" + status + body)
+        sendMailFailure(mailClient, userEmail, "SciCat returned unexpected %s response:\n%s" % (status, body))
 
 
 def collectExportIds(v3, sessionToken, exportData):
@@ -294,7 +296,7 @@ def getRoCrateExportToWorkspace(context, params):
 
         result = checkStatues(context, params, jobId)
         print(result)
-        OPERATION_LOG.info("RO_CRATE_SATUS:" + str(result))
+        OPERATION_LOG.info("RO_CRATE_SATUS: %s" % str(result))
         if result["error"] is not None:
             return resultDict(None, result["error"])
         if result["result"]["status"] and result["result"]["status"] == "COMPLETED":
@@ -323,8 +325,8 @@ def getRoCrateExportToWorkspace(context, params):
     file_path = Path.of(session_workspace.toPath().toString(), file_name)
 
     if file_path.toFile().exists() == False:
-        OPERATION_LOG.error("Could not find file: " + path)
-        return resultDict(None, "Could not find file: " + path)
+        OPERATION_LOG.error("Could not find file: %s" % path)
+        return resultDict(None, "Could not find file: %s" % path)
 
     return resultDict(file_name)
 
@@ -437,7 +439,7 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
     path = Path.of(file_path)
 
     if path.toFile().exists() == False:
-        return resultDict(None, "Could not find file: " + path)
+        return resultDict(None, "Could not find file: %s" % path)
 
     if proxy_host is None or proxy_host == "":
         client = HttpClient.newHttpClient()
@@ -469,7 +471,7 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
     OPERATION_LOG.info("SciCat status: %s upload response: %s" % (status, response.body()))
     if status >= 300:
         if response.body() == u'':
-            error_message = "HTTP status:" + str(status)
+            error_message = "HTTP status: %s" % str(status)
         else:
             body = json.loads(response.body())
             if 'message' in body:
