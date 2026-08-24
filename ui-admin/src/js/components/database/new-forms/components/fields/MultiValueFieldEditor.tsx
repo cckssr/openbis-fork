@@ -5,7 +5,7 @@ import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel.jsx';
 import Typography from "@mui/material/Typography";
 
 interface MultiValueFieldEditorProps {
-  label: string;
+  label?: string;
   required?: boolean;
   values: any[];
   onChange: (values: any[]) => void;

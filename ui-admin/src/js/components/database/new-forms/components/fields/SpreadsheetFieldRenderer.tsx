@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Box from '@mui/material/Box';
 import { Typography } from '@mui/material';
 import { FieldRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts';
@@ -21,6 +21,20 @@ export const SpreadsheetFieldRenderer: React.FC<FieldRendererProps> = ({
 }) => {
   const isEditing = mode === FormMode.EDIT || mode === FormMode.CREATE;
   const editable = isEditing && !field.readOnly;
+
+  // `SpreadsheetField` is an uncontrolled widget (jspreadsheet-ce reads `value` only once, on
+  // mount - see its own useEffect) - it never re-syncs if `field.value` changes externally, e.g.
+  // an auto-save restore. Track the value this renderer itself last emitted via onChange, so an
+  // external change (restore) can be told apart from the roundtrip of the user's own edit (which
+  // arrives back as the very same object reference); only the former bumps the remount key,
+  // forcing SpreadsheetField to destroy/recreate and pick up the new value. Mirrors
+  // MultiValueFieldEditor's analogous `values`-resync effect for the multi-value case below.
+  const lastEmittedRef = useRef<any>(field.value);
+  const remountKeyRef = useRef(0);
+  if (field.value !== lastEmittedRef.current) {
+    remountKeyRef.current += 1;
+    lastEmittedRef.current = field.value;
+  }
 
   const label: React.JSX.Element = (
     <Typography
@@ -83,10 +97,13 @@ export const SpreadsheetFieldRenderer: React.FC<FieldRendererProps> = ({
         }}>
           {label}
           <SpreadsheetField
-              key={editable ? 'edit' : 'view'}
+              key={`${editable ? 'edit' : 'view'}-${remountKeyRef.current}`}
               value={field.value}
               editable={editable}
-              onChange={(spreadsheet: any) => onFieldChange(field.id, spreadsheet)}
+              onChange={(spreadsheet: any) => {
+                lastEmittedRef.current = spreadsheet;
+                onFieldChange(field.id, spreadsheet);
+              }}
           />
         </Box>
     );
