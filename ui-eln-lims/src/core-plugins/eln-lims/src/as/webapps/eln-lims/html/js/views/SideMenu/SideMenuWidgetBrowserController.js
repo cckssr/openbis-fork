@@ -3169,7 +3169,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
     _createRoCrateImportNode() {
         return {
-            text: "Ro-Crate",
+            text: "RO-Crate",
             object: {
                 type: this.TYPE_IMPORT_RO_CRATE,
                 id: this.TYPE_IMPORT_RO_CRATE,

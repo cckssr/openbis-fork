@@ -169,6 +169,11 @@ public class Writer
             facade.addPropertyType(rdfsProperty);
 
         }
+        for (IVocabularyType vocabularyType : mapResult.getSchema().getVocabularyTypes())
+        {
+            facade.addVocabularyType(vocabularyType);
+
+        }
 
     }
 

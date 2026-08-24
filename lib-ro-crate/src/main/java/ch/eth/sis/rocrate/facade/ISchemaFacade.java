@@ -21,11 +21,16 @@ public interface ISchemaFacade
     /* Adds a single property */
     void addPropertyType(IPropertyType property);
 
+    void addVocabularyType(IVocabularyType type);
+
+
     /* Adds a restriction */
     void addRestriction(IRestriction restriction);
 
     /* Get all Properties */
     List<IPropertyType> getPropertyTypes();
+
+    List<IVocabularyType> getVocabularyTypes();
 
     /* Gets a single property by its ID. */
     IPropertyType getPropertyType(String id);

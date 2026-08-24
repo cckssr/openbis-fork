@@ -201,9 +201,9 @@ class OpenBisObject:
         deletion_id = self.openbis.delete_openbis_entity(
             entity=self._entity, objectId=self.data["permId"], reason=reason
         )
-        log_info(f"{self._entity} {self.permId} successfully deleted.")
+        log_info(f"{self._entity} {self.permId} successfully deleted. Deletion id: {deletion_id}")
 
-        if permanently:
+        if permanently and deletion_id is not None:
             self.openbis.confirm_deletions([deletion_id])
             log_info(f"{self._entity} {self.permId} successfully deleted permanently.")
 

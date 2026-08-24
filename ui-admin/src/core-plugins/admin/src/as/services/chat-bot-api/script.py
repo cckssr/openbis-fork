@@ -1,6 +1,9 @@
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
 
-chatBotLlmServerUrl = CommonServiceProvider.tryToGetProperty("admin.as.chat-bot-api.chat-bot-llm-server-url", "https://chat-bot-server:8080/query")
+from java.net import URL
+import json
+
+chatBotLlmServerUrl = CommonServiceProvider.tryToGetProperty("admin.as.chat-bot-api.chat-bot-llm-server-url", "http://localhost:8080/api/v1/query")
 
 def process(context, parameters):
     method = parameters.get("method")
@@ -11,14 +14,51 @@ def process(context, parameters):
 
     return result
 
+
 def getAsk(context, parameters):
     message = parameters.get("query")
-    session_id = parameters.get("session_id")
-    if session_id is None:
-        session_id = "test-session-id"
-
-    answer = "This is your answer with " + str(session_id) + " and " + str(chatBotLlmServerUrl) + " to: " + str(message)
+    code, response = http_post(chatBotLlmServerUrl, json_data=json.dumps({
+        "question": message,
+        "openbis_version": "7.x"
+    }))
     return {
-    "answer" : answer,
-    "sessionId" : session_id
+        "answer" : response,
     }
+
+def http_post(url, json_data):
+
+    from java.net import URL
+    from java.io import BufferedReader, InputStreamReader
+
+    connection = URL(url).openConnection()
+    connection.setRequestMethod("POST")
+    connection.setDoOutput(True)
+    connection.setRequestProperty("Content-Type", "application/json")
+    connection.setRequestProperty("Accept", "application/json")
+    connection.setConnectTimeout(10000)
+    connection.setReadTimeout(130000)
+
+    output = connection.getOutputStream()
+    output.write(json_data.encode("UTF-8"))
+    output.close()
+
+    response_code = connection.getResponseCode()
+
+    reader = BufferedReader(
+        InputStreamReader(connection.getInputStream(), "UTF-8")
+    )
+
+    lines = []
+    line = reader.readLine()
+
+    while line is not None:
+        lines.append(line)
+        line = reader.readLine()
+
+    reader.close()
+    connection.disconnect()
+
+    response = json.loads("\n".join(lines))
+
+
+    return response_code, response["answer"]

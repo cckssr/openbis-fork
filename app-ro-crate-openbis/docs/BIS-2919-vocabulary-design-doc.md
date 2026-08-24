@@ -16,7 +16,8 @@ individual terms.
       "@type": "rdf:Property",
       "schema:rangeIncludes": {
         "@id": "openBIS:termINSTRUMENT"
-      }
+      },
+      "rdfs:comment": "Specific instrument used."
     },
     {
       "@id": "openBIS:termINSTRUMENT",
@@ -33,12 +34,14 @@ individual terms.
     {
       "@id": "openBIS:termINSTRUMENT_CALORIMETER",
       "@type": "owl:NamedIndividual",
-      "rdfs:label": "Calorimeter"
+      "rdfs:label": "Calorimeter",
+      "rdfs:comment": "We use a bomb calorimeter"
     },
     {
       "@id": "openBIS:termINSTRUMENT_GAS_CHROMATOGRAPH",
       "@type": "owl:NamedIndividual",
-      "rdfs:label": "Gas chromatograph"
+      "rdfs:label": "Gas chromatograph",
+      "rdfs:comment": "A chromatograph with a long tube"
     }
   ]
 }
@@ -54,6 +57,8 @@ interface IVocabularyType
 {
     String getId();
 
+    String getDescription();
+
     String getLabel();
 
     List<IVocabularyTerm> getTerms();
@@ -64,6 +69,8 @@ interface IVocabularyTerm
     String getId();
 
     String getLabel();
+
+    String getDescription();
 }
 
 
@@ -75,7 +82,7 @@ interface IVocabularyTerm
 interface IPropertyType
 {
 
-    void addVocabularyType(IVocabularyType);
+    void addVocabularyType(IVocabularyType type);
 
 }
 

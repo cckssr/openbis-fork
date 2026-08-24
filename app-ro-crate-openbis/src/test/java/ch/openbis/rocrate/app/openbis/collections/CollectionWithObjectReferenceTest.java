@@ -85,7 +85,7 @@ public class CollectionWithObjectReferenceTest
                 experiment.getProperties().size()); // Empty properties are not included
         Assert.assertEquals("Collection Name",
                 experiment.getProperties().get("NAME").toString());
-        Assert.assertEquals(15, experimentType.getPropertyAssignments().size()); // excluding NAME
+        Assert.assertEquals(16, experimentType.getPropertyAssignments().size()); // excluding NAME
         String val = ((Serializable[]) experiment.getProperties()
                 .get("DEFAULT_EXPERIMENT.OBJECT"))[0].toString();
         Assert.assertEquals("/DEFAULT/DEFAULT/ENTRY6", val);

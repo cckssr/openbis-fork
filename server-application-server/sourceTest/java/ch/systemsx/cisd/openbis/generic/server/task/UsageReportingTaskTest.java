@@ -59,6 +59,8 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
 {
     private static final String D = UsageReportingTask.DELIM;
 
+    private static final String N = "null";
+
     private BufferedAppender logRecorder;
 
     private File configFile;
@@ -155,10 +157,11 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         attachmentRecorder.getRecordedObjects().get(0).writeTo(baos);
         assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
-                + "number of new collections" + D + "number of new objects" + D + "number of new data sets\n"
-                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "7" + D + "10" + D + "6\n"
-                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1\n"
-                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "B" + D + "2" + D + D + "5" + D + "0" + D + "0\n", baos.toString());
+                + "number of new collections" + D + "number of new objects" + D + "number of new data sets" + D
+                + "space access" + D + "project access" + D + "experiment access" + D + "sample access" + D + "data sets access" + "\n"
+                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "7" + D + "10" + D + "6" + D + D + D + D + D +"\n"
+                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "B" + D + "2" + D + D + "5" + D + "0" + D + "0" + D + N + D + N + D + N + D + N + D + N + "\n", baos.toString());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
         assertEquals(2, attachmentRecorder.getRecordedObjects().size());
@@ -207,13 +210,14 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         attachmentRecorder.getRecordedObjects().get(0).writeTo(baos);
         assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
-                + "number of new collections" + D + "number of new objects" + D + "number of new data sets\n"
-                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "2" + D + "15" + D + "6\n"
-                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1\n"
-                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "B" + D + "2" + D + D + "0" + D + "5" + D + "0\n"
-                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1\n"
-                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "u2" + D + "1" + D + D + "0" + D + "11" + D + "5\n"
-                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "u3" + D + "1" + D + D + "0" + D + "3" + D + "0\n", baos.toString());
+                + "number of new collections" + D + "number of new objects" + D + "number of new data sets" + D
+                + "space access" + D + "project access" + D + "experiment access" + D + "sample access" + D + "data sets access" + "\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "2" + D + "15" + D + "6" + D + D + D + D + D +"\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "B" + D + "2" + D + D + "0" + D + "5" + D + "0" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "u2" + D + "1" + D + D + "0" + D + "11" + D + "5" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "u3" + D + "1" + D + D + "0" + D + "3" + D + "0" + D + N + D + N + D + N + D + N + D + N + "\n", baos.toString());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
         assertEquals(2, attachmentRecorder.getRecordedObjects().size());
@@ -268,13 +272,14 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         attachmentRecorder.getRecordedObjects().get(0).writeTo(baos);
         assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
-                + "number of new collections" + D + "number of new objects" + D + "number of new data sets" + D + "total number of entities\n"
-                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "2" + D + "13" + D + "6" + D + "91\n"
-                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1" + D + "35\n"
-                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "B" + D + "2" + D + "u2 u3" + D + "0" + D + "0" + D + "0" + D + "37\n"
-                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1" + D + "14\n"
-                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "u2" + D + "1" + D + D + "0" + D + "9" + D + "5" + D + "23\n"
-                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "u3" + D + "1" + D + D + "0" + D + "3" + D + "0" + D + "33\n", baos.toString());
+                + "number of new collections" + D + "number of new objects" + D + "number of new data sets" + D + "total number of entities" + D
+                + "space access" + D + "project access" + D + "experiment access" + D + "sample access" + D + "data sets access" + "\n"
+                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "2" + D + "13" + D + "6" + D + "91" + D + D + D + D + D +"\n"
+                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1" + D + "35" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "B" + D + "2" + D + "u2 u3" + D + "0" + D + "0" + D + "0" + D + "37" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1" + D + "14" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "u2" + D + "1" + D + D + "0" + D + "9" + D + "5" + D + "23" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1970-01-04 00:00:00" + D + "1970-01-11 00:00:00" + D + "u3" + D + "1" + D + D + "0" + D + "3" + D + "0" + D + "33" + D + N + D + N + D + N + D + N + D + N + "\n", baos.toString());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
         assertEquals(2, attachmentRecorder.getRecordedObjects().size());
@@ -323,12 +328,13 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         attachmentRecorder.getRecordedObjects().get(0).writeTo(baos);
         assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
-                + "number of new collections" + D + "number of new objects" + D + "number of new data sets\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "2" + D + "10" + D + "11\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "B" + D + "2" + D + D + "0" + D + "0" + D + "5\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u1" + D + "1" + D + D + "0" + D + "1" + D + "0\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u2" + D + "1" + D + D + "0" + D + "9" + D + "5\n", baos.toString());
+                + "number of new collections" + D + "number of new objects" + D + "number of new data sets" + D
+                + "space access" + D + "project access" + D + "experiment access" + D + "sample access" + D + "data sets access" + "\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "2" + D + "10" + D + "11" + D + D + D + D + D +"\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "B" + D + "2" + D + D + "0" + D + "0" + D + "5" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u1" + D + "1" + D + D + "0" + D + "1" + D + "0" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u2" + D + "1" + D + D + "0" + D + "9" + D + "5" + D + N + D + N + D + N + D + N + D + N + "\n", baos.toString());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
         assertEquals(2, attachmentRecorder.getRecordedObjects().size());
@@ -369,11 +375,12 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         attachmentRecorder.getRecordedObjects().get(1).writeTo(baos);
         assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
-                + "number of new collections" + D + "number of new objects" + D + "number of new data sets\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "4" + D + "u4" + D + "7" + D + "3" + D + "6\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u2" + D + "1" + D + D + "2" + D + "2" + D + "5\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u3" + D + "1" + D + D + "3" + D + "0" + D + "0\n", baos.toString());
+                + "number of new collections" + D + "number of new objects" + D + "number of new data sets" + D
+                + "space access" + D + "project access" + D + "experiment access" + D + "sample access" + D + "data sets access" + "\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "4" + D + "u4" + D + "7" + D + "3" + D + "6" + D + D + D + D + D +"\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u2" + D + "1" + D + D + "2" + D + "2" + D + "5" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u3" + D + "1" + D + D + "3" + D + "0" + D + "0" + D + N + D + N + D + N + D + N + D + N + "\n", baos.toString());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
         assertEquals(2, attachmentRecorder.getRecordedObjects().size());
@@ -415,11 +422,12 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         attachmentRecorder.getRecordedObjects().get(1).writeTo(baos);
         assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
-                + "number of new collections" + D + "number of new objects" + D + "number of new data sets\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "4" + D + "u4" + D + "7" + D + "3" + D + "6\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u2" + D + "1" + D + D + "2" + D + "2" + D + "5\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u3" + D + "1" + D + D + "3" + D + "0" + D + "0\n", baos.toString());
+                + "number of new collections" + D + "number of new objects" + D + "number of new data sets" + D
+                + "space access" + D + "project access" + D + "experiment access" + D + "sample access" + D + "data sets access" + "\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "4" + D + "u4" + D + "7" + D + "3" + D + "6" + D + D + D + D + D +"\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u2" + D + "1" + D + D + "2" + D + "2" + D + "5" + D + N + D + N + D + N + D + N + D + N + "\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u3" + D + "1" + D + D + "3" + D + "0" + D + "0" + D + N + D + N + D + N + D + N + D + N + "\n", baos.toString());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
         assertEquals(2, attachmentRecorder.getRecordedObjects().size());

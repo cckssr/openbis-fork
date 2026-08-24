@@ -1,6 +1,8 @@
 package ch.eth.sis.rocrate;
 
 import ch.eth.sis.rocrate.facade.*;
+import ch.eth.sis.rocrate.facade.impl.VocabularyTerm;
+import ch.eth.sis.rocrate.facade.impl.VocabularyType;
 import ch.eth.sis.rocrate.schemaorg.SchemaOrgInformation;
 import ch.eth.sis.rocrate.schemaorg.SchemaOrgPropertyResolver;
 import ch.eth.sis.rocrate.schemaorg.SchemaOrgReader;
@@ -11,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
+import edu.kit.datamanager.ro_crate.entities.contextual.ContextualEntity;
 import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +75,8 @@ public class SchemaFacade implements ISchemaFacade
 
     private Map<String, String> identifiersToShorten;
 
+    private Map<String, IVocabularyType> vocabularyTypes;
+
     private final RoCrate crate;
 
     private SchemaOrgInformation schema_org_information;
@@ -102,6 +107,7 @@ public class SchemaFacade implements ISchemaFacade
         this.types = new LinkedHashMap<>();
         this.propertyTypes = new LinkedHashMap<>();
         this.metadataEntries = new LinkedHashMap<>();
+        this.vocabularyTypes = new LinkedHashMap<>();
     }
 
     public SchemaFacade(RoCrate crate)
@@ -199,6 +205,31 @@ public class SchemaFacade implements ISchemaFacade
     }
 
     @Override
+    public void addVocabularyType(IVocabularyType type)
+    {
+        {
+            ContextualEntity.ContextualEntityBuilder contextualEntityBuilder =
+                    new ContextualEntity.ContextualEntityBuilder();
+            contextualEntityBuilder.setId(type.getId());
+            contextualEntityBuilder.addType("owl:Class");
+            contextualEntityBuilder.addProperty(RDFS_COMMENT, type.getDescription());
+            for (IVocabularyTerm term : type.getTerms())
+            {
+                contextualEntityBuilder.addIdProperty("owl:oneOf", term.getId());
+                ContextualEntity.ContextualEntityBuilder termBuilder =
+                        new ContextualEntity.ContextualEntityBuilder();
+                termBuilder.setId(term.getId());
+                termBuilder.addType("owl:namedIndividual");
+                termBuilder.addProperty(RDFS_LABEL, term.getLabel());
+                termBuilder.addProperty("rdfs:comment", term.getDescription());
+                crate.addContextualEntity(termBuilder.build());
+            }
+
+            crate.addContextualEntity(contextualEntityBuilder.build());
+        }
+    }
+
+    @Override
     public void addRestriction(IRestriction restriction)
     {
 
@@ -208,6 +239,12 @@ public class SchemaFacade implements ISchemaFacade
     public List<IPropertyType> getPropertyTypes()
     {
         return propertyTypes.values().stream().toList();
+    }
+
+    @Override
+    public List<IVocabularyType> getVocabularyTypes()
+    {
+        return vocabularyTypes.values().stream().toList();
     }
 
     @Override
@@ -377,6 +414,39 @@ public class SchemaFacade implements ISchemaFacade
 
         }
 
+        if (this.vocabularyTypes == null)
+        {
+            this.vocabularyTypes = new LinkedHashMap<>();
+        }
+        for (AbstractEntity abstractEntity : abstractEntities)
+        {
+            List<String> strings = RoCrateValueUtil.parseMultiValued(abstractEntity, "@type");
+            if (strings.size() == 1 && strings.contains("owl:Class"))
+            {
+                List<IVocabularyTerm> terms =
+                        abstractEntity.getLinkedTo().stream()
+                                .map(x -> abstractEntities.stream().filter(y -> y.getId().equals(x))
+                                        .findFirst().orElseThrow())
+                                .filter(Objects::nonNull)
+                                .filter(x -> RoCrateValueUtil.parseMultiValued(x, "@type")
+                                        .contains("owl:namedIndividual"))
+                                .map(x -> new VocabularyTerm(x.getId(),
+                                        RoCrateValueUtil.parseMultiValued(x, "rdfs:label")
+                                                .stream().findFirst().orElse(null),
+                                        RoCrateValueUtil.parseMultiValued(x, "rdfs:comment")
+                                                .stream().findFirst().orElse(null)))
+                                .collect(Collectors.toList());
+                String comment =
+                        RoCrateValueUtil.parseMultiValued(abstractEntity, RDFS_COMMENT).getFirst();
+                IVocabularyType vocabularyType =
+                        new VocabularyType(abstractEntity.getId(), comment, terms);
+                vocabularyTypes.put(vocabularyType.getId(), vocabularyType);
+
+            }
+
+        }
+
+
         for (AbstractEntity entity : abstractEntities)
         {
             String type = entity
@@ -410,9 +480,18 @@ public class SchemaFacade implements ISchemaFacade
                         .filter(x -> !LiteralType.isLiteralType(x))
                         .map(this::resolvePrefixSingleValue)
                         .map(idsToTypes::get)
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList());
 
+                List<IVocabularyType> vocaTypes = rawRange.stream()
+                        .filter(x -> !LiteralType.isLiteralType(x))
+                        .map(vocabularyTypes::get)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+
+
                 dataTypes.stream().forEach(rdfsProperty::addDataType);
+                vocaTypes.forEach(rdfsProperty::addVocabularyType);
                 types.forEach(rdfsProperty::addType);
 
                 Stream<String> domain =

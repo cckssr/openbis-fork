@@ -11,7 +11,10 @@ public class PropertyType implements IPropertyType
 
     List<IType> rangeIncludes;
 
-    List<IDataType> rangeeIndlucesDataType;
+    List<IDataType> rangeIncludesDataType;
+
+    List<IVocabularyType> rangeIncludesVocabularies;
+
 
     String id;
 
@@ -25,8 +28,9 @@ public class PropertyType implements IPropertyType
     public PropertyType()
     {
         this.rangeIncludes = new ArrayList<>();
-        this.rangeeIndlucesDataType = new ArrayList<>();
+        this.rangeIncludesDataType = new ArrayList<>();
         this.ontologicalAnnotations = new ArrayList<>();
+        this.rangeIncludesVocabularies = new ArrayList<>();
 
     }
 
@@ -56,9 +60,10 @@ public class PropertyType implements IPropertyType
     public List<String> getRange()
     {
         System.out.println(this.id);
-        Stream<String> a = rangeIncludes.stream().map(x -> x.getId());
-        Stream<String> b = rangeeIndlucesDataType.stream().map(x -> x.getTypeName());
-        return Stream.concat(a, b).collect(Collectors.toList());
+        Stream<String> a = rangeIncludes.stream().map(IType::getId);
+        Stream<String> b = rangeIncludesDataType.stream().map(IDataType::getTypeName);
+        Stream<String> c = rangeIncludesVocabularies.stream().map(IVocabularyType::getId);
+        return Stream.concat(c, Stream.concat(a, b)).collect(Collectors.toList());
 
 
     }
@@ -93,20 +98,28 @@ public class PropertyType implements IPropertyType
 
     public void setTypes(List<IDataType> types)
     {
-        this.rangeeIndlucesDataType = new ArrayList<>(types);
+        this.rangeIncludesDataType = new ArrayList<>(types);
     }
 
     public void addDataType(IDataType type)
     {
-        if (this.rangeeIndlucesDataType == null)
+        if (this.rangeIncludesDataType == null)
         {
-            this.rangeeIndlucesDataType = new ArrayList<>();
+            this.rangeIncludesDataType = new ArrayList<>();
         }
-        if (!rangeeIndlucesDataType.contains(type))
+        if (!rangeIncludesDataType.contains(type))
         {
-            rangeeIndlucesDataType.add(type);
+            rangeIncludesDataType.add(type);
         }
 
+    }
+
+    public void addVocabularyType(IVocabularyType type)
+    {
+        if (!this.rangeIncludesVocabularies.contains(type))
+        {
+            this.rangeIncludesVocabularies.add(type);
+        }
     }
 
     public void addType(IType type)
@@ -119,6 +132,10 @@ public class PropertyType implements IPropertyType
         {
             this.rangeIncludes.add(type);
         }
+    }
+
+    public void addVocabularyType()
+    {
     }
 
     public void setLabel(String label)
@@ -137,7 +154,8 @@ public class PropertyType implements IPropertyType
         return "PropertyType{" +
                 "domainIncludes=" + domainIncludes +
                 ", rangeIncludes=" + rangeIncludes +
-                ", rangeeIndlucesDataType=" + rangeeIndlucesDataType +
+                ", rangeIncludesDataType=" + rangeIncludesDataType +
+                ", rangeIncludesVocabularies=" + rangeIncludesVocabularies +
                 ", id='" + id + '\'' +
                 ", ontologicalAnnotations=" + ontologicalAnnotations +
                 ", label='" + label + '\'' +

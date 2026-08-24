@@ -14,6 +14,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.excel.v3.from.enums.ImportTypes;
 import ch.ethz.sis.openbis.generic.excel.v3.from.enums.ScriptTypes;
 import ch.ethz.sis.openbis.generic.excel.v3.from.helper.*;
@@ -31,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -507,7 +510,11 @@ public class ExcelReader
 
         }
 
-        return new OpenBisModel(Map.of(), schema, spaceResult, projectResult, metadata,
+        Map<VocabularyPermId, Vocabulary> vocabularies =
+                vocabularyHelper.getResult().values().stream().collect(Collectors.toMap(
+                        Vocabulary::getPermId, Function.identity()));
+
+        return new OpenBisModel(vocabularies, schema, spaceResult, projectResult, metadata,
                 scriptHelper.getResults(), miscellaneous, Map.of(), this.files, this.imageFiles);
     }
 

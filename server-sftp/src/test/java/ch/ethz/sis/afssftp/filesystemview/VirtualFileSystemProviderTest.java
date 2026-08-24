@@ -63,7 +63,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                false,
                 new FtpPathLister.EntityDescriptor(
                         SftpNode.Type.EXPERIMENT,
                         Optional.empty(),
@@ -72,11 +71,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                         Optional.empty(),
                         Optional.of("EXPERIMENT_3"),
                         Optional.empty(),
-                        false,
                         null,
-                        null
+                        null,
+                        new SftpListUtil.EntityBasicInfo(true, 123L, 345L, false)
                 ),
-                "/dir/img.png"
+                "/dir/img.png",
+                null
         ))).when(ftpPathLister).toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
 
         AfsFileChannel afsFileChannel1 = new AfsFileChannel("EXPERIMENT_3", "/dir/img.png", user, 0L, true, false);
@@ -101,7 +101,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                false,
                 new FtpPathLister.EntityDescriptor(
                         SftpNode.Type.EXPERIMENT,
                         Optional.empty(),
@@ -110,11 +109,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                         Optional.empty(),
                         Optional.of("EXPERIMENT_3"),
                         Optional.empty(),
-                        true,
                         null,
-                        null
+                        null,
+                        new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
                 ),
-                "/dir/img.png"
+                "/dir/img.png",
+                null
         ))).when(ftpPathLister).toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
 
         AfsFileChannel afsFileChannel2 = new AfsFileChannel("EXPERIMENT_3", "/dir/img.png", user, 0L, false, true);
@@ -147,9 +147,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                     Optional.empty(),
                     Optional.of("identifier"),
                     Optional.empty(),
-                    false,
                     null,
-                    null
+                    null,
+                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, false)
             ))).when(ftpPathLister).toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
 
             Exception exception = null;
@@ -307,7 +307,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                false,
                 new FtpPathLister.EntityDescriptor(
                         SftpNode.Type.EXPERIMENT,
                         Optional.empty(),
@@ -316,11 +315,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                         Optional.empty(),
                         Optional.of("EXPERIMENT_3"),
                         Optional.empty(),
-                        true,
                         null,
-                        null
+                        null,
+                        new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
                 ),
-                "/dir/subdir"
+                "/dir/subdir",
+                null
         );
         Mockito.doReturn(Optional.of(entityDescriptor1)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -341,7 +341,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                false,
                 new FtpPathLister.EntityDescriptor(
                         SftpNode.Type.EXPERIMENT,
                         Optional.empty(),
@@ -350,11 +349,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                         Optional.empty(),
                         Optional.of("EXPERIMENT_3"),
                         Optional.empty(),
-                        true,
                         null,
-                        null
+                        null,
+                        new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
                 ),
-                "/"
+                "/",
+                null
         );
         Mockito.doReturn(Optional.of(entityDescriptor2)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -375,7 +375,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                false,
                 new FtpPathLister.EntityDescriptor(
                         SftpNode.Type.EXPERIMENT,
                         Optional.empty(),
@@ -384,11 +383,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                         Optional.empty(),
                         Optional.of("EXPERIMENT_3"),
                         Optional.empty(),
-                        false,
                         null,
-                        null
+                        null,
+                        new SftpListUtil.EntityBasicInfo(true, 123L, 345L, false)
                 ),
-                "/dir/subdir"
+                "/dir/subdir",
+                null
         );
         Mockito.doReturn(Optional.of(entityDescriptor3)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -415,9 +415,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.of("space_id_1"),
                 Optional.empty(),
-                true,
                 null,
-                null
+                null,
+                new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
         );
         Mockito.doReturn(Optional.of(entityDescriptor4)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -436,9 +436,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.of("/SPACE_1/PROJECT_1"),
                 Optional.empty(),
-                true,
                 null,
-                null
+                null,
+                new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
         );
         Mockito.doReturn(Optional.of(entityDescriptor5)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -457,9 +457,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.of("experiment name!!!"),
-                true,
                 null,
-                null
+                null,
+                new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
         );
         Mockito.doReturn(Optional.of(entityDescriptor6)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -482,9 +482,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                 Optional.ofNullable(withParentSample ? "sample_1" : null),
                                 Optional.empty(),
                                 Optional.of("sample name!!!"),
-                                true,
                                 null,
-                                null
+                                null,
+                                new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
                         );
                         Mockito.doReturn(Optional.of(entityDescriptor7)).when(ftpPathLister)
                                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -518,9 +518,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                     Optional.empty(),
                     Optional.of("id"),
                     Optional.empty(),
-                    true,
                     null,
-                    null
+                    null,
+                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
             );
             Mockito.doReturn(Optional.of(entityDescriptor10)).when(ftpPathLister)
                     .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -578,7 +578,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                false,
                 new FtpPathLister.EntityDescriptor(
                         SftpNode.Type.EXPERIMENT,
                         Optional.empty(),
@@ -587,11 +586,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                         Optional.empty(),
                         Optional.of("EXPERIMENT_3"),
                         Optional.empty(),
-                        true,
                         null,
-                        null
+                        null,
+                        new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
                 ),
-                "/dir/subdir"
+                "/dir/subdir",
+                null
         );
         Mockito.doReturn(Optional.of(entityDescriptor1)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -610,7 +610,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                false,
                 new FtpPathLister.EntityDescriptor(
                         SftpNode.Type.EXPERIMENT,
                         Optional.empty(),
@@ -619,11 +618,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                         Optional.empty(),
                         Optional.of("EXPERIMENT_3"),
                         Optional.empty(),
-                        true,
                         null,
-                        null
+                        null,
+                        new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
                 ),
-                "/"
+                "/",
+                null
         );
         Mockito.doReturn(Optional.of(entityDescriptor2)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -642,7 +642,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                false,
                 new FtpPathLister.EntityDescriptor(
                         SftpNode.Type.EXPERIMENT,
                         Optional.empty(),
@@ -651,11 +650,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                         Optional.empty(),
                         Optional.of("EXPERIMENT_3"),
                         Optional.empty(),
-                        false,
                         null,
-                        null
+                        null,
+                        new SftpListUtil.EntityBasicInfo(true, 123L, 345L, false)
                 ),
-                "/dir/subdir"
+                "/dir/subdir",
+                null
         );
         Mockito.doReturn(Optional.of(entityDescriptor3)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -680,9 +680,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.of("space_id_1"),
                 Optional.empty(),
-                true,
                 null,
-                null
+                null,
+                new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
         );
         Mockito.doReturn(Optional.of(entityDescriptor4)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -701,9 +701,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.of("/SPACE_1/PROJECT_1"),
                 Optional.empty(),
-                true,
                 null,
-                null
+                null,
+                new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
         );
         Mockito.doReturn(Optional.of(entityDescriptor5)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -722,9 +722,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.of("experiment_1"),
                 Optional.empty(),
-                true,
                 null,
-                null
+                null,
+                new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
         );
         Mockito.doReturn(Optional.of(entityDescriptor6)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -743,9 +743,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.of("sample_1"),
                 Optional.empty(),
-                true,
                 null,
-                null
+                null,
+                new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
         );
         Mockito.doReturn(Optional.of(entityDescriptor7)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -764,9 +764,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.of("folder_1"),
                 Optional.empty(),
-                true,
                 null,
-                null
+                null,
+                new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
         );
         Mockito.doReturn(Optional.of(entityDescriptor8)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -785,9 +785,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.of("dataset_1"),
                 Optional.empty(),
-                true,
                 null,
-                null
+                null,
+                new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
         );
         Mockito.doReturn(Optional.of(entityDescriptor9)).when(ftpPathLister)
                 .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -807,9 +807,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                     Optional.empty(),
                     Optional.of("id"),
                     Optional.empty(),
-                    true,
                     null,
-                    null
+                    null,
+                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
             );
             Mockito.doReturn(Optional.of(entityDescriptor10)).when(ftpPathLister)
                     .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments));
@@ -890,7 +890,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                             Optional.empty(),
                                             Optional.empty(),
                                             Optional.empty(),
-                                            false,
                                             new FtpPathLister.EntityDescriptor(
                                                     SftpNode.Type.EXPERIMENT,
                                                     Optional.empty(),
@@ -899,11 +898,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                                     Optional.empty(),
                                                     Optional.of("EXPERIMENT_3"),
                                                     Optional.empty(),
-                                                    isMutableEntityPath1,
                                                     null,
-                                                    null
+                                                    null,
+                                                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, isMutableEntityPath1)
                                             ),
-                                            "/dir/file1"
+                                            "/dir/file1",
+                                            null
                                     ) : new FtpPathLister.EntityDescriptor(
                                             SftpNode.Type.EXPERIMENT,
                                             Optional.empty(),
@@ -912,9 +912,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                             Optional.empty(),
                                             Optional.empty(),
                                             Optional.empty(),
-                                            isMutableEntityPath1,
                                             null,
-                                            null
+                                            null,
+                                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, isMutableEntityPath1)
                                     );
                             Mockito.doReturn(Optional.of(entityDescriptor1)).when(ftpPathLister)
                                     .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments1));
@@ -928,7 +928,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                             Optional.empty(),
                                             Optional.empty(),
                                             Optional.empty(),
-                                            false,
                                             new FtpPathLister.EntityDescriptor(
                                                     SftpNode.Type.EXPERIMENT,
                                                     Optional.empty(),
@@ -937,11 +936,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                                     Optional.empty(),
                                                     Optional.of("EXPERIMENT_4"),
                                                     Optional.empty(),
-                                                    isMutableEntityPath2,
                                                     null,
-                                                    null
+                                                    null,
+                                                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, isMutableEntityPath2)
                                             ),
-                                            "/dir/file2"
+                                            "/dir/file2",
+                                            null
                                     ) : new FtpPathLister.EntityDescriptor(
                                             SftpNode.Type.EXPERIMENT,
                                             Optional.empty(),
@@ -950,9 +950,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                             Optional.empty(),
                                             Optional.of("EXPERIMENT_4"),
                                             Optional.empty(),
-                                            isMutableEntityPath2,
                                             null,
-                                            null
+                                            null,
+                                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, isMutableEntityPath2)
                                     );
                             Mockito.doReturn(Optional.of(entityDescriptor2)).when(ftpPathLister)
                                     .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments2));
@@ -1054,7 +1054,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                             Optional.empty(),
                                             Optional.empty(),
                                             Optional.empty(),
-                                            false,
                                             new FtpPathLister.EntityDescriptor(
                                                     SftpNode.Type.EXPERIMENT,
                                                     Optional.empty(),
@@ -1063,11 +1062,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                                     Optional.empty(),
                                                     Optional.of("EXPERIMENT_3"),
                                                     Optional.empty(),
-                                                    isMutableEntityPath1,
                                                     null,
-                                                    null
+                                                    null,
+                                                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, isMutableEntityPath1)
                                             ),
-                                            "/dir/file1"
+                                            "/dir/file1",
+                                            null
                                     ) : new FtpPathLister.EntityDescriptor(
                                             SftpNode.Type.EXPERIMENT,
                                             Optional.empty(),
@@ -1076,9 +1076,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                             Optional.empty(),
                                             Optional.of("EXPERIMENT_3"),
                                             Optional.empty(),
-                                            isMutableEntityPath1,
                                             null,
-                                            null
+                                            null,
+                                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, isMutableEntityPath1)
                                     );
                             Mockito.doReturn(Optional.of(entityDescriptor1)).when(ftpPathLister)
                                     .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments1));
@@ -1092,7 +1092,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                             Optional.empty(),
                                             Optional.empty(),
                                             Optional.empty(),
-                                            false,
                                             new FtpPathLister.EntityDescriptor(
                                                     SftpNode.Type.EXPERIMENT,
                                                     Optional.empty(),
@@ -1101,11 +1100,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                                     Optional.empty(),
                                                     Optional.of("EXPERIMENT_4"),
                                                     Optional.empty(),
-                                                    isMutableEntityPath2,
                                                     null,
-                                                    null
+                                                    null,
+                                                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, isMutableEntityPath2)
                                             ),
-                                            "/dir/file2"
+                                            "/dir/file2",
+                                            null
                                     ) : new FtpPathLister.EntityDescriptor(
                                             SftpNode.Type.EXPERIMENT,
                                             Optional.empty(),
@@ -1114,9 +1114,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                             Optional.empty(),
                                             Optional.of("EXPERIMENT_4"),
                                             Optional.empty(),
-                                            isMutableEntityPath2,
                                             null,
-                                            null
+                                            null,
+                                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, isMutableEntityPath2)
                                     );
                             Mockito.doReturn(Optional.of(entityDescriptor2)).when(ftpPathLister)
                                     .toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments2));
@@ -1166,9 +1166,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                     Optional.empty(),
                                     identifier1,
                                     Optional.empty(),
-                                    false,
                                     null,
-                                    null
+                                    null,
+                                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, false)
                             ))).when(ftpPathLister).toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments1));
                             Mockito.doReturn(Optional.of(new FtpPathLister.EntityDescriptor(
                                     type2,
@@ -1178,9 +1178,9 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                     Optional.empty(),
                                     identifier2,
                                     Optional.of("New name@@@ #"),
-                                    false,
                                     null,
-                                    null
+                                    null,
+                                    new SftpListUtil.EntityBasicInfo(true, 123L, 345L, false)
                             ))).when(ftpPathLister).toEntityDescriptor(new StandardPathTranslator().fromPathSegments(pathSegments2));
 
                             if (type1 != SftpNode.Type.AFS_FILE && type2 != SftpNode.Type.AFS_FILE) {
@@ -1277,7 +1277,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                false,
                 new FtpPathLister.EntityDescriptor(
                         SftpNode.Type.EXPERIMENT,
                         Optional.empty(),
@@ -1286,11 +1285,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                         Optional.empty(),
                         Optional.empty(),
                         Optional.empty(),
-                        true,
                         null,
-                        null
+                        null,
+                        new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
                 ),
-                "/dir/img.png"
+                "/dir/img.png",
+                null
         );
 
         FtpPathLister.EntityDescriptor entityDescriptor2 = new FtpPathLister.EntityDescriptor(
@@ -1301,7 +1301,6 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                false,
                 new FtpPathLister.EntityDescriptor(
                         SftpNode.Type.EXPERIMENT,
                         Optional.empty(),
@@ -1310,11 +1309,12 @@ public class VirtualFileSystemProviderTest extends TestCase {
                         Optional.empty(),
                         Optional.empty(),
                         Optional.empty(),
-                        true,
                         null,
-                        null
+                        null,
+                        new SftpListUtil.EntityBasicInfo(true, 123L, 345L, true)
                 ),
-                "/dir/img2.png"
+                "/dir/img2.png",
+                null
         );
 
         assertTrue(virtualFileSystemProvider.isSameFile(examplePath1, examplePath1));

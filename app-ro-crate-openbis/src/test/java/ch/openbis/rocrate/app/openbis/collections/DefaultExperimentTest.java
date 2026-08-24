@@ -82,7 +82,7 @@ public class DefaultExperimentTest
                 experiment.getProperties().size()); // Empty properties are not included
         Assert.assertEquals("DEFAULT_EXP_1",
                 experiment.getProperties().get("NAME").toString());
-        Assert.assertEquals(14, experimentType.getPropertyAssignments().size()); // excluding NAME
+        Assert.assertEquals(15, experimentType.getPropertyAssignments().size()); // excluding NAME
 
         byte[] convert = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, openBisModel);
         Files.write(Path.of("/tmp/lol.zip"), convert);

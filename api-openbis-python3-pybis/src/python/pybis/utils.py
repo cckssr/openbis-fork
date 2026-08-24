@@ -85,7 +85,8 @@ def parse_jackson(input_json):
         "validationPlugin",
         "dataSetPermId",
         "dataStore",
-        "sampleType"
+        "sampleType",
+        "typeGroup"
     ]
     found = {}
 
@@ -234,7 +235,7 @@ def is_identifier(ident):
 
 
 def is_permid(ident):
-    match = re.match("^\d+\-\d+$", ident)
+    match = re.match(r"^\d+-\d+$", ident)
     if match:
         return True
     else:

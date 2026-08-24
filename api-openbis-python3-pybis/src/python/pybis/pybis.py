@@ -5503,7 +5503,11 @@ class Openbis:
             else:
                 return TypeGroup(self, data=group)
 
-    def search_type_group(self, name):
+    def search_type_groups(self, name):
+
+        wildcards = False
+        if name is not None and "*" in name:
+            wildcards = True
 
         criteria = {
                 '@type' : 'as.dto.typegroup.search.TypeGroupSearchCriteria',
@@ -5513,7 +5517,8 @@ class Openbis:
                     'fieldType': 'ATTRIBUTE',
                     "fieldValue": {
                         "value": name,
-                        "@type": "as.dto.common.search.StringStartsWithValue",
+                        "@type": "as.dto.common.search.StringEqualToValue",
+                        "useWildcards": str(wildcards)
                     },
                 }]
             }
@@ -5539,9 +5544,107 @@ class Openbis:
         }
 
         resp = self._post_request(self.as_v3, request)
+        parse_jackson(resp)
         if resp is not None:
             log_debug("Search type group response: %s" % resp)
-            return resp
+            return self._type_group_list_from_response(resp['objects'], parsed=True)
+
+    def _type_group_list_from_response(
+            self,
+            response,
+            attrs=None,
+            props=None,
+            start_with=None,
+            count=None,
+            totalCount=0,
+            parsed=False,
+    ):
+        if not parsed:
+            parse_jackson(response)
+
+        def create_data_frame(attrs, props, response):
+            """returns a Things object, containing a DataFrame plus additional information"""
+
+            def extract_attribute(attribute_to_extract):
+                def return_attribute(obj):
+                    if obj is None:
+                        return ""
+                    return obj.get(attribute_to_extract, "")
+
+                return return_attribute
+
+            if attrs is None:
+                attrs = []
+            default_attrs = [
+                "id",
+                "code",
+                "registrator",
+                "registrationDate",
+                "modifier",
+                "modificationDate",
+                "managedInternally",
+                "metaData",
+            ]
+            display_attrs = default_attrs + attrs
+            if props is None:
+                props = []
+            else:
+                if isinstance(props, str):
+                    props = [props]
+            if len(response) == 0:
+                for prop in props:
+                    if prop == "*":
+                        continue
+                    display_attrs.append(prop)
+                type_groups = DataFrame(columns=display_attrs)
+            else:
+
+                type_groups = DataFrame(response)
+                for attr in attrs:
+                    if "." in attr:
+                        entity, attribute_to_extract = attr.split(".")
+                        type_groups[attr] = type_groups[entity].map(
+                            extract_attribute(attribute_to_extract)
+                        )
+
+                type_groups["registrationDate"] = type_groups["registrationDate"].map(
+                    format_timestamp
+                )
+                type_groups["modificationDate"] = type_groups["modificationDate"].map(
+                    format_timestamp
+                )
+                type_groups["registrator"] = type_groups["registrator"].map(extract_person)
+                type_groups["modifier"] = type_groups["modifier"].map(extract_person)
+                type_groups["id"] = type_groups["id"].map(extract_permid)
+
+            return type_groups[type_groups.columns.intersection(display_attrs)]
+
+        def create_objects(response):
+            return list(
+                map(
+                    lambda obj: TypeGroup(
+                        openbis_obj=self,
+                        data=obj
+                    ),
+                    response,
+                )
+            )
+
+        result = Things(
+            openbis_obj=self,
+            entity="type_group",
+            identifier_name="code",
+            start_with=start_with,
+            count=count,
+            totalCount=totalCount,
+            response=response,
+            df_initializer=create_data_frame,
+            objects_initializer=create_objects,
+            attrs=attrs,
+            props=props,
+        )
+
+        return result
 
 
     def new_type_group_assignment(self, type_group_name, sample_type_code):
@@ -5654,7 +5757,7 @@ class Openbis:
             log_debug("Get Type Group Assignment response: %s" % resp)
             return resp
 
-    def search_type_group_assignment(self, type_group, sample_type):
+    def search_type_group_assignments(self, type_group="*", sample_type="*"):
 
         criteria = {
                 '@type' : 'as.dto.typegroup.search.TypeGroupAssignmentSearchCriteria',
@@ -5666,7 +5769,8 @@ class Openbis:
                             'fieldType': 'ATTRIBUTE',
                             "fieldValue": {
                                 "value": type_group,
-                                "@type": "as.dto.common.search.StringStartsWithValue",
+                                "@type": "as.dto.common.search.StringEqualToValue",
+                                "useWildcards": type_group is not None and "*" in type_group
                             },
                         }]
                     },
@@ -5678,7 +5782,8 @@ class Openbis:
                              'fieldType': 'ATTRIBUTE',
                              "fieldValue": {
                                  "value": sample_type,
-                                 "@type": "as.dto.common.search.StringStartsWithValue",
+                                 "@type": "as.dto.common.search.StringEqualToValue",
+                                 "useWildcards": sample_type is not None and "*" in sample_type
                              }
                         }]
                     }]
@@ -5706,6 +5811,7 @@ class Openbis:
         }
 
         resp = self._post_request(self.as_v3, request)
+        parse_jackson(resp)
         if resp is not None:
             log_debug("Search Type Group Assignment response: %s" % resp)
             return resp

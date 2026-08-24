@@ -83,7 +83,7 @@ public class CollectionPropertyTest
                 experiment.getProperties().size()); // Empty properties are not included
         Assert.assertEquals("Publications Collection",
                 experiment.getProperties().get("NAME").toString());
-        Assert.assertEquals(2, experimentType.getPropertyAssignments().size()); // excluding NAME
+        Assert.assertEquals(3, experimentType.getPropertyAssignments().size()); // excluding NAME
 
         byte[] convert = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, openBisModel);
         Files.write(Path.of("/tmp/lol.zip"), convert);

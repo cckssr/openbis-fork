@@ -30,6 +30,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
@@ -130,6 +132,9 @@ public class RdfToModel
                 codeToType,
                 schema, identifierToCollectionType, openBisDerivedTypes);
 
+        Map<String, Vocabulary> idToVocabulary = schemaFacade.getVocabularyTypes().stream()
+                .collect(Collectors.toMap(IVocabularyType::getId, VocabularyHelper::mapVocabulary));
+
         Map<IType, List<String>> typesToProperties = new LinkedHashMap<>();
         for (IPropertyType typeProperty : typeProperties)
         {
@@ -213,7 +218,6 @@ public class RdfToModel
 
         }
 
-
         Map<String, List<FileProblem>> identifierToMissingFile = new LinkedHashMap<>();
         for (IMetadataEntry entry : entries)
         {
@@ -233,8 +237,11 @@ public class RdfToModel
         Map<String, String> collect = externalIdentifierToSample.entrySet().stream()
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().getCode()));
 
+        Map<VocabularyPermId, Vocabulary> voacbularies = idToVocabulary.values().stream()
+                .collect(Collectors.toMap(x -> x.getPermId(), Function.identity()));
         OpenBisModel openBisModel =
-                new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
+                new OpenBisModel(voacbularies, schema, spaces, projects, metadata, Map.of(),
+                        Map.of(),
                         collect,
                         objectIdentifiersToFiles, objectIdentifiersTOImageFiles);
 
@@ -308,6 +315,7 @@ public class RdfToModel
                     sampleType.setSemanticAnnotations(newAnnotations);
 
                 });
+                ExternalIdentifierHelper.setAdditionalPropertyTypes(sampleType);
 
             }
             if (kind == EntityKind.EXPERIMENT)
@@ -325,7 +333,6 @@ public class RdfToModel
                 experimentType.setPermId(new EntityTypePermId(type.getId(), kind));
                 entityTypeToRdfIdentifier.put(type.getId(), experimentType.getPermId());
 
-
                 if (isOpenBisDerivedType(type))
                 {
                     schema.put(experimentType.getPermId(), experimentType);
@@ -333,8 +340,10 @@ public class RdfToModel
                 identifierToCollectionType.put(type.getId(), experimentType);
                 if (!codeToType.codeToExperimentType.containsKey(experimentType.getCode()))
                 {
-                codeToType.codeToExperimentType.put(experimentType.getCode(), experimentType);
+                    codeToType.codeToExperimentType.put(experimentType.getCode(), experimentType);
                 }
+                ExternalIdentifierHelper.setAdditionalPropertyTypes(experimentType);
+
             }
 
         }
@@ -538,8 +547,7 @@ public class RdfToModel
                             propertyAssignment.getSemanticAnnotations());
                     newAssignment.setUnique(propertyAssignment.isUnique());
                     newAssignment.setEntityType(sampleType1);
-                    if (assignments.stream().noneMatch(
-                            x -> x.getPropertyType().equals(newAssignment.getPropertyType())))
+                    if (isNotYetAdded(propertyAssignment, assignments, newAssignment))
                     {
                         assignments.add(newAssignment);
                     }
@@ -559,6 +567,16 @@ public class RdfToModel
                 sampleType.setSemanticAnnotations(deduplicatedAnnotations);
             }
         }
+    }
+
+    private static boolean isNotYetAdded(PropertyAssignment propertyAssignment,
+            List<PropertyAssignment> assignments, PropertyAssignment newAssignment)
+    {
+        return assignments.stream().noneMatch(
+                x -> x.getPropertyType()
+                        .equals(newAssignment.getPropertyType())) && assignments.stream()
+                .noneMatch(x -> x.getPropertyType().getCode()
+                        .equals(propertyAssignment.getPropertyType().getCode()));
     }
 
     /**
@@ -697,6 +715,7 @@ public class RdfToModel
                             sample.getCode()); // We need a name to construct certain paths inside the zip
                 }
                 sample.setProperties(properties);
+                ExternalIdentifierHelper.setProperty(entity, entry);
 
                 properties.get("SPACE");
                 ReferencesToResolve referencesToResolve =
@@ -753,7 +772,6 @@ public class RdfToModel
 
                 experimentsToProjects.put(experiment, projectIdentifier);
 
-
                 handleProperties(baseCodeToPossibleDataTypes, idToEntities, entry, properties,
                         objectReferencesToResolve,
                         experiment);
@@ -766,8 +784,8 @@ public class RdfToModel
                                 .orElse(OpenBisStructureHelper.getDefaultExperimentType());
                 experiment.setType(type);
 
-
                 res.add(experiment);
+                ExternalIdentifierHelper.setProperty(experiment, entry);
 
             }
 

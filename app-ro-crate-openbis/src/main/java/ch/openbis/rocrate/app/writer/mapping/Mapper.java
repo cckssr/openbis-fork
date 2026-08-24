@@ -18,9 +18,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
+import ch.openbis.rocrate.app.writer.mapping.helper.RoCrateVocabularyHelper;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
@@ -40,6 +42,8 @@ import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static ch.openbis.rocrate.app.writer.mapping.helper.RoCrateVocabularyHelper.mapVocabularyTypes;
 
 public class Mapper
 {
@@ -144,6 +148,9 @@ public class Mapper
 
         }
 
+        RoCrateVocabularyHelper.VocabularyHelperResult vocabularyHelperResult =
+                mapVocabularyTypes(openBisModel.getVocabularyTypes().values().stream().toList());
+
         for (Map.Entry<String, List<Pair<PropertyAssignment, IType>>> a : classesUsingProperty
                 .entrySet())
         {
@@ -189,6 +196,7 @@ public class Mapper
 
             a.getValue().stream().map(x -> x.getLeft().getPropertyType().getDataType())
                     .filter(x -> x != DataType.SAMPLE)
+                    .filter(x -> x != DataType.CONTROLLEDVOCABULARY)
                     .map(Enum::name)
                     .distinct()
                     .map(this::mapOpenBisToXsdDataTypes)
@@ -200,6 +208,13 @@ public class Mapper
 
             iTypeStream
                     .forEach(rdfsProperty::addType);
+
+            a.getValue().stream().map(Pair::getLeft)
+                    .filter(x -> x.getPropertyType().getDataType() == DataType.CONTROLLEDVOCABULARY)
+                    .map(PropertyAssignment::getPropertyType)
+                    .map(ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType::getVocabulary)
+                    .map(x -> vocabularyHelperResult.typeMap().get(x))
+                    .forEach(rdfsProperty::addVocabularyType);
 
             if (a.getValue().stream().findFirst().get().getLeft().getPropertyType()
                     .getDataType() == DataType.SAMPLE && rdfsProperty.getRange().isEmpty())
@@ -275,7 +290,8 @@ public class Mapper
                 Set<String> referenceTypeNames = openBisModel.getEntityTypes().values().stream()
                         .map(x -> x.getPropertyAssignments())
                         .flatMap(Collection::stream).map(x -> x.getPropertyType())
-                        .filter(x -> x.getDataType().name().startsWith("SAMPLE"))
+                        .filter(x -> x.getDataType().name().startsWith(
+                                "SAMPLE") || x.getDataType() == DataType.CONTROLLEDVOCABULARY)
                         .map(x -> x.getCode())
                         .collect(Collectors.toSet());
 
@@ -359,7 +375,8 @@ public class Mapper
                 Set<String> referenceTypeNames = openBisModel.getEntityTypes().values().stream()
                         .map(x -> x.getPropertyAssignments())
                         .flatMap(Collection::stream).map(x -> x.getPropertyType())
-                        .filter(x -> x.getDataType().name().startsWith("SAMPLE"))
+                        .filter(x -> x.getDataType().name().startsWith(
+                                "SAMPLE") || x.getDataType() == DataType.CONTROLLEDVOCABULARY)
                         .map(x -> x.getCode())
                         .collect(Collectors.toSet());
 
@@ -387,10 +404,32 @@ public class Mapper
                     } else
                     {
 
-                        references.put(propName, extractSerializableList(a.getValue()).stream()
-                                .map(x -> mapValue(x, dataType)).collect(
-                                        Collectors.toList()));
+                        if (dataType == DataType.SAMPLE)
+                        {
+                            references.put(propName, extractSerializableList(a.getValue()).stream()
+                                    .map(x -> mapValue(x, dataType)).collect(
+                                            Collectors.toList()));
 
+                        }
+                        if (dataType == DataType.CONTROLLEDVOCABULARY)
+                        {
+                            ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary
+                                    vocabulary = experiment.getType().getPropertyAssignments()
+                                    .stream()
+                                    .map(x -> x.getPropertyType())
+                                    .filter(x -> x.getCode().equals(a.getKey()))
+                                    .map(x -> x.getVocabulary())
+                                    .findFirst().orElseThrow();
+                            IVocabularyType vocabularyType =
+                                    vocabularyHelperResult.typeMap().get(vocabulary);
+                            VocabularyTerm vocabularyTerm = vocabulary.getTerms().stream()
+                                    .filter(x -> x.getCode().equals(a.getValue().toString()))
+                                    .findFirst().orElseThrow();
+                            ch.eth.sis.rocrate.facade.impl.VocabularyTerm vocabularyTerm1 =
+                                    vocabularyHelperResult.termMap().get(vocabularyTerm);
+                            references.put(propName, List.of(vocabularyTerm1.getId()));
+
+                        }
                     }
 
                 }
@@ -472,10 +511,13 @@ public class Mapper
 
         }
 
+
+
         List<MetadataEntry> metaDataEntries = new ArrayList<>(idToMetadataEntryMap.values());
 
         return new MapResult(
-                new RdfsSchema(new ArrayList<>(classes.values()), properties),
+                new RdfsSchema(new ArrayList<>(classes.values()), properties,
+                        vocabularyHelperResult.typeMap().values().stream().toList()),
                 new MappingInfo(reverseMapping, rdfsPropertiesUsedIn), metaDataEntries, files);
     }
 
@@ -522,10 +564,7 @@ public class Mapper
 
     }
 
-    IType mapOpenBisToRdfType()
-    {
-        return null;
-    }
+
 
     IDataType mapOpenBisToXsdDataTypes(String openBisType)
     {
@@ -540,10 +579,6 @@ public class Mapper
             case BOOLEAN ->
             {
                 return LiteralType.BOOLEAN;
-            }
-            case CONTROLLEDVOCABULARY ->
-            {
-                return LiteralType.STRING;
             }
             case INTEGER ->
             {
