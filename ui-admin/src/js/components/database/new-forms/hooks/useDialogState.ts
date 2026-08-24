@@ -24,6 +24,10 @@ export interface DialogState {
     entityKind: string | null;
     actionName: string | null;
   };
+  export: {
+    isOpen: boolean;
+    info: any | null;
+  };
 }
 
 const initialDialogState: DialogState = {
@@ -44,6 +48,10 @@ const initialDialogState: DialogState = {
     isOpen: false,
     entityKind: null,
     actionName: null,
+  },
+  export: {
+    isOpen: false,
+    info: null,
   },
 };
 
@@ -117,6 +125,21 @@ export const useDialogState = () => {
     }));
   }, []);
 
+  // Export dialog actions
+  const openExportDialog = useCallback((info: any) => {
+    setDialogs(prev => ({
+      ...prev,
+      export: { isOpen: true, info },
+    }));
+  }, []);
+
+  const closeExportDialog = useCallback(() => {
+    setDialogs(prev => ({
+      ...prev,
+      export: { isOpen: false, info: null },
+    }));
+  }, []);
+
   return {
     dialogs,
     // New dialog
@@ -132,6 +155,9 @@ export const useDialogState = () => {
     // Move dialog
     openMoveDialog,
     closeMoveDialog,
+    // Export dialog
+    openExportDialog,
+    closeExportDialog
   };
 };
 

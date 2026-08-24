@@ -140,10 +140,13 @@ export class SpaceFormController implements IFormController {
     };
   }
 
-
   async move(form: Form, context?: any, params?: any): Promise<void> {
     // Spaces are root-level entities and cannot be moved
     throw new Error('Spaces cannot be moved. They are root-level entities in the openBIS hierarchy.');
+  }
+
+  async export(form: Form): Promise<void> {
+    throw new Error('Not implemented.');
   }
 
 }

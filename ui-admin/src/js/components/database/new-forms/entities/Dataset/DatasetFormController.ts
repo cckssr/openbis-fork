@@ -250,4 +250,8 @@ export class DatasetFormController implements IFormController {
 		}
 		return Promise.resolve();
 	}
+
+	async export(form: Form): Promise<void> {
+		throw new Error('Not implemented.');
+	}
 }

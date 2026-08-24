@@ -78,16 +78,16 @@ export class CoreFormModel {
 		context.setAutoSaveEnabled(!context.isAutoSaveEnabled);
 	};
 
-	static deleteAction = (context: IExtendedActionContext) => {
-		context.controller.delete(context.form, context);
+	static deleteAction = async (context: IExtendedActionContext) => {
+		await context.controller.delete(context.form, context);
 	};
 
 	static unknownAction = (actionName: string) => {
 		alert(`Unknown action: ${actionName}`);
 	};
 
-	static moveAction = (context: IExtendedActionContext) => {
-		context.controller.move(context.form);
+	static moveAction = async (context: IExtendedActionContext) => {
+		await context.controller.move(context.form);
 	};
 
 	/* 	static newEntityAction = (context: IExtendedActionContext, selectedEntityType: string) => {
@@ -152,4 +152,9 @@ export class CoreFormModel {
 			throw new Error("onNewDataset callback not provided to context.");
 		}	
 	};
+
+	static exportAction: (context: IExtendedActionContext) => void = async (context: IExtendedActionContext) => {
+		await context.controller.export(context.form);
+	};
+
 }
