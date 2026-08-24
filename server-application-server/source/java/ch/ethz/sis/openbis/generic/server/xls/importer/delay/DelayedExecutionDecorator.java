@@ -1468,6 +1468,12 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
     {
         List<SemanticAnnotation> annotations = null;
         SemanticAnnotationSearchCriteria criteria = new SemanticAnnotationSearchCriteria();
+        SemanticAnnotationFetchOptions fetchOptions = new SemanticAnnotationFetchOptions();
+        fetchOptions.withEntityType();
+        fetchOptions.withPropertyType();
+        fetchOptions.withPropertyAssignment().withEntityType();
+        fetchOptions.withPropertyAssignment().withPropertyType();
+
         switch (type) {
             case EntityType:
                 if(entityTypeToSemanticAnnotationMap.containsKey(permIdOrNull)) {
@@ -1475,7 +1481,7 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
                 } else {
                     criteria.withEntityType().withKind().thatEquals(permIdOrNull.getEntityKind());
                     criteria.withEntityType().withCode().thatEquals(permIdOrNull.getPermId());
-                    annotations = searchSemanticAnnotations(criteria, new SemanticAnnotationFetchOptions());
+                    annotations = searchSemanticAnnotations(criteria, fetchOptions);
                 }
                 entityTypeToSemanticAnnotationMap.put(permIdOrNull, annotations);
                 break;
@@ -1484,7 +1490,7 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
                     annotations = propertyTypeToSemanticAnnotationMap.get(propertyCodeOrNull);
                 } else {
                     criteria.withPropertyType().withCode().thatEquals(propertyCodeOrNull);
-                    annotations = searchSemanticAnnotations(criteria, new SemanticAnnotationFetchOptions());
+                    annotations = searchSemanticAnnotations(criteria, fetchOptions);
                 }
                 propertyTypeToSemanticAnnotationMap.put(propertyCodeOrNull, annotations);
                 break;
@@ -1496,7 +1502,7 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
                     criteria.withEntityType().withKind().thatEquals(permIdOrNull.getEntityKind());
                     criteria.withEntityType().withCode().thatEquals(permIdOrNull.getPermId());
                     criteria.withPropertyType().withCode().thatEquals(propertyCodeOrNull);
-                    annotations = searchSemanticAnnotations(criteria, new SemanticAnnotationFetchOptions());
+                    annotations = searchSemanticAnnotations(criteria, fetchOptions);
                 }
                 propertyAssignmentToSemanticAnnotationMap.put(key, annotations);
                 break;
