@@ -265,7 +265,8 @@ public class SyncJobFormDialogStep implements DialogStep<SyncJobDialogContext, S
                                     new SyncJobSessionChoiceResult(
                                             true,
                                             availableSession
-                                    )
+                                    ),
+                                    context.acceptedValidityMillisLeftForPATs()
                             ),
                             newSyncJob
                         )

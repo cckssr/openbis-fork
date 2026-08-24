@@ -14,7 +14,7 @@ import java.util.List;
 public class SettingsTest extends DriveTestCase {
     @Test
     public void testGettingSyncJobs() {
-        Settings settings = new Settings(true, "it", 60, null, new ArrayList<>(List.of("aaa", "bbb")));
+        Settings settings = new Settings(true, "it", 60, null, new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
         Assert.assertEquals(Collections.emptyList(), settings.getJobs());
     }
 }

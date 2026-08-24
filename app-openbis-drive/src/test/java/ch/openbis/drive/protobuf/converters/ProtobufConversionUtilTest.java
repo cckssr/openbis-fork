@@ -75,7 +75,7 @@ public class ProtobufConversionUtilTest extends DriveTestCase {
     public void toProtobufSettings() {
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-        )), new ArrayList<>(List.of("aaa", "bbb")));
+        )), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
 
         DriveApiService.Settings protobufSettings = ProtobufConversionUtil.toProtobufSettings(settings, "seCReT".getBytes(StandardCharsets.UTF_8));
 

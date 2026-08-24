@@ -9,6 +9,7 @@ message Settings {
     SyncJobs jobs = 4;
     IgnoredPathPatterns ignored_path_patterns = 5;
     optional bytes client_secret = 6;
+    optional int32 expiring_session_warning_days = 7;
 }
 
 message SyncJob {

@@ -10,6 +10,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.search.PersonalAccessTokenSe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.openbis.drive.DriveTestCase;
+import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
 import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
 import org.mockito.ArgumentCaptor;
@@ -177,6 +178,9 @@ public class OpenBISQueryUtilTest extends DriveTestCase {
         SyncJob syncJob6 = new SyncJob();
         syncJob6.setOpenBisUrl("https://myopenbis5.example.com");
         syncJob6.setOpenBisPersonalAccessToken("pat-6");
+        SyncJob syncJob7 = new SyncJob();
+        syncJob6.setOpenBisUrl("https://myopenbis7.example.com");
+        syncJob6.setOpenBisPersonalAccessToken("pat-7");
 
         Date validUntil1 = new Date(System.currentTimeMillis() + 100000);
         Mockito.doReturn(new OpenBISQueryUtil.PATCheckResult(
@@ -217,14 +221,22 @@ public class OpenBISQueryUtilTest extends DriveTestCase {
                 validUntil3
         )).when(openBISQueryUtil).checkPAT("https://myopenbis5.example.com", "pat-6");
 
+        Date validUntil4 = new Date(System.currentTimeMillis() + 80000);
+        Mockito.doReturn(new OpenBISQueryUtil.PATCheckResult(
+                OpenBISQueryUtil.PATCheckResultEnum.OK,
+                "user3",
+                validUntil4
+        )).when(openBISQueryUtil).checkPAT("https://myopenbis7.example.com", "pat-7");
+
         Set<OpenBISQueryUtil.AvailableSession> availableSessionSet = openBISQueryUtil.getAvailableSessions(List.of(
                 syncJob1,
                 syncJob2,
                 syncJob3,
                 syncJob4,
                 syncJob5,
-                syncJob6
-        ));
+                syncJob6,
+                syncJob7
+        ), 90000);
 
         assertEquals(Set.of(
                 new OpenBISQueryUtil.AvailableSession(
@@ -249,7 +261,7 @@ public class OpenBISQueryUtilTest extends DriveTestCase {
         Mockito.doReturn("session-tkn").when(openbisClientMock).login("user1", "pWd");
 
         Date validUntil = new Date(System.currentTimeMillis()
-                + OpenBISQueryUtil.PAT_MINIMUM_LEFT_VALIDITY_MILLIS
+                + Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS * 24 * 60 * 60 * 1000
                 + 1000000
         );
         PersonalAccessToken personalAccessToken = new PersonalAccessToken();
@@ -264,7 +276,7 @@ public class OpenBISQueryUtilTest extends DriveTestCase {
                 ArgumentCaptor.forClass(PersonalAccessTokenSearchCriteria.class);
 
         OpenBISQueryUtil.NewSessionResult newSessionResult = openBISQueryUtil.getNewSession(
-                "https://myopenbis.example.com", "user1", "pWd");
+                "https://myopenbis.example.com", "user1", "pWd", Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS * 24 * 60 * 60 * 1000);
         Mockito.verify(openBISQueryUtil, Mockito.times(1)).getOpenbisClient("https://myopenbis.example.com");
         Mockito.verify(openbisClientMock, Mockito.times(1)).login("user1", "pWd");
         Mockito.verify(openbisClientMock, Mockito.times(1)).searchPersonalAccessTokens(
@@ -290,7 +302,7 @@ public class OpenBISQueryUtilTest extends DriveTestCase {
         Mockito.doReturn("session-tkn").when(openbisClientMock).login("user1", "pWd");
 
         Date validUntil = new Date(System.currentTimeMillis()
-                + OpenBISQueryUtil.PAT_MINIMUM_LEFT_VALIDITY_MILLIS
+                + Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS * 24 * 60 * 60 * 1000
                 - 1000
         );
         PersonalAccessToken personalAccessToken = new PersonalAccessToken();
@@ -314,7 +326,7 @@ public class OpenBISQueryUtilTest extends DriveTestCase {
                 ArgumentCaptor.forClass(List.class);
 
         OpenBISQueryUtil.NewSessionResult newSessionResult = openBISQueryUtil.getNewSession(
-                "https://myopenbis.example.com", "user1", "pWd");
+                "https://myopenbis.example.com", "user1", "pWd", Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS * 24 * 60 * 60 * 1000);
         Mockito.verify(openBISQueryUtil, Mockito.times(1)).getOpenbisClient("https://myopenbis.example.com");
         Mockito.verify(openbisClientMock, Mockito.times(1)).login("user1", "pWd");
         Mockito.verify(openbisClientMock, Mockito.times(1)).searchPersonalAccessTokens(
@@ -363,7 +375,7 @@ public class OpenBISQueryUtilTest extends DriveTestCase {
         Mockito.doReturn(null).when(openbisClientMock).login("user1", "pWd");
 
         OpenBISQueryUtil.NewSessionResult newSessionResult = openBISQueryUtil.getNewSession(
-                "https://myopenbis.example.com", "user1", "pWd");
+                "https://myopenbis.example.com", "user1", "pWd", Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS * 24 * 60 * 60 * 1000);
         Mockito.verify(openBISQueryUtil, Mockito.times(1)).getOpenbisClient("https://myopenbis.example.com");
         Mockito.verify(openbisClientMock, Mockito.times(1)).login("user1", "pWd");
         Mockito.verify(openbisClientMock, Mockito.times(0)).searchPersonalAccessTokens(
@@ -384,7 +396,7 @@ public class OpenBISQueryUtilTest extends DriveTestCase {
         Mockito.doThrow(new RemoteAccessException("error")).when(openbisClientMock).login("user1", "pWd");
 
         OpenBISQueryUtil.NewSessionResult newSessionResult = openBISQueryUtil.getNewSession(
-                "https://myopenbis.example.com", "user1", "pWd");
+                "https://myopenbis.example.com", "user1", "pWd", Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS * 24 * 60 * 60 * 1000);
         Mockito.verify(openBISQueryUtil, Mockito.times(1)).getOpenbisClient("https://myopenbis.example.com");
         Mockito.verify(openbisClientMock, Mockito.times(1)).login("user1", "pWd");
         Mockito.verify(openbisClientMock, Mockito.times(0)).searchPersonalAccessTokens(
@@ -410,7 +422,7 @@ public class OpenBISQueryUtilTest extends DriveTestCase {
                 ArgumentCaptor.forClass(PersonalAccessTokenSearchCriteria.class);
 
         OpenBISQueryUtil.NewSessionResult newSessionResult = openBISQueryUtil.getNewSession(
-                "https://myopenbis.example.com", "user1", "pWd");
+                "https://myopenbis.example.com", "user1", "pWd", Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS * 24 * 60 * 60 * 1000);
         Mockito.verify(openBISQueryUtil, Mockito.times(1)).getOpenbisClient("https://myopenbis.example.com");
         Mockito.verify(openbisClientMock, Mockito.times(1)).login("user1", "pWd");
         Mockito.verify(openbisClientMock, Mockito.times(1)).searchPersonalAccessTokens(

@@ -40,12 +40,37 @@
     -fx-background-radius: 10px;
 }
 
+.sync-job-card-warning {
+    -fx-yellow-button-base: #FFDC5C;
+    -fx-base: -fx-yellow-button-base;
+    -fx-table-cell-border-color: derive(-fx-base,-12%);
+    -fx-table-header-border-color: #959595;
+    -fx-background-color: -fx-table-cell-border-color, -fx-control-inner-background;
+    -fx-border-color: -fx-table-cell-border-color;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
 .sync-job-card:hover {
     -fx-background-color: -fx-table-cell-border-color, derive(-fx-control-inner-background,-5%);
 }
 
 .sync-job-card-error:hover {
     -fx-background-color: -fx-table-cell-border-color, derive(-fx-control-inner-background,-5%);
+}
+
+.sync-job-card-warning:hover {
+    -fx-background-color: -fx-table-cell-border-color, derive(-fx-control-inner-background,-5%);
+}
+
+.sync-job-card-live-status-error {
+    -fx-text-fill: red;
+    -fx-font-weight: bold;
+}
+
+.bold-text {
+    -fx-font-weight: bold;
 }
 
 .hidden {

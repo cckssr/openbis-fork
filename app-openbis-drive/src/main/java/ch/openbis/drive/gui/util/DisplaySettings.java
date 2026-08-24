@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 public class DisplaySettings {
     public static final double DEFAULT_INITIAL_WINDOW_WIDTH = 1100;
-    public static final double DEFAULT_INITIAL_WINDOW_HEIGHT = 680;
+    public static final double DEFAULT_INITIAL_WINDOW_HEIGHT = 690;
 
     public static final double SIDE_MENU_WIDTH = 200;
     public static final double SIDE_MENU_BUTTON_HEIGHT = 50;
@@ -32,6 +32,9 @@ public class DisplaySettings {
     public static final String MAIN_CONTENT_PADDED_FRAME_CLASS = "main-content-frame";
     public static final String SYNC_JOB_CARD_CLASS = "sync-job-card";
     public static final String SYNC_JOB_CARD_ERROR_CLASS = "sync-job-card-error";
+    public static final String SYNC_JOB_CARD_WARNING_CLASS = "sync-job-card-warning";
+    public static final String SYNC_JOB_CARD_LIVE_STATUS_ERROR= "sync-job-card-live-status-error";
+    public static final String BOLD_TEXT= "bold-text";
     public static final String TEXT_AREA_TABLE_CELL_CLASS = "text-area-table-cell";
     public static final String HIDDEN_DISPLAY_STYLE_CLASS = "hidden";
     public static final String ERROR_STYLE_CLASS = "error";

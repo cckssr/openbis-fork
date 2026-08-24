@@ -38,7 +38,7 @@ public class SettingsManagerTest extends DriveTestCase {
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", false);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "localdir2", true);
-        Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)), new ArrayList<>(List.of("aaa", "bbb")));
+        Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
 
         settingsManager.setSettings(settings1);
         Assert.assertEquals(settings1, settingsManager.getSettings());
@@ -129,7 +129,7 @@ public class SettingsManagerTest extends DriveTestCase {
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", false);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "localdir2", true);
-        Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)), new ArrayList<>(List.of("aaa", "bbb")));
+        Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
 
         settingsManager.setSettings(settings1);
         Assert.assertEquals(Collections.emptyList(), settingsManager.getSyncJobs());
@@ -156,7 +156,7 @@ public class SettingsManagerTest extends DriveTestCase {
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1/subdir", true);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "localdir1", false);
-        Settings settings = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)), new ArrayList<>(List.of("aaa", "bbb")));
+        Settings settings = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
 
         settingsManager.setSettings(settings);
     }

@@ -4,7 +4,6 @@ import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.gui.maincontent.ResizablePanel;
 import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.SharedContext;
-import ch.openbis.drive.gui.util.Style;
 import ch.openbis.drive.gui.util.UsageUtil;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.util.OpenBISQueryUtil;
@@ -33,13 +32,19 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import lombok.NonNull;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 
 public class SyncJobCard extends ResizablePanel implements AutoCloseable {
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm z");
+    private final long warningMillisBeforExpiringSession;
     public static final int SYNC_JOB_ATTRIBUTE_WIDTH = 165;
     private final I18n i18n;
     private final SyncJob syncJob;
@@ -58,8 +63,14 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
 
     private volatile OpenBISQueryUtil.PATCheckResult patCheckResult = null;
 
-    public SyncJobCard(@NonNull SyncJob syncJob, @NonNull Pane parent) {
+    public SyncJobCard(
+            @NonNull SyncJob syncJob,
+            @NonNull Pane parent,
+            long warningMillisBeforExpiringSession
+    ) {
         super(parent);
+
+        this.warningMillisBeforExpiringSession = warningMillisBeforExpiringSession;
 
         SyncJobCard thisRef = this;
         ParallelExecutionUtil.EXECUTOR_SERVICE.submit(new Task<>() {
@@ -72,7 +83,7 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
                         if (patCheckResult.result() == OpenBISQueryUtil.PATCheckResultEnum.OK) {
                             setSessionValidUntilLabel();
                         } else {
-                            thisRef.getStyleClass().remove(DisplaySettings.SYNC_JOB_CARD_CLASS);
+                            thisRef.getStyleClass().removeIf(DisplaySettings.SYNC_JOB_CARD_CLASS::equals);
                             thisRef.getStyleClass().add(DisplaySettings.SYNC_JOB_CARD_ERROR_CLASS);
                             setErrorMessage(patCheckResult);
                         }
@@ -204,6 +215,7 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
     public void setScanning(boolean remote) {
         Platform.runLater( () -> {
             if (isErrorState()) { return; }
+            removeLabelErrorStyle(liveStatus);
             this.liveStatus.setText(
                 remote ?
                     i18n.get("main_panel.sync_tasks.sync_job_card.live_state.scanning_remote") :
@@ -224,6 +236,7 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         }
         Platform.runLater( () -> {
             if (isErrorState()) { return; }
+            removeLabelErrorStyle(liveStatus);
             this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.live_state.upload"));
             this.progressBarWithFraction.getStyleClass().removeIf( cls -> cls.equals(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS) );
             this.animatedProgressBar.getProgressBar().setProgress(progress);
@@ -242,6 +255,7 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         }
         Platform.runLater( () -> {
             if (isErrorState()) { return; }
+            removeLabelErrorStyle(liveStatus);
             this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.live_state.download"));
             this.progressBarWithFraction.getStyleClass().removeIf( cls -> cls.equals(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS) );
             this.animatedProgressBar.getProgressBar().setProgress(progress);
@@ -257,10 +271,17 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
             if ( !this.progressBarWithFraction.getStyleClass().contains(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS) ) {
                 this.progressBarWithFraction.getStyleClass().add(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS);
             }
-            if (syncJob.isEnabled()) {
-                this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.live_state.not_running"));
+            if (!isWarningExpiringSessionState()) {
+                removeLabelErrorStyle(liveStatus);
+                if (syncJob.isEnabled()) {
+                    this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.live_state.not_running"));
+                } else {
+                    this.liveStatus.setText("");
+                }
             } else {
-                this.liveStatus.setText("");
+                addLabelErrorStyle(liveStatus);
+                this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.warning_state.session_expires_in") + " " + Optional.ofNullable(patCheckResult).map(OpenBISQueryUtil.PATCheckResult::validUntil)
+                        .map(SyncJobCard::formatExpiresInText).orElse("-"));
             }
         });
     }
@@ -268,11 +289,22 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
     public void setSessionValidUntilLabel() {
         Optional<ZonedDateTime> sessionValidityEndDate = Optional.ofNullable(patCheckResult).map(OpenBISQueryUtil.PATCheckResult::validUntil)
                 .map( date -> date.toInstant().atZone(ZoneId.systemDefault()));
-        sessionValidUntilLabel.setValue(sessionValidityEndDate.map(ZonedDateTime::toString).orElse("-"));
+        if (isWarningExpiringSessionState()) {
+            this.getStyleClass().removeIf(DisplaySettings.SYNC_JOB_CARD_CLASS::equals);
+            this.getStyleClass().add(DisplaySettings.SYNC_JOB_CARD_WARNING_CLASS);
+        }
+        sessionValidUntilLabel.setValue(sessionValidityEndDate.map(DATE_TIME_FORMATTER::format).orElse("-"));
     }
 
     boolean isErrorState() {
         return patCheckResult != null && patCheckResult.result() != OpenBISQueryUtil.PATCheckResultEnum.OK;
+    }
+
+    boolean isWarningExpiringSessionState() {
+        return patCheckResult != null && patCheckResult.result() == OpenBISQueryUtil.PATCheckResultEnum.OK &&
+                patCheckResult.validUntil() != null && patCheckResult.validUntil().toInstant().isBefore(
+                    Instant.now().plus(warningMillisBeforExpiringSession, ChronoUnit.MILLIS)
+                );
     }
 
     public void setErrorMessage(@NonNull OpenBISQueryUtil.PATCheckResult patCheckResult) {
@@ -280,14 +312,23 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
             if ( !this.progressBarWithFraction.getStyleClass().contains(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS) ) {
                 this.progressBarWithFraction.getStyleClass().add(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS);
             }
-            liveStatus.setStyle(String.format("-fx-text-fill: %s",
-                    Style.toCssValue(Color.RED)));
+            addLabelErrorStyle(liveStatus);
             switch (patCheckResult.result()) {
                 case INVALID_SESSION -> this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.invalid_session"));
                 case ERROR_REACHING_SERVER -> this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.server_unreachable"));
                 default -> this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.unknown_error_checking_server_session"));
             }
         });
+    }
+
+    void addLabelErrorStyle(@NonNull Label label) {
+        if (!label.getStyleClass().contains(DisplaySettings.SYNC_JOB_CARD_LIVE_STATUS_ERROR)) {
+            label.getStyleClass().add(DisplaySettings.SYNC_JOB_CARD_LIVE_STATUS_ERROR);
+        }
+    }
+
+    void removeLabelErrorStyle(@NonNull Label label) {
+        label.getStyleClass().removeIf(DisplaySettings.SYNC_JOB_CARD_LIVE_STATUS_ERROR::equals);
     }
 
     static class AnimatedProgressBar {
@@ -353,6 +394,16 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         super.close();
         for (SyncJobCardLabel syncJobCardLabel : syncJobCardLabels) {
             syncJobCardLabel.close();
+        }
+    }
+
+    public static String formatExpiresInText(@NonNull Date date) {
+        long numberOfHours = Long.max(date.getTime() - System.currentTimeMillis(), 0L) / 3_600_000L;
+        long numberOfDays = numberOfHours / 24;
+        if (numberOfDays > 0) {
+            return numberOfDays + " " + SharedContext.getContext().getI18n().get("generic_messages.time_durations.expires_in.days");
+        } else {
+            return numberOfHours + " " + SharedContext.getContext().getI18n().get("generic_messages.time_durations.expires_in.hours");
         }
     }
 }

@@ -375,7 +375,7 @@ public class DriveAPICmdLineAppTest extends DriveTestCase {
     @Test
     public void testHandleConfigCommand() throws Exception {
         Mockito.doNothing().when(driveAPICmdLineApp).printConfig();
-        Mockito.doNothing().when(driveAPICmdLineApp).setConfig(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(driveAPICmdLineApp).setConfig(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         Mockito.doNothing().when(driveAPICmdLineApp).handleIgnoredPathPatternsConfigCommand(Mockito.any());
 
         driveAPICmdLineApp.handleConfigCommand(new String[] { "config"
@@ -385,17 +385,22 @@ public class DriveAPICmdLineAppTest extends DriveTestCase {
 
         driveAPICmdLineApp.handleConfigCommand(new String[] { "config", "-startAtLogin=true"
         });
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setConfig(true, null, null);
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setConfig(true, null, null, null);
         Mockito.clearInvocations(driveAPICmdLineApp);
 
         driveAPICmdLineApp.handleConfigCommand(new String[] { "config", "-language=it"
         });
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setConfig(null, "it", null);
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setConfig(null, "it", null, null);
         Mockito.clearInvocations(driveAPICmdLineApp);
 
         driveAPICmdLineApp.handleConfigCommand(new String[] { "config", "-syncInterval=40"
         });
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setConfig(null, null, 40);
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setConfig(null, null, 40, null);
+        Mockito.clearInvocations(driveAPICmdLineApp);
+
+        driveAPICmdLineApp.handleConfigCommand(new String[] { "config", "-expPatWarningDays=9"
+        });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setConfig(null, null, null, 9);
         Mockito.clearInvocations(driveAPICmdLineApp);
 
         driveAPICmdLineApp.handleConfigCommand(new String[] { "config", "ignored-path-patterns"
@@ -456,34 +461,37 @@ public class DriveAPICmdLineAppTest extends DriveTestCase {
         for (Boolean bool : new Boolean[] { true, null } ) {
             for(String language : new String[] {"it" , null}) {
                 for(Integer syncInt : new Integer[] {98, null}) {
+                    for(Integer expPatWarningDays : new Integer[] {11, null}) {
+                        Settings settings = new Settings();
+                        settings.setStartAtLogin(false);
+                        settings.setLanguage("es");
+                        settings.setSyncInterval(37);
+                        settings.setExpiringSessionWarningDays(8);
+                        SyncJob syncJob = new SyncJob(SyncJob.Type.Upload, "http://url", "tkn", "1234", "title", "/remDir", "/dir", true);
+                        settings.setJobs(new ArrayList<>(List.of(
+                                syncJob
+                        )));
+                        Mockito.doReturn(settings).when(driveAPIClient).getSettings();
+                        Mockito.doNothing().when(driveAPIClient).setSettings(Mockito.any());
+                        Mockito.doNothing().when(driveAPICmdLineApp).printConfig();
 
-                    Settings settings = new Settings();
-                    settings.setStartAtLogin(false);
-                    settings.setLanguage("es");
-                    settings.setSyncInterval(37);
-                    SyncJob syncJob = new SyncJob(SyncJob.Type.Upload, "http://url", "tkn", "1234", "title", "/remDir", "/dir", true);
-                    settings.setJobs(new ArrayList<>(List.of(
-                            syncJob
-                    )));
-                    Mockito.doReturn(settings).when(driveAPIClient).getSettings();
-                    Mockito.doNothing().when(driveAPIClient).setSettings(Mockito.any());
-                    Mockito.doNothing().when(driveAPICmdLineApp).printConfig();
+                        driveAPICmdLineApp.setConfig(bool, language, syncInt, expPatWarningDays);
+                        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).getNewDriveAPIClient();
 
-                    driveAPICmdLineApp.setConfig(bool, language, syncInt);
-                    Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).getNewDriveAPIClient();
+                        ArgumentCaptor<Settings> settingsArgumentCaptor = ArgumentCaptor.forClass(Settings.class);
+                        Mockito.verify(driveAPIClient, Mockito.times(1)).setSettings(settingsArgumentCaptor.capture());
+                        Assert.assertEquals(bool != null ? bool : false, settingsArgumentCaptor.getValue().isStartAtLogin());
+                        Assert.assertEquals(language != null ? language : "es", settingsArgumentCaptor.getValue().getLanguage());
+                        Assert.assertEquals(syncInt != null ? syncInt : 37, settingsArgumentCaptor.getValue().getSyncInterval());
+                        Assert.assertEquals(expPatWarningDays != null ? expPatWarningDays : 8, (int) settingsArgumentCaptor.getValue().getExpiringSessionWarningDays());
+                        Assert.assertEquals(List.of(
+                                syncJob
+                        ), settingsArgumentCaptor.getValue().getJobs());
+                        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printConfig();
 
-                    ArgumentCaptor<Settings> settingsArgumentCaptor = ArgumentCaptor.forClass(Settings.class);
-                    Mockito.verify(driveAPIClient, Mockito.times(1)).setSettings(settingsArgumentCaptor.capture());
-                    Assert.assertEquals(bool != null ? bool : false, settingsArgumentCaptor.getValue().isStartAtLogin());
-                    Assert.assertEquals(language != null ? language : "es", settingsArgumentCaptor.getValue().getLanguage());
-                    Assert.assertEquals(syncInt != null ? syncInt : 37, settingsArgumentCaptor.getValue().getSyncInterval());
-                    Assert.assertEquals(List.of(
-                            syncJob
-                    ), settingsArgumentCaptor.getValue().getJobs());
-                    Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printConfig();
-
-                    Mockito.clearInvocations(driveAPICmdLineApp);
-                    Mockito.clearInvocations(driveAPIClient);
+                        Mockito.clearInvocations(driveAPICmdLineApp);
+                        Mockito.clearInvocations(driveAPIClient);
+                    }
                 }
             }
         }

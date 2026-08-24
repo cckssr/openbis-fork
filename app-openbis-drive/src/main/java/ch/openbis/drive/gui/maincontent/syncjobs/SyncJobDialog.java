@@ -53,6 +53,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     public SyncJobDialog(
             @Nullable SyncJob toBeModified,
             @NonNull List<SyncJob> currentSyncJobs,
+            long acceptedValidityMillisLeftForPATs,
             Stage mainStage
     ) {
         super();
@@ -86,7 +87,12 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
         ParallelExecutionUtil.EXECUTOR_SERVICE.submit(
                 () -> {
-                    SyncJobDialogContext initialContext = new SyncJobDialogContext(toBeModified, currentSyncJobs, null);
+                    SyncJobDialogContext initialContext = new SyncJobDialogContext(
+                            toBeModified,
+                            currentSyncJobs,
+                            null,
+                            acceptedValidityMillisLeftForPATs
+                    );
                     SyncJobDialogStep initialStep = SyncJobDialogStep.SESSION_CHOICE;
 
                     initializeStep(initialStep, initialContext);

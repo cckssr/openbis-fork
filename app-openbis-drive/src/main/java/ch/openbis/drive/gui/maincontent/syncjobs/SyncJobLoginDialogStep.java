@@ -7,6 +7,7 @@ import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.SharedContext;
 import ch.openbis.drive.gui.util.Style;
+import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.util.OpenBISQueryUtil;
 import impl.org.controlsfx.skin.AutoCompletePopup;
@@ -68,6 +69,9 @@ public class SyncJobLoginDialogStep implements DialogStep<SyncJobDialogContext, 
     private volatile CompletableFuture<DialogStepResult<SyncJobDialogContext, SyncJob>> result;
     private volatile EventHandler<ActionEvent> applyButtonHandler;
 
+    private volatile long acceptedValidityMillisLeftForPATs = Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS
+            * 24 * 60 * 60 * 1000;
+
     @Override
     public void initialize(
             @NonNull SyncJobDialogContext context,
@@ -80,6 +84,7 @@ public class SyncJobLoginDialogStep implements DialogStep<SyncJobDialogContext, 
         this.result = resultFuture;
         this.knownOpenbisUrls = context.currentSyncJobs().stream()
                 .map(SyncJob::getOpenBisUrl).collect(Collectors.toSet());
+        this.acceptedValidityMillisLeftForPATs = context.acceptedValidityMillisLeftForPATs();
 
         VBox baseVerticalBox = new VBox();
         baseVerticalBox.setPadding(new Insets(50, 0, 0, 0));
@@ -152,7 +157,9 @@ public class SyncJobLoginDialogStep implements DialogStep<SyncJobDialogContext, 
                     CompletableFuture.supplyAsync(
                         () -> OpenBISQueryUtil.getInstance().getNewSession(
                                 openbisServerUrlValue.getText().trim(),
-                                usernameValue.getText().trim(), passwordValue.getText().trim()
+                                usernameValue.getText().trim(), passwordValue.getText().trim(),
+                                acceptedValidityMillisLeftForPATs
+
                         )
                     );
                 Platform.runLater(
@@ -188,7 +195,8 @@ public class SyncJobLoginDialogStep implements DialogStep<SyncJobDialogContext, 
                                                     new SyncJobSessionChoiceResult(
                                                             true,
                                                             availableSession
-                                                    )
+                                                    ),
+                                                    context.acceptedValidityMillisLeftForPATs()
                                             ),
                                             null
                                     )

@@ -63,7 +63,6 @@ public class OpenBISQueryUtil {
     static final int AFS_CLIENT_TIMEOUT = 30000;
 
     public static final String DRIVE_PAT_SESSION_NAME = "OPENBIS_DRIVE_GENERATED_SESSION";
-    static final long PAT_MINIMUM_LEFT_VALIDITY_MILLIS = 1000L * 60 * 60 * 24 * 7;
     static final long GENERATED_PAT_DURATION_MILLIS = 1000L * 60 * 60 * 24 * 365;
 
     public static @NonNull OpenBISQueryUtil getInstance() {
@@ -191,7 +190,10 @@ public class OpenBISQueryUtil {
             @NonNull String personalAccessToken,
             ZonedDateTime validUntil
     ) {}
-    public @NonNull Set<AvailableSession> getAvailableSessions(@NonNull List<SyncJob> syncJobs) {
+    public @NonNull Set<AvailableSession> getAvailableSessions(
+            @NonNull List<SyncJob> syncJobs,
+            long acceptedValidityMillisLeftForPATs
+    ) {
         ConcurrentHashMap<List<String>, AvailableSession> availableSessions = new ConcurrentHashMap<>();
 
         try {
@@ -199,23 +201,24 @@ public class OpenBISQueryUtil {
                     (syncJob) -> CompletableFuture.supplyAsync(
                             () -> {
                                 PATCheckResult patCheckResult = checkPAT(syncJob.getOpenBisUrl(), syncJob.getOpenBisPersonalAccessToken());
-                                if (patCheckResult.result() == PATCheckResultEnum.OK) {
+                                if (patCheckResult.result() == PATCheckResultEnum.OK &&
+                                    patCheckResult.validUntil() != null && patCheckResult.validUntil().after(
+                                        new Date(System.currentTimeMillis() + acceptedValidityMillisLeftForPATs)
+                                    )
+                                ) {
                                     availableSessions.compute(List.of(patCheckResult.user(), syncJob.getOpenBisUrl()),
                                         (sessionKey, currentRelatedSession) -> {
                                             if (
                                                     currentRelatedSession == null ||
                                                     currentRelatedSession.validUntil() == null ||
-                                                    (
-                                                        patCheckResult.validUntil() != null &&
-                                                        currentRelatedSession.validUntil().toInstant()
-                                                                .isBefore(patCheckResult.validUntil().toInstant())
-                                                    )
+                                                    currentRelatedSession.validUntil().toInstant()
+                                                            .isBefore(patCheckResult.validUntil().toInstant())
                                             ) {
                                                 return new AvailableSession(
                                                         patCheckResult.user(),
                                                         syncJob.getOpenBisUrl(),
                                                         syncJob.getOpenBisPersonalAccessToken(),
-                                                        Optional.ofNullable(patCheckResult.validUntil())
+                                                        Optional.of(patCheckResult.validUntil())
                                                                 .map(Date::toInstant)
                                                                 .map(instant -> instant.atZone(ZoneId.systemDefault()))
                                                                 .orElse(null)
@@ -251,7 +254,8 @@ public class OpenBISQueryUtil {
     public NewSessionResult getNewSession(
             @NonNull String openBISUrl,
             @NonNull String username,
-            @NonNull String password
+            @NonNull String password,
+            long acceptedValidityMillisLeftForPATs
     ) {
         try {
             OpenBIS openbis = getOpenbisClient(openBISUrl);
@@ -269,7 +273,7 @@ public class OpenBISQueryUtil {
             PersonalAccessToken alreadyAvailableSession = pats.getObjects().stream().filter(
                 pat -> pat.getValidFromDate().before(new Date()) &&
                     pat.getValidToDate().after(
-                        new Date(System.currentTimeMillis() + PAT_MINIMUM_LEFT_VALIDITY_MILLIS)
+                        new Date(System.currentTimeMillis() + acceptedValidityMillisLeftForPATs)
                     )
             ).findFirst().orElse(null);
 

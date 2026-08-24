@@ -40,7 +40,12 @@ public class DriveAPICmdLineApp {
      * <p>
      * Prints config on the standard output, in one line, fields separated by tabs
      * ./drive-app config
-     * ./drive-app config -startAtLogin=true|false -language=en|fr|de|it|es syncInterval=120 (-> seconds) (defaults: false, 'en', 120 seconds = 2 minutes)
+     * ./drive-app config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120 -expPatWarningDays=7
+     *        -> sets configuration parameters:
+     *            -startAtLogin : start the background-service at login (defaults to false)
+     *            -language : two-letter ISO-code for language (defaults to 'en') (affects only the graphical interface)
+     *            -syncInterval : synchronization-interval in seconds (defaults to 120 seconds = 2 minutes)
+     *            -expPatWarningDays : advance warning days for expiring PAT-sessions (defaults to 7 days) (affects only the graphical interface)
      * ./drive-app config ignored-path-patterns -> shows the active global default list of ignored file patterns (glob syntax)
      * ./drive-app config ignored-path-patterns -showFactoryDefault -> shows the factory-default (not necessarily active) global default list of ignored file patterns (glob syntax)
      * ./drive-app config ignored-path-patterns -reset -> resets the active global default list of ignored file patterns to factory-default values
@@ -84,6 +89,8 @@ public class DriveAPICmdLineApp {
         } else {
             driveAPICmdLineApp.printHelp();
         }
+
+        System.exit(0);
     }
 
     DriveAPIClientProtobufImpl getNewDriveAPIClient() throws Exception {
@@ -447,9 +454,11 @@ public class DriveAPICmdLineApp {
                     options.addOption(Option.builder()
                                     .option("startAtLogin").longOpt("startAtLogin").required(false).hasArg(true).desc("Start application at system-login (defaults to: false)").get())
                             .addOption(Option.builder()
-                                    .option("language").longOpt("language").required(false).hasArg(true).desc("Language (defaults to: en)").get())
+                                    .option("language").longOpt("language").required(false).hasArg(true).desc("Language (defaults to: en) (affects only the graphical interface)").get())
                             .addOption(Option.builder()
-                                    .option("syncInterval").longOpt("syncInterval").required(false).hasArg(true).desc("Synchronization interval in seconds (defaults to 120 seconds = 2 minutes)").get());
+                                    .option("syncInterval").longOpt("syncInterval").required(false).hasArg(true).desc("Synchronization interval in seconds (defaults to 120 seconds = 2 minutes)").get())
+                            .addOption(Option.builder()
+                                    .option("expPatWarningDays").longOpt("expPatWarningDays").required(false).hasArg(true).desc("Advance warning days for expiring PAT-sessions (defaults to 7 days) (affects only the graphical interface)").get());
                     CommandLineParser commandLineParser = new DefaultParser();
                     CommandLine commandLine;
                     try {
@@ -489,7 +498,20 @@ public class DriveAPICmdLineApp {
                             return;
                         }
                     }
-                    setConfig(startAtLogin, language, syncInterval);
+                    Integer expPatWarningDays = null;
+                    if (commandLine.hasOption("expPatWarningDays")) {
+                        try {
+                            expPatWarningDays = Integer.parseInt(commandLine.getOptionValue("expPatWarningDays"));
+                            if (expPatWarningDays < 1 || expPatWarningDays > 100000) {
+                                throw new IllegalArgumentException();
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Wrong '-expPatWarningDays=' option\n");
+                            printHelp();
+                            return;
+                        }
+                    }
+                    setConfig(startAtLogin, language, syncInterval, expPatWarningDays);
                 }
             }
         }
@@ -576,7 +598,12 @@ public class DriveAPICmdLineApp {
                 status  -> prints the status of the background service
                 
                 config  -> prints the configuration with which the background service is running
-                config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120   -> sets configuration parameters: two-letter ISO-code for language, synchronization-interval in seconds (defaults: false, 'en', 120 seconds = 2 minutes)
+                config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120 -expPatWarningDays=7
+                        -> sets configuration parameters:
+                           -startAtLogin : start the background-service at login (defaults to false)
+                           -language : two-letter ISO-code for language (defaults to 'en') (affects only the graphical interface)
+                           -syncInterval : synchronization-interval in seconds (defaults to 120 seconds = 2 minutes)
+                           -expPatWarningDays : advance warning days for expiring PAT-sessions (defaults to 7 days) (affects only the graphical interface)
                 config ignored-path-patterns -> shows the active global default list of ignored file patterns (glob syntax)
                 config ignored-path-patterns -showFactoryDefault -> shows the showFactoryDefault (not necessarily active) global default list of ignored file patterns (glob syntax)
                 config ignored-path-patterns -reset -> resets the active global default list of ignored file patterns to factory-default values
@@ -605,6 +632,7 @@ public class DriveAPICmdLineApp {
             System.out.println("Start-at-login: " + settings.isStartAtLogin());
             System.out.println("Language: " + settings.getLanguage());
             System.out.println(String.format("Sync-interval: %s seconds", settings.getSyncInterval()));
+            System.out.println(String.format("Advance expiring PAT-session warning days: %s days", settings.getExpiringSessionWarningDays()));
             System.out.println("Synchronization-jobs: ");
             for (SyncJob syncJob : settings.getJobs()) {
                 System.out.println("----------");
@@ -615,17 +643,20 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    void setConfig(Boolean startAtLogin, String language, Integer syncInterval) throws Exception {
+    void setConfig(Boolean startAtLogin, String language, Integer syncInterval, Integer expPatWarningDays) throws Exception {
         try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             Settings settings = driveAPIClient.getSettings();
-            if(startAtLogin != null) {
+            if (startAtLogin != null) {
                 settings.setStartAtLogin(startAtLogin);
             }
-            if(language != null) {
+            if (language != null) {
                 settings.setLanguage(language);
             }
-            if(syncInterval != null) {
+            if (syncInterval != null) {
                 settings.setSyncInterval(syncInterval);
+            }
+            if (expPatWarningDays != null) {
+                settings.setExpiringSessionWarningDays(expPatWarningDays);
             }
             driveAPIClient.setSettings(settings);
             printConfig();

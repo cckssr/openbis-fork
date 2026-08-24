@@ -17,6 +17,9 @@ public class ProtobufConversionUtil {
         settings.setSyncInterval(settingsDto.getSyncIntervalSeconds());
         settings.setJobs(fromProtobufSyncJobs(settingsDto.getJobs()));
         settings.setIgnoredPathPatterns(new ArrayList<>(settingsDto.getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList()));
+        if (settingsDto.hasExpiringSessionWarningDays()) {
+            settings.setExpiringSessionWarningDays(settingsDto.getExpiringSessionWarningDays());
+        }
 
         return settings;
     }
@@ -33,6 +36,8 @@ public class ProtobufConversionUtil {
         if (clientSecret != null) {
             builder.setClientSecret(ByteString.copyFrom(clientSecret));
         }
+
+        builder.setExpiringSessionWarningDays(settings.getExpiringSessionWarningDays());
 
         return builder.build();
     }

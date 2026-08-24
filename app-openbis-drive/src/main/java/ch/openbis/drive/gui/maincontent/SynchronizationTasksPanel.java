@@ -57,6 +57,8 @@ public class SynchronizationTasksPanel extends ResizablePanel {
 
     private final Timeline timeline;
 
+    private final long expiringSessionWarningMillis;
+
     public SynchronizationTasksPanel(@NonNull Pane parent, @NonNull Callback<Void, Void> refreshAll) {
         super(parent);
         this.refreshAll = refreshAll;
@@ -89,14 +91,18 @@ public class SynchronizationTasksPanel extends ResizablePanel {
         syncTaskListContainer = new VBox();
         syncTaskListContainer.setSpacing(SYNC_JOB_CARD_SPACING);
 
-        ServiceCallHandler.ServiceCallResult<List<SyncJob>> syncJobsResult = SharedContext.getContext().getServiceCallHandler(parent).getSyncJobs();
+        ServiceCallHandler.ServiceCallResult<Settings> settingsResult = SharedContext.getContext().getServiceCallHandler(parent).getSettings();
 
-        if (syncJobsResult.isOk()) {
-            syncJobs.setValue(syncJobsResult.getOk());
+        if (settingsResult.isOk()) {
+            Settings settings = settingsResult.getOk();
+
+            expiringSessionWarningMillis = (long) settings.getExpiringSessionWarningDays() * 24 * 60 * 60 * 1000;
+
+            syncJobs.setValue(settings.getJobs());
 
             syncJobCards.setValue(syncJobs.getValue().stream().sorted(
                     Comparator.comparing(SyncJob::getTitle)
-            ).map(syncJob -> new SyncJobCard(syncJob, syncTaskListContainer)).toList());
+            ).map(syncJob -> new SyncJobCard(syncJob, syncTaskListContainer, expiringSessionWarningMillis)).toList());
             syncTaskListContainer.getChildren().addAll(syncJobCards.getValue());
 
             syncJobCards.getValue().forEach( syncJobCard -> {
@@ -119,6 +125,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
             syncListScrollPane.setContent(syncTaskListContainer);
             mainVBox.getChildren().add(syncListScrollPane);
         } else {
+            expiringSessionWarningMillis = Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS * 24 * 60 * 60 * 1000;
             ErrorLabel errorLabel = new ErrorLabel();
             mainVBox.getChildren().add(errorLabel);
         }
@@ -235,7 +242,12 @@ public class SynchronizationTasksPanel extends ResizablePanel {
         Optional<SyncJob> selectedSyncJob = getSelectedSyncJob();
         if (selectedSyncJob.isPresent()) {
             SyncJob syncJob = selectedSyncJob.get();
-            SyncJobDialog syncJobDialog = new SyncJobDialog(selectedSyncJob.get(), syncJobs.get(), (Stage) this.getScene().getWindow());
+            SyncJobDialog syncJobDialog = new SyncJobDialog(
+                    selectedSyncJob.get(),
+                    syncJobs.get(),
+                    expiringSessionWarningMillis,
+                    (Stage) this.getScene().getWindow()
+            );
             syncJobDialog.setResizable(true);
             Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
             if (newSyncJob.isPresent()) {
@@ -254,7 +266,12 @@ public class SynchronizationTasksPanel extends ResizablePanel {
     }
 
     private void openCreationDialogForNewSyncJob() {
-        SyncJobDialog syncJobDialog = new SyncJobDialog(null, syncJobs.get(), (Stage) this.getScene().getWindow());
+        SyncJobDialog syncJobDialog = new SyncJobDialog(
+                null,
+                syncJobs.get(),
+                expiringSessionWarningMillis,
+                (Stage) this.getScene().getWindow()
+        );
         syncJobDialog.setResizable(true);
         Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
         if (newSyncJob.isPresent()) {

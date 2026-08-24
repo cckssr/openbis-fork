@@ -7,5 +7,6 @@ import java.util.List;
 public record SyncJobDialogContext(
         SyncJob toBeModified,
         List<SyncJob> currentSyncJobs,
-        SyncJobSessionChoiceResult sessionChoiceResult
+        SyncJobSessionChoiceResult sessionChoiceResult,
+        long acceptedValidityMillisLeftForPATs
 ) {}
