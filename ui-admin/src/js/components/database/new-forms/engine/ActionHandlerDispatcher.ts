@@ -29,6 +29,8 @@ class ActionHandlerDispatcher {
         return CoreFormModel.newObjectAction;
       case 'newDataSet':
         return CoreFormModel.newDatasetAction;
+      case 'export':
+        return CoreFormModel.exportAction;
 
       // Space-specific actions
       case 'space:save':

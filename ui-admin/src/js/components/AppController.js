@@ -195,8 +195,8 @@ export class AppController {
     let id = 1
     const openObjects = this.getOpenObjects(page)
     openObjects.forEach(openObject => {
-      if (openObject.type === type) {
-        id++
+      if (openObject.type === type && openObject.id >= id) {
+        id = openObject.id + 1
       }
     })
 

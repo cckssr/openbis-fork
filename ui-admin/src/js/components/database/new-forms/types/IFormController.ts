@@ -50,4 +50,11 @@ export interface IFormController {
    * @returns A promise that resolves when the move is complete.
    */
   move(form: Form, context?: any, params?: any): Promise<void>;
+
+  /**
+   * Handles the "export" process for the entity.
+   * @param form the form object to export.
+   */
+  export(form: Form): Promise<void>;
+
 }

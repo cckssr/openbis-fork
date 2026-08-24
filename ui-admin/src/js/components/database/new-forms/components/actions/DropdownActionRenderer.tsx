@@ -27,12 +27,8 @@ export const DropdownActionRenderer: React.FC<ActionRendererProps> = ({ action, 
 		handleClose();
 	};
 
-	// Get menu items from action metadata or use defaults
-	// Check if action has meta property (extended FormAction) or use defaults
-	const menuItems: DropdownMenuItem[] = (action as any).meta?.items || [
-		{ label: 'Export', actionName: 'export' },
-		{ label: 'Freeze', actionName: 'freeze' }
-	];
+	// Get menu items from action metadata
+	const menuItems: DropdownMenuItem[] = (action as any).meta?.items;
 
 	return (
 		<>

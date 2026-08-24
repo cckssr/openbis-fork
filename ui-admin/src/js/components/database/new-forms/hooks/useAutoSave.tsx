@@ -299,6 +299,25 @@ export const useAutoSave = ({
     };
   }, [isEnabled, saveToStorage]);
 
+  // Flush a final save on true unmount (e.g. the app's own in-tab close, via removeOpenTab -
+  // that only unmounts this hook, it never fires `beforeunload`). Kept as its own effect with an
+  // empty dependency array so the cleanup runs exactly once, on unmount - not on every isEnabled/
+  // interval/saveToStorage change, which would otherwise re-write storage right after an explicit
+  // `clearStorage()` call (e.g. the user turning auto-save off) undid it. Reads isEnabled and
+  // saveToStorage through refs so it always sees their latest values at unmount time.
+  const isEnabledRef = useRef(isEnabled);
+  isEnabledRef.current = isEnabled;
+  const saveToStorageRef = useRef(saveToStorage);
+  saveToStorageRef.current = saveToStorage;
+
+  useEffect(() => {
+    return () => {
+      if (isEnabledRef.current) {
+        saveToStorageRef.current();
+      }
+    };
+  }, []);
+
   return {
     saveToStorage,
     loadFromStorage,

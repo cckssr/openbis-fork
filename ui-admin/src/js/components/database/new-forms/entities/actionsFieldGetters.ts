@@ -170,5 +170,11 @@ export const getMoreActionsAction = () => {
 				mode: FormMode.VIEW,
 			},
 		],
+		meta: {
+			items: [
+				{ label: 'Export', actionName: 'export' },
+				{ label: 'Freeze', actionName: 'freeze' }
+			]
+		}
 	};
 };

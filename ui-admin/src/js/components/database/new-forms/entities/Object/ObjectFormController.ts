@@ -339,4 +339,8 @@ export class ObjectFormController implements IFormController {
 			throw new Error(result.error || 'Failed to move object');
 		}
 	}
+
+	async export(form: Form): Promise<void> {
+		throw new Error('Not implemented.');
+	}
 }

@@ -4,9 +4,10 @@ import { CollectionFormController } from '@src/js/components/database/new-forms/
 import { DatasetFormController } from '@src/js/components/database/new-forms/entities/Dataset/DatasetFormController.ts';
 import { ObjectFormController } from '@src/js/components/database/new-forms/entities/Object/ObjectFormController.ts';
 import { EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import {IFormController} from "@src/js/components/database/new-forms/types/IFormController.ts";
 
 class ControllerDispatcher {
-  static createController(entityKind: string, openbisFacade: any, user?: string) {
+  static createController(entityKind: string, openbisFacade: any, user?: string): IFormController {
     switch (entityKind) {
       case EntityKind.SPACE:
       case EntityKind.NEW_SPACE:

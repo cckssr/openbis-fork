@@ -215,4 +215,8 @@ export class ProjectFormController implements IFormController {
     const result = await this.openbisFacade.updateProjects([projectUpdate]);
     return Promise.resolve(form.version ? form.version + 1 : 1);
   }
+
+  async export(form: Form): Promise<void> {
+    throw new Error('Not implemented.');
+  }
 }

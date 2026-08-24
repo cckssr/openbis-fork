@@ -24,6 +24,7 @@ import { useOperationState } from '@src/js/components/database/new-forms/hooks/u
 import { useDialogState } from '@src/js/components/database/new-forms/hooks/useDialogState.ts';
 
 import { useMoveFlow } from '@src/js/components/database/new-forms/hooks/useMoveFlow.ts';
+import { useExportFlow } from '@src/js/components/database/new-forms/hooks/useExportFlow.ts';
 import { useConflictFlow } from '@src/js/components/database/new-forms/hooks/useConflictFlow.ts';
 import { useDeleteFlow } from '@src/js/components/database/new-forms/hooks/useDeleteFlow.ts';
 import { useEntityAutoSaveFlow } from '@src/js/components/database/new-forms/hooks/useEntityAutoSaveFlow.tsx';
@@ -78,6 +79,7 @@ export const EntityFormContextProvider = ({
     openConflictDialog, closeConflictDialog, setConflictResolving,
     openDeleteDialog, closeDeleteDialog,
     openMoveDialog, closeMoveDialog,
+    openExportDialog, closeExportDialog
   } = useDialogState();
 
   // Other state (could also be extracted if needed)
@@ -210,6 +212,21 @@ export const EntityFormContextProvider = ({
     dialogs,
     openMoveDialog,
     closeMoveDialog,
+    loadForm,
+    setLoading,
+    setSaving,
+    setError,
+    clearError,
+    externalAppController,
+    actionToastContext,
+  });
+
+  const { handleExportRequest, handleExportConfirm, handleExportCancel } = useExportFlow({
+    form,
+    controller,
+    dialogs,
+    openExportDialog,
+    closeExportDialog,
     loadForm,
     setLoading,
     setSaving,
