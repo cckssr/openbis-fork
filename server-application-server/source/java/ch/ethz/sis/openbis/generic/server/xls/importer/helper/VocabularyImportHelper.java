@@ -116,7 +116,7 @@ public class VocabularyImportHelper extends BasicImportHelper
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
             //if exists, skip
-            return !isObjectExist(header, values);
+            return vocab == null;
         }
         return true;
     }

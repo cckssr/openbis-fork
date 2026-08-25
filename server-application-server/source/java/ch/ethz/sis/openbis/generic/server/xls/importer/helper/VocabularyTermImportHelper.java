@@ -133,8 +133,9 @@ public class VocabularyTermImportHelper extends BasicImportHelper
     @Override
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
+        String termCode = getValueByColumnName(header, values, Attribute.Code);
         Optional<VocabularyTerm> term = vocabulary.getTerms().stream()
-                .filter(x -> x.getCode().equalsIgnoreCase(vocabularyCode))
+                .filter(x -> x.getCode().equalsIgnoreCase(termCode))
                 .findAny();
         String internal = getValueByColumnName(header, values, Attribute.Internal);
         boolean isInternalNamespace = ImportUtils.isTrue(internal) || (term.isPresent() && term.get().isManagedInternally());
