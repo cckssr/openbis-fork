@@ -69,9 +69,9 @@ public class PropertyTypeSearcher
 
     private static final ObjectMapper OBJECT_MAPPER = new GenericObjectMapper();
 
-    private Map<String, PropertyType> code2PropertyType;
+    private final Map<String, PropertyType> code2PropertyType;
 
-    private Map<String, PropertyType> label2PropertyType;
+    private final Map<String, PropertyType> label2PropertyType;
 
     private final SemanticAnnotationCache annotationCache;
 

@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
@@ -132,8 +133,11 @@ public class VocabularyTermImportHelper extends BasicImportHelper
     @Override
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
+        Optional<VocabularyTerm> term = vocabulary.getTerms().stream()
+                .filter(x -> x.getCode().equalsIgnoreCase(vocabularyCode))
+                .findAny();
         String internal = getValueByColumnName(header, values, Attribute.Internal);
-        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal) || (term.isPresent() && term.get().isManagedInternally());
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
             //if exists, skip

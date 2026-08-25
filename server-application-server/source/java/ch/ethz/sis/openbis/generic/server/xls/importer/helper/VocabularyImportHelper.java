@@ -111,7 +111,8 @@ public class VocabularyImportHelper extends BasicImportHelper
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         String internal = getValueByColumnName(header, values, Attribute.Internal);
-        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+        Vocabulary vocab = getVocabulary(header, values);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal) || (vocab != null && vocab.isManagedInternally());
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
             //if exists, skip
@@ -120,15 +121,20 @@ public class VocabularyImportHelper extends BasicImportHelper
         return true;
     }
 
-    @Override
-    protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    private Vocabulary getVocabulary(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
         VocabularyPermId vocabularyPermId = new VocabularyPermId(code);
 
         VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
         fetchOptions.withTerms().withVocabulary();
-        return delayedExecutor.getVocabulary(vocabularyPermId, fetchOptions) != null;
+        return delayedExecutor.getVocabulary(vocabularyPermId, fetchOptions);
+    }
+
+    @Override
+    protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    {
+        return getVocabulary(header, values) != null;
     }
 
     @Override

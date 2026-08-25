@@ -94,25 +94,31 @@ public class TypeGroupAssignmentImportHelper extends BasicImportHelper
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         String internal = getValueByColumnName(header, values, Attribute.Internal);
-        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+        TypeGroupAssignment assignment = getTypeGroupAssignment(header, values);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal) || (assignment != null && assignment.isManagedInternally());
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
             //if exists, skip
-            return !isObjectExist(header, values);
+            return assignment == null;
         }
         return true;
+    }
+
+    private TypeGroupAssignment getTypeGroupAssignment(Map<String, Integer> header, List<String> values)
+    {
+        String code = getValueByColumnName(header, values, Attribute.Code);
+        for(TypeGroupAssignment assignment : assignments) {
+            if(assignment.getSampleType().getCode().equalsIgnoreCase(code)) {
+                return assignment;
+            }
+        }
+        return null;
     }
 
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
     {
-        String code = getValueByColumnName(header, values, Attribute.Code);
-        for(TypeGroupAssignment assignment : assignments) {
-            if(assignment.getSampleType().getCode().equalsIgnoreCase(code)) {
-                return true;
-            }
-        }
-        return false;
+        return getTypeGroupAssignment(header, values) != null;
     }
 
     @Override

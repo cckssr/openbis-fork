@@ -104,23 +104,28 @@ public class TypeGroupImportHelper extends BasicImportHelper
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         String internal = getValueByColumnName(header, values, Attribute.Internal);
-        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+        TypeGroup typeGroup = getTypeGroup(header, values);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal) || (typeGroup != null && typeGroup.isManagedInternally());
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
             //if exists, skip
-            return !isObjectExist(header, values);
+            return typeGroup == null;
         }
         return true;
     }
 
-
-    @Override
-    protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    private TypeGroup getTypeGroup(Map<String, Integer> header, List<String> values)
     {
         String id = getValueByColumnName(header, values, Attribute.Code);
 
         final ITypeGroupId typeGroupId = new TypeGroupId(id);
-        return delayedExecutor.getTypeGroup(typeGroupId, new TypeGroupFetchOptions()) != null;
+        return delayedExecutor.getTypeGroup(typeGroupId, new TypeGroupFetchOptions());
+    }
+
+    @Override
+    protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    {
+        return getTypeGroup(header, values) != null;
     }
 
     @Override
