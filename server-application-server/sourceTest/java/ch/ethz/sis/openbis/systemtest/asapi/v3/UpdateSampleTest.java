@@ -2207,7 +2207,7 @@ public class UpdateSampleTest extends AbstractSampleTest
         assertEquals(sample1.isFrozenForParents(), false);
         assertEquals(sample1.isFrozenForDataSets(), false);
         assertFreezingEvent(TEST_USER, sample1.getIdentifier().getIdentifier(), EntityType.SAMPLE,
-                new FreezingFlags().freeze().freeze());
+                new FreezingFlags().freeze().freezeData());
         Sample sample2 = samples.get(sampleId2);
         assertEquals(sample2.getIdentifier().getIdentifier(), sampleId2.getIdentifier());
         assertEquals(sample2.isFrozen(), true);
@@ -2217,7 +2217,7 @@ public class UpdateSampleTest extends AbstractSampleTest
         assertEquals(sample2.isFrozenForParents(), false);
         assertEquals(sample2.isFrozenForDataSets(), false);
         assertFreezingEvent(TEST_USER, sample2.getIdentifier().getIdentifier(), EntityType.SAMPLE,
-                new FreezingFlags().freeze().freezeForComponents());
+                new FreezingFlags().freeze().freezeData().freezeForComponents());
         Sample sample3 = samples.get(sampleId3);
         assertEquals(sample3.getIdentifier().getIdentifier(), sampleId3.getIdentifier());
         assertEquals(sample3.isFrozen(), true);
@@ -2227,7 +2227,7 @@ public class UpdateSampleTest extends AbstractSampleTest
         assertEquals(sample3.isFrozenForParents(), false);
         assertEquals(sample3.isFrozenForDataSets(), false);
         assertFreezingEvent(TEST_USER, sample3.getIdentifier().getIdentifier(), EntityType.SAMPLE,
-                new FreezingFlags().freeze().freezeForChildren());
+                new FreezingFlags().freeze().freezeData().freezeForChildren());
         Sample sample4 = samples.get(sampleId4);
         assertEquals(sample4.getIdentifier().getIdentifier(), sampleId4.getIdentifier());
         assertEquals(sample4.isFrozen(), true);
@@ -2237,7 +2237,7 @@ public class UpdateSampleTest extends AbstractSampleTest
         assertEquals(sample4.isFrozenForParents(), true);
         assertEquals(sample4.isFrozenForDataSets(), false);
         assertFreezingEvent(TEST_USER, sample4.getIdentifier().getIdentifier(), EntityType.SAMPLE,
-                new FreezingFlags().freeze().freezeForParents());
+                new FreezingFlags().freeze().freezeData().freezeForParents());
         Sample sample5 = samples.get(sampleId5);
         assertEquals(sample5.getIdentifier().getIdentifier(), sampleId5.getIdentifier());
         assertEquals(sample5.isFrozen(), true);
@@ -2247,7 +2247,7 @@ public class UpdateSampleTest extends AbstractSampleTest
         assertEquals(sample5.isFrozenForParents(), false);
         assertEquals(sample5.isFrozenForDataSets(), true);
         assertFreezingEvent(TEST_USER, sample5.getIdentifier().getIdentifier(), EntityType.SAMPLE,
-                new FreezingFlags().freeze().freezeForDataSets());
+                new FreezingFlags().freeze().freezeData().freezeForDataSets());
     }
 
     @Test
