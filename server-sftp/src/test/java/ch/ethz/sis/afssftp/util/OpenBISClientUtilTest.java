@@ -59,9 +59,25 @@ public class OpenBISClientUtilTest extends TestCase {
             Mockito.doReturn(correctPAT).when(
                     openBISMock
             ).isSessionActive();
-            assertEquals(correctPAT ? pat : null, openBISClientUtil.login(pat, null));
-            assertEquals(correctPAT ? pat : null, openBISClientUtil.login(pat, ""));
-            assertEquals(correctPAT ? pat : null, openBISClientUtil.login(pat, " \t \n"));
+            assertEquals(correctPAT ? pat : null, openBISClientUtil.login("?", pat));
         }
+    }
+
+    public void testLoginWithBlankValues() {
+        OpenBISClientUtil openBISClientUtil = Mockito.spy(new OpenBISClientUtil());
+        OpenBIS openBISMock = Mockito.mock(OpenBIS.class);
+        Mockito.doReturn(openBISMock).when(openBISClientUtil).getOpenBISClient();
+        String NON_EMPTY = "non-empty";
+        for (String user : new String[]{ null, "", " \t ", NON_EMPTY}) {
+            for (String pwd : new String[]{ null, "", " \t ", NON_EMPTY}) {
+                if (!NON_EMPTY.equals(user) || !NON_EMPTY.equals(pwd)) {
+                    assertNull(openBISClientUtil.login(user, pwd));
+                }
+            }
+        }
+        Mockito.verify(openBISMock, Mockito.times(0))
+                .login(Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(openBISMock, Mockito.times(0))
+                .isSessionActive();
     }
 }
