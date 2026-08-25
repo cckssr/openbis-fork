@@ -91,8 +91,12 @@ function RoCrateImportController(parentController) {
                 } else {
                     var result = pollResults.result;
                     if(result.status === "COMPLETED") {
-                        Util.showSuccess("Import is completed.", function () { Util.unblockUI(); });
-                        mainController.refreshView();
+                        if(result.validationResult && result.validationResult.isValid === false) {
+                            Util.showError("Import failed to validate:\n" + JSON.stringify(result.validationResult.errors, null, "\t"));
+                        } else {
+                            Util.showSuccess("Import is completed.", function () { Util.unblockUI(); });
+                            mainController.refreshView();
+                        }
                     } else if(result.status === "FAILED") {
                         Util.showError(result.errors);
                     } else {
