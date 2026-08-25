@@ -389,8 +389,8 @@ public class RdfToModel
                 }
 
                 propertyType.setCode(code);
-                propertyType.setDescription(propertyType.getCode());
-                propertyType.setLabel(a.getId());
+                propertyType.setDescription(a.getComment());
+                propertyType.setLabel(a.getLabel());
 
                 propertyType.setPermId(new PropertyTypePermId(baseCode));
                 propertyType.setDataType(dataType);

@@ -464,6 +464,16 @@ public class SchemaFacade implements ISchemaFacade
                 rdfsProperty.setOntologicalAnnotations(
                         RoCrateValueUtil.parseMultiValued(entity, EQUIVALENT_PROPERTY));
 
+                JsonNode labelNode = entity.getProperty("rdfs:label");
+                if(labelNode != null) {
+                    rdfsProperty.setLabel(labelNode.asText());
+                }
+
+                JsonNode commentNode = entity.getProperty("rdfs:comment");
+                if(commentNode != null) {
+                    rdfsProperty.setComment(commentNode.asText());
+                }
+
                 List<String> rawRange =
                         Stream.concat(
                                         RoCrateValueUtil.parseMultiValued(entity, rangeIdentifier).stream(),
