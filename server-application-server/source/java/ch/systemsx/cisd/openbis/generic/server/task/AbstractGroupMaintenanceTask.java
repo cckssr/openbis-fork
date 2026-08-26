@@ -80,7 +80,7 @@ abstract class AbstractGroupMaintenanceTask implements IMaintenanceTask
 
     protected abstract void setUpSpecific(Properties properties);
 
-    protected UserManagerConfig readGroupDefinitions(IChangedHandler handlerOrNull)
+    protected UserManagerConfig readUserManagerConfig(IChangedHandler handlerOrNull)
     {
         if (configurationFile.isFile() == false)
         {

@@ -163,7 +163,7 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
     public synchronized void execute(UserManagerReport report)
     {
         bufferedAppender.resetLogContent();
-        UserManagerConfig config = readGroupDefinitions(report);
+        UserManagerConfig config = readUserManagerConfig(report);
         if (config == null || config.getGroups() == null)
         {
             return;
@@ -306,7 +306,17 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
         UserManager userManager = createUserManager(logger, report);
         userManager.setReuseHomeSpace(config.getReuseHomeSpace());
         userManager.setGlobalSpaces(config.getGlobalSpaces());
-        userManager.setInstanceAdmins(config.getInstanceAdmins());
+
+        List<String> instanceAdmins = config.getInstanceAdmins();
+        for (String instanceAdminGroup: config.getInstanceAdminGroups())
+        {
+            List<Principal> usersOfGroup = this.getUsersOfGroup(instanceAdminGroup);
+            for (Principal user:usersOfGroup) {
+                instanceAdmins.add(user.getUserId());
+            }
+        }
+        userManager.setInstanceAdmins(instanceAdmins);
+
         try
         {
             userManager.setCommon(config.getCommonSpaces(), config.getCommonSamples(), config.getCommonExperiments());

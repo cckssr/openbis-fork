@@ -274,7 +274,7 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
 
     private List<String> getGroups()
     {
-        UserManagerConfig config = readGroupDefinitions(null);
+        UserManagerConfig config = readUserManagerConfig(null);
         if (config == null)
         {
             return null;
