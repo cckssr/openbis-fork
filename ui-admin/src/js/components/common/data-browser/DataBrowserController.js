@@ -493,4 +493,19 @@ export default class DataBrowserController extends ComponentController {
     return dataSets[dataSetId] ? dataSets[dataSetId] : null
   }
 
+  async getDataSetOwner() {
+    let experimentId = new this.openbis.ExperimentPermId(this.owner);
+    let experimentFetchOptions = new this.openbis.ExperimentFetchOptions();
+    let experiments = await this.openbis.getExperiments([experimentId], experimentFetchOptions);
+
+    if (experiments[experimentId]) {
+      return experiments[experimentId];
+    } else {
+      let sampleId = new this.openbis.SamplePermId(this.owner);
+      let sampleFetchOptions = new this.openbis.SampleFetchOptions();
+      let samples = await this.openbis.getSamples([sampleId], sampleFetchOptions);
+      return samples[sampleId];
+    }
+  }
+
 }

@@ -352,7 +352,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                 if(!isEntityFrozen && profile.isAFSAvailable() && !isImmutableData) {
                     const labelInfo = LabelUtil.getToolbarLabelInfo("FREEZE");
                     dropdownOptionsModel.push({
-                        label : labelInfo.label,
+                        label : labelInfo.tooltip,
                         action : function () {
                             FormUtil.showFreezeAfsDataForm("EXPERIMENT", _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
                         }
