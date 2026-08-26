@@ -234,7 +234,12 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
             // Update property assignment
             ArrayList<PropertyAssignmentCreation> propertyAssignmentsForUpdate = getPropertyAssignmentsForUpdate();
             int index = indexOf(creation.getPropertyTypeId(), propertyAssignmentsForUpdate);
-            propertyAssignmentsForUpdate.set(index, creation);
+            PropertyAssignmentCreation assignmentForUpdate = propertyAssignmentsForUpdate.get(index);
+            if(!delayedExecutor.isSystem() && assignmentForUpdate.isManagedInternally()) {
+                propertyAssignmentsForUpdate.remove(index);
+            } else {
+                propertyAssignmentsForUpdate.set(index, creation);
+            }
             newAssignments.set(propertyAssignmentsForUpdate.toArray(new PropertyAssignmentCreation[0]));
         }
 
@@ -329,9 +334,7 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
             creation.setOrdinal(propertyAssignment.getOrdinal());
             creation.setSection(propertyAssignment.getSection());
             creation.setShowInEditView(propertyAssignment.isShowInEditView());
-            if(delayedExecutor.isSystem()) {
-                creation.setManagedInternally(propertyAssignment.isManagedInternally());
-            }
+            creation.setManagedInternally(propertyAssignment.isManagedInternally());
             newPropertyAssignmentCreations.add(creation);
         }
         return newPropertyAssignmentCreations;
