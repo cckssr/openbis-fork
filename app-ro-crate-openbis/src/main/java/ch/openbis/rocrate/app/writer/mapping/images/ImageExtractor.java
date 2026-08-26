@@ -13,6 +13,9 @@ public class ImageExtractor
 
 {
 
+    private static final String DATA_PREFIX = "xlsx/miscellaneous/file-service/eln-lims/";
+    private static final String EMBEDDED_IMAGE_PREFIX = "/openbis/openbis/file-service/eln-lims/";
+
     public record ValueAndImages(Serializable value, Map<String, String> images)
     {
     }
@@ -35,7 +38,8 @@ public class ImageExtractor
             {
                 final String imageSrc = imageElement.attr("src");
                 String updatedPath = getUpdatedPath(imageSrc);
-                imageElement.attr("src", updatedPath);
+                String imagePath = getImagePath(imageSrc);
+                imageElement.attr("src", imagePath);
 
                 oldToNewImagePaths.put(imageSrc, updatedPath);
             }
@@ -50,21 +54,29 @@ public class ImageExtractor
 
     }
 
-    static String getUpdatedPath(String a)
-    {
-        String prefix = "xlsx/miscellaneous/file-service/eln-lims/";
-        if (a.startsWith(prefix))
+    private static String getImagePath(String path) {
+        if (path != null && path.startsWith(DATA_PREFIX))
         {
-            return a;
+            return EMBEDDED_IMAGE_PREFIX + path.substring(DATA_PREFIX.length());
+        }
+        return path;
+    }
+
+    static String getUpdatedPath(String imagePath)
+    {
+
+        if (imagePath.startsWith(DATA_PREFIX))
+        {
+            return imagePath;
         }
 
-        if (a.startsWith("file-service/eln-lims/"))
+        if (imagePath.startsWith("file-service/eln-lims/"))
         {
             // This means it's an openBIS import, we don't have to rename potential naming collisions
-            return prefix + a;
+            return DATA_PREFIX + imagePath;
         }
 
-        String[] parts = a.split("/");
+        String[] parts = imagePath.split("/");
         String fileName = parts[parts.length - 1];
         String[] split = fileName.split("\\.");
         parts[parts.length - 1] =
@@ -72,7 +84,7 @@ public class ImageExtractor
                         .collect(Collectors.joining("."));
         String b = Arrays.stream(parts).collect(Collectors.joining("/"));
 
-        return prefix + b;
+        return DATA_PREFIX + b;
     }
 
 }
