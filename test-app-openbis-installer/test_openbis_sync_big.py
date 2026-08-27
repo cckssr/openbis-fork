@@ -178,15 +178,44 @@ class TestCase(systemtest.testcase.TestCase):
                         words.append(word)
                     previous_word = word
         return next_words
-    
+
     def _checkData(self, openbis_data_source, openbis_harvester):
+        # Since BIS-1886/BIS-2818 (openBIS Sync Refinement, Extensions 1 & 2), MasterDataDeliverer only
+        # delivers master data actually referenced by a synced sample/experiment/data set - i.e. a type is
+        # included only if it has a synced instance, and a vocabulary/property-type/plugin only if it's
+        # referenced by a property assignment of an included type - instead of mirroring every registered
+        # type/vocabulary/plugin unconditionally. These fragments reproduce that "used" closure (see
+        # MasterDataDeliverer.collectPluginIds/collectPropertyTypeIds and the type fetches feeding them)
+        # so the data-source side of each comparison below only expects what production code would select.
+        USED_SAMPLE_TYPE_IDS = "(select distinct saty_id from samples)"
+        USED_EXPERIMENT_TYPE_IDS = "(select distinct exty_id from experiments)"
+        USED_DATA_SET_TYPE_IDS = "(select distinct dsty_id from data)"
+        USED_PROPERTY_TYPE_IDS = (
+            "(select prty_id from sample_type_property_types where saty_id in %s "
+            "union select prty_id from experiment_type_property_types where exty_id in %s "
+            "union select prty_id from data_set_type_property_types where dsty_id in %s)"
+            % (USED_SAMPLE_TYPE_IDS, USED_EXPERIMENT_TYPE_IDS, USED_DATA_SET_TYPE_IDS))
+        USED_VOCABULARY_IDS = (
+            "(select distinct covo_id from property_types where covo_id is not null and id in %s)"
+            % USED_PROPERTY_TYPE_IDS)
+        USED_PLUGIN_IDS = (
+            "(select validation_script_id from sample_types where id in %s and validation_script_id is not null "
+            "union select validation_script_id from experiment_types where id in %s and validation_script_id is not null "
+            "union select validation_script_id from data_set_types where id in %s and validation_script_id is not null "
+            "union select script_id from sample_type_property_types where saty_id in %s and script_id is not null "
+            "union select script_id from experiment_type_property_types where exty_id in %s and script_id is not null "
+            "union select script_id from data_set_type_property_types where dsty_id in %s and script_id is not null)"
+            % (USED_SAMPLE_TYPE_IDS, USED_EXPERIMENT_TYPE_IDS, USED_DATA_SET_TYPE_IDS,
+               USED_SAMPLE_TYPE_IDS, USED_EXPERIMENT_TYPE_IDS, USED_DATA_SET_TYPE_IDS))
+
         self._compareDataBases("Internal Vocabularies", openbis_data_source, openbis_harvester, "openbis",
                                "select code, description from controlled_vocabularies "
                                + "where is_managed_internally and pers_id_registerer = 1 order by code")
         self._compareDataBases("Non internal Vocabularies", openbis_data_source, openbis_harvester, "openbis",
                                "select '{0}' || code as code, description, source_uri, is_chosen_from_list "
                                + "from controlled_vocabularies "
-                               + "where (not is_managed_internally or pers_id_registerer <> 1) and code like '{1}%' order by code")
+                               + "where (not is_managed_internally or pers_id_registerer <> 1) and code like '{1}%' "
+                               + "and id in " + USED_VOCABULARY_IDS + " order by code")
         self._compareDataBases("Internal property types", openbis_data_source, openbis_harvester, "openbis", 
                                "select t.code as code, dt.code as data_type, v.code as vocabulary, "
                                + "t.label, t.description, "
@@ -202,12 +231,13 @@ class TestCase(systemtest.testcase.TestCase):
                                + "from property_types t join data_types dt on t.daty_id = dt.id "
                                + "left join controlled_vocabularies v on t.covo_id = v.id "
                                + "where (not t.is_managed_internally or t.pers_id_registerer <> 1) "
-                               + "and t.code like '{1}%' and not v.code like '%PLATE_GEOMETRY'"
+                               + "and t.code like '{1}%' and not v.code like '%PLATE_GEOMETRY' "
+                               + "and t.id in " + USED_PROPERTY_TYPE_IDS + " "
                                + "order by t.code, t.is_managed_internally")
         self._compareDataBases("Experiment types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || t.code as code, t.description, '{0}' || s.name as validation_script "
                                + "from experiment_types t left join scripts s on t.validation_script_id = s.id "
-                               + "where t.code like '{1}%' order by t.code")
+                               + "where t.code like '{1}%' and t.id in " + USED_EXPERIMENT_TYPE_IDS + " order by t.code")
         self._compareDataBases("Experiment type property assignments", openbis_data_source, openbis_harvester, "openbis",
                                 "select '{0}' || et.code as experiment_type, "
                                 + "case when pt.is_managed_internally then pt.code else '{0}' || pt.code end as property_type, "
@@ -218,13 +248,14 @@ class TestCase(systemtest.testcase.TestCase):
                                 + "join experiment_types et on etpt.exty_id = et.id "
                                 + "join property_types pt on etpt.prty_id = pt.id "
                                 + "left join scripts s on etpt.script_id = s.id "
-                                + "where et.code like '{1}%' order by experiment_type, property_type")
+                                + "where et.code like '{1}%' and et.id in " + USED_EXPERIMENT_TYPE_IDS
+                                + " order by experiment_type, property_type")
         self._compareDataBases("Sample types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || code as code, t.description, is_listable, generated_from_depth, part_of_depth "
                                + "is_auto_generated_code, generated_code_prefix, is_subcode_unique, inherit_properties, "
                                + "show_parent_metadata, '{0}' || s.name as validation_script "
                                + "from sample_types t left join scripts s on t.validation_script_id = s.id "
-                               + "where code like '{1}%' order by code")
+                               + "where code like '{1}%' and t.id in " + USED_SAMPLE_TYPE_IDS + " order by code")
         self._compareDataBases("Sample type property assignments", openbis_data_source, openbis_harvester, "openbis",
                                 "select '{0}' || et.code as sample_type, "
                                 + "case when pt.is_managed_internally and pt.code not similar to "
@@ -236,12 +267,13 @@ class TestCase(systemtest.testcase.TestCase):
                                 + "join sample_types et on etpt.saty_id = et.id "
                                 + "join property_types pt on etpt.prty_id = pt.id "
                                 + "left join scripts s on etpt.script_id = s.id "
-                                + "where et.code like '{1}%' order by sample_type, property_type")
+                                + "where et.code like '{1}%' and et.id in " + USED_SAMPLE_TYPE_IDS
+                                + " order by sample_type, property_type")
         self._compareDataBases("Data set types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || code as code, t.description, main_ds_pattern, main_ds_path, "
                                + "deletion_disallow, '{0}' || s.name as validation_script "
                                + "from data_set_types t left join scripts s on t.validation_script_id = s.id "
-                               + "where code like '{1}%' order by code")
+                               + "where code like '{1}%' and t.id in " + USED_DATA_SET_TYPE_IDS + " order by code")
         self._compareDataBases("Data set type property assignments", openbis_data_source, openbis_harvester, "openbis",
                                 "select '{0}' || et.code as data_set_type, "
                                 + "case when pt.is_managed_internally then pt.code else '{0}' || pt.code end as property_type, "
@@ -252,11 +284,12 @@ class TestCase(systemtest.testcase.TestCase):
                                 + "join data_set_types et on etpt.dsty_id = et.id "
                                 + "join property_types pt on etpt.prty_id = pt.id "
                                 + "left join scripts s on etpt.script_id = s.id "
-                                + "where et.code like '{1}%' order by data_set_type, property_type")
+                                + "where et.code like '{1}%' and et.id in " + USED_DATA_SET_TYPE_IDS
+                                + " order by data_set_type, property_type")
         self._compareDataBases("Plugins", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || name as name, description, script_type, plugin_type, entity_kind, is_available, "
                                + "length(script) as script_length, md5(script) as script_hash "
-                               + "from scripts where name like '{1}%' order by name")
+                               + "from scripts where name like '{1}%' and id in " + USED_PLUGIN_IDS + " order by name")
         # Space STORAGE will be ignored because it is empty
         self._compareDataBases("Spaces", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || s.code as code, s.description, "
