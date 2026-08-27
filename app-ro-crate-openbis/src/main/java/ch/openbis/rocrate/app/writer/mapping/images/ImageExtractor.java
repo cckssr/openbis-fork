@@ -16,6 +16,8 @@ public class ImageExtractor
     private static final String DATA_PREFIX = "xlsx/miscellaneous/file-service/eln-lims/";
     private static final String EMBEDDED_IMAGE_PREFIX = "/openbis/openbis/file-service/eln-lims/";
 
+    public static final String FILE_SERVICE_ELN_LIMS = "file-service/eln-lims/";
+
     public record ValueAndImages(Serializable value, Map<String, String> images)
     {
     }
@@ -38,8 +40,8 @@ public class ImageExtractor
             {
                 final String imageSrc = imageElement.attr("src");
                 String updatedPath = getUpdatedPath(imageSrc);
-                String imagePath = getImagePath(imageSrc);
-                imageElement.attr("src", imagePath);
+                String propertyImagePath = getImagePath(updatedPath);
+                imageElement.attr("src", propertyImagePath);
 
                 oldToNewImagePaths.put(imageSrc, updatedPath);
             }
@@ -55,7 +57,7 @@ public class ImageExtractor
     }
 
     private static String getImagePath(String path) {
-        if (path != null && path.startsWith(DATA_PREFIX))
+        if (path.startsWith(DATA_PREFIX))
         {
             return EMBEDDED_IMAGE_PREFIX + path.substring(DATA_PREFIX.length());
         }
@@ -70,21 +72,23 @@ public class ImageExtractor
             return imagePath;
         }
 
-        if (imagePath.startsWith("file-service/eln-lims/"))
+        if (imagePath.startsWith(FILE_SERVICE_ELN_LIMS))
         {
             // This means it's an openBIS import, we don't have to rename potential naming collisions
             return DATA_PREFIX + imagePath;
         }
+        return DATA_PREFIX + getRandomizedName(imagePath);
+    }
 
+    private static String getRandomizedName(String imagePath) {
         String[] parts = imagePath.split("/");
         String fileName = parts[parts.length - 1];
         String[] split = fileName.split("\\.");
         parts[parts.length - 1] =
                 split[0] + "-" + UUID.randomUUID() + "." + Arrays.stream(split).skip(1)
                         .collect(Collectors.joining("."));
-        String b = Arrays.stream(parts).collect(Collectors.joining("/"));
-
-        return DATA_PREFIX + b;
+        String newPath = Arrays.stream(parts).collect(Collectors.joining("/"));
+        return newPath;
     }
 
 }
