@@ -308,11 +308,15 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
         userManager.setGlobalSpaces(config.getGlobalSpaces());
 
         List<String> instanceAdmins = config.getInstanceAdmins();
-        for (String instanceAdminGroup: config.getInstanceAdminGroups())
+        if (config.getInstanceAdminGroups() != null && config.getInstanceAdminGroups().isEmpty())
         {
-            List<Principal> usersOfGroup = this.getUsersOfGroup(instanceAdminGroup);
-            for (Principal user:usersOfGroup) {
-                instanceAdmins.add(user.getUserId());
+            for (String instanceAdminGroup : config.getInstanceAdminGroups())
+            {
+                List<Principal> usersOfGroup = this.getUsersOfGroup(instanceAdminGroup);
+                for (Principal user : usersOfGroup)
+                {
+                    instanceAdmins.add(user.getUserId());
+                }
             }
         }
         userManager.setInstanceAdmins(instanceAdmins);
