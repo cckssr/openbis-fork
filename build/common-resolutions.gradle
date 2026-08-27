@@ -32,7 +32,11 @@ configurations.all {
         // 4.1.133.Final). Mixing 4.2.x onto that classpath made the RO-Crate
         // server drop connections (EOF) on validate/import. Pin every netty
         // module to the single 4.1.x version the whole build standardises on.
-        if (details.requested.group == 'io.netty') {
+        // netty-tcnative-* is a separate project (OpenSSL bindings) versioned
+        // independently as 2.0.x.Final, not 4.1.x - forcing it here resolves
+        // to a version that was never published and breaks resolution for
+        // anything that pulls it in (e.g. vertx-core via quarkus-vertx-http).
+        if (details.requested.group == 'io.netty' && !details.requested.name.startsWith('netty-tcnative')) {
             details.useVersion libs.io.netty.netty.all.get().versionConstraint.requiredVersion
         }
     }
