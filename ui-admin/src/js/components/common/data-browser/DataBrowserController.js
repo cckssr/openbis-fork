@@ -485,6 +485,7 @@ export default class DataBrowserController extends ComponentController {
     let dataSetId = new this.openbis.DataSetPermId(this.owner);
     
     let fetchOptions = new this.openbis.DataSetFetchOptions();
+    fetchOptions.withDataStore();
     fetchOptions.withPhysicalData();
     fetchOptions.withExperiment();
     fetchOptions.withSample();
