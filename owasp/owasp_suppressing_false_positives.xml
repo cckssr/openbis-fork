@@ -223,4 +223,19 @@
 		<packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-(reflect|stdlib|stdlib-common)@1\.6\.21$</packageUrl>
 		<cve>CVE-2026-53914</cve>
 	</suppress>
+	<!-- [2026-12-01] mortbay-apache-el-{9.0.111,10.0.27.2,11.0.22}.jar are legacy
+	     Apache EL implementations bundled inside jetty-home-12.1.10.zip itself
+	     (lib/ee8-apache-jsp, lib/ee9-apache-jsp, lib/ee11-apache-jsp), shipped by
+	     the Jetty project for backward-compat with old EE8/EE9/EE11 JSP stacks.
+	     They cannot be upgraded independently - Jetty controls what ships inside
+	     its own home distribution zip - and openBIS only runs the EE10 stack, so
+	     these compat jars are never loaded. Suppressed for now like the other
+	     frozen/bundled artifacts (bioformats/jython/izpack) below; re-check at
+	     year end whether a newer jetty-home still bundles these or Jetty has
+	     dropped the legacy EE8/EE9/EE11 compat modules. -->
+	<suppress until="2026-12-01Z">
+		<notes><![CDATA[ mortbay-apache-el jars bundled inside jetty-home-12.1.10.zip's ee8/ee9/ee11-apache-jsp lib dirs -- shipped as-is by Jetty for legacy EE compat, openBIS only runs EE10, not independently upgradable ]]></notes>
+		<filePath regex="true">.*jetty-home-12\.1\.10\.zip.*mortbay-apache-el-.*\.jar.*</filePath>
+		<vulnerabilityName regex="true">.*</vulnerabilityName>
+	</suppress>
 </suppressions>
