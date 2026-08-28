@@ -138,7 +138,15 @@ public interface IRelationshipService
     public void addParentToSample(IAuthSession session,
             @AuthorizationGuard(name = "SAMPLE", guardClass = SamplePEPredicate.class) SamplePE sample,
             @AuthorizationGuard(name = "PARENT", guardClass = SamplePEPredicate.class, rolesAllowed = { RoleWithHierarchy.SPACE_ETL_SERVER,
-                    RoleWithHierarchy.PROJECT_USER }) SamplePE parent);
+                    RoleWithHierarchy.PROJECT_OBSERVER }) SamplePE parent);
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_USER })
+    @Capability("ADD_CHILD_TO_SAMPLE")
+    public void addChildToSample(IAuthSession session,
+            @AuthorizationGuard(name = "SAMPLE", guardClass = SamplePEPredicate.class) SamplePE sample,
+            @AuthorizationGuard(name = "CHILD", guardClass = SamplePEPredicate.class, rolesAllowed = { RoleWithHierarchy.SPACE_ETL_SERVER,
+                    RoleWithHierarchy.PROJECT_OBSERVER }) SamplePE child);
 
     @Transactional(propagation = Propagation.MANDATORY)
     @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_USER })
@@ -155,7 +163,15 @@ public interface IRelationshipService
     public void removeParentFromSample(IAuthSession session,
             @AuthorizationGuard(name = "SAMPLE", guardClass = SamplePEPredicate.class) SamplePE sample,
             @AuthorizationGuard(name = "PARENT", guardClass = SamplePEPredicate.class, rolesAllowed = { RoleWithHierarchy.SPACE_ETL_SERVER,
-                    RoleWithHierarchy.PROJECT_USER }) SamplePE parent);
+                    RoleWithHierarchy.PROJECT_OBSERVER }) SamplePE parent);
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @Capability("REMOVE_CHILD_FROM_SAMPLE")
+    public void removeChildFromSample(IAuthSession session,
+            @AuthorizationGuard(name = "SAMPLE", guardClass = SamplePEPredicate.class) SamplePE sample,
+            @AuthorizationGuard(name = "CHILD", guardClass = SamplePEPredicate.class, rolesAllowed = { RoleWithHierarchy.SPACE_ETL_SERVER,
+                    RoleWithHierarchy.PROJECT_OBSERVER }) SamplePE child);
 
     @Transactional(propagation = Propagation.MANDATORY)
     @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })

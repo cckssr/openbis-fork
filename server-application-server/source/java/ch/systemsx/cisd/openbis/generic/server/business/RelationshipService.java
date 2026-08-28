@@ -252,6 +252,11 @@ public class RelationshipService implements IRelationshipService, ApplicationCon
                 actor));
     }
 
+    @Override public void addChildToSample(final IAuthSession session, final SamplePE sample, final SamplePE child)
+    {
+        addParentToSample(session, child, sample);
+    }
+
     @Override
     public void setSampleParentChildAnnotations(IAuthSession session, SamplePE child, SamplePE parent,
             Map<String, String> childAnnotations, Map<String, String> parentAnnotations)
@@ -287,6 +292,11 @@ public class RelationshipService implements IRelationshipService, ApplicationCon
         }
         throw UserFailureException.fromTemplate(ERR_SAMPLE_PARENT_RELATIONSHIP_NOT_FOUND,
                 sample.getCode(), parent.getCode());
+    }
+
+    @Override public void removeChildFromSample(final IAuthSession session, final SamplePE sample, final SamplePE child)
+    {
+        removeParentFromSample(session, child, sample);
     }
 
     @Override

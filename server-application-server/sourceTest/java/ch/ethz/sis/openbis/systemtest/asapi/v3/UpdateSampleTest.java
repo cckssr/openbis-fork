@@ -3131,6 +3131,222 @@ public class UpdateSampleTest extends AbstractSampleTest
         }
     }
 
+    @Test
+    public void testUpdateParentsAndChildren()
+    {
+        final String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        EntityTypePermId sampleType = createASampleType(adminSessionToken, false);
+
+        // space
+        SpacePermId space1 = createSpace(adminSessionToken, "SPACE_1_" + UUID.randomUUID());
+        SpacePermId space2 = createSpace(adminSessionToken, "SPACE_2_" + UUID.randomUUID());
+
+        // projects
+        ProjectPermId project11 = createProject(adminSessionToken, "PROJECT_11_" + UUID.randomUUID(), space1);
+        ProjectPermId project21 = createProject(adminSessionToken, "PROJECT_21_" + UUID.randomUUID(), space2);
+
+        // users
+        PersonPermId instanceAdmin = new PersonPermId(TEST_USER);
+
+        PersonPermId space1User = createUser(adminSessionToken, "space_1_user_" + UUID.randomUUID());
+        createRoleAssignment(adminSessionToken, space1User, Role.USER, space1, null);
+
+        PersonPermId space1UserAndSpace2Observer = createUser(adminSessionToken, "space_1_user_space_2_observer" + UUID.randomUUID());
+        createRoleAssignment(adminSessionToken, space1UserAndSpace2Observer, Role.USER, space1, null);
+        createRoleAssignment(adminSessionToken, space1UserAndSpace2Observer, Role.OBSERVER, space2, null);
+
+        PersonPermId space1PowerUserAndSpace2Observer = createUser(adminSessionToken, "space_1_power_user_space_2_observer" + UUID.randomUUID());
+        createRoleAssignment(adminSessionToken, space1PowerUserAndSpace2Observer, Role.POWER_USER, space1, null);
+        createRoleAssignment(adminSessionToken, space1PowerUserAndSpace2Observer, Role.OBSERVER, space2, null);
+
+        PersonPermId space2User = createUser(adminSessionToken, "space_2_user_" + UUID.randomUUID());
+        createRoleAssignment(adminSessionToken, space2User, Role.USER, space2, null);
+
+        PersonPermId project11User = createUser(adminSessionToken, "project_11_user_" + UUID.randomUUID() + "_pa_on");
+        createRoleAssignment(adminSessionToken, project11User, Role.USER, null, project11);
+
+        PersonPermId project11UserAndProject21Observer =
+                createUser(adminSessionToken, "project_11_user_project_21_observer" + UUID.randomUUID() + "_pa_on");
+        createRoleAssignment(adminSessionToken, project11UserAndProject21Observer, Role.USER, null, project11);
+        createRoleAssignment(adminSessionToken, project11UserAndProject21Observer, Role.OBSERVER, null, project21);
+
+        PersonPermId project11PowerUserAndProject21Observer =
+                createUser(adminSessionToken, "project_11_power_user_project_21_observer" + UUID.randomUUID() + "_pa_on");
+        createRoleAssignment(adminSessionToken, project11PowerUserAndProject21Observer, Role.POWER_USER, null, project11);
+        createRoleAssignment(adminSessionToken, project11PowerUserAndProject21Observer, Role.OBSERVER, null, project21);
+
+        PersonPermId project21User = createUser(adminSessionToken, "project_21_user_" + UUID.randomUUID() + "_pa_on");
+        createRoleAssignment(adminSessionToken, project21User, Role.USER, null, project21);
+
+        // sample creations
+        Function<String, SamplePermId> sampleInProject11 =
+                (sessionToken) -> createSample(adminSessionToken, "SAMPLE_IN_PROJECT_11_" + UUID.randomUUID(), space1, project11, sampleType);
+        Function<String, SamplePermId> sampleInProject11WithParentAndChildInProject21 =
+                (sessionToken) ->
+                {
+                    final SampleCreation parentCreation = new SampleCreation();
+                    parentCreation.setCode("PARENT_IN_PROJECT_21_" + UUID.randomUUID());
+                    parentCreation.setSpaceId(space2);
+                    parentCreation.setProjectId(project21);
+                    parentCreation.setTypeId(sampleType);
+                    parentCreation.setCreationId(new CreationId(UUID.randomUUID().toString()));
+
+                    final SampleCreation childCreation = new SampleCreation();
+                    childCreation.setCode("CHILD_IN_PROJECT_21_" + UUID.randomUUID());
+                    childCreation.setSpaceId(space2);
+                    childCreation.setProjectId(project21);
+                    childCreation.setTypeId(sampleType);
+                    childCreation.setCreationId(new CreationId(UUID.randomUUID().toString()));
+
+                    final SampleCreation creation = new SampleCreation();
+                    creation.setCode("SAMPLE_IN_PROJECT_11_WITH_PARENT_AND_CHILD_IN_PROJECT_21_" + UUID.randomUUID());
+                    creation.setSpaceId(space1);
+                    creation.setProjectId(project11);
+                    creation.setTypeId(sampleType);
+                    creation.setParentIds(List.of(parentCreation.getCreationId()));
+                    creation.setChildIds(List.of(childCreation.getCreationId()));
+                    return v3api.createSamples(sessionToken, List.of(parentCreation, childCreation, creation)).get(2);
+                };
+        Function<String, SamplePermId> sampleInProject21 =
+                (sessionToken) -> createSample(adminSessionToken, "SAMPLE_IN_PROJECT_21_" + UUID.randomUUID(), space2, project21, sampleType);
+
+        // sample updates
+        Function<SamplePermId, SampleUpdate> addParent = (parent) -> updateSampleAddParent(parent);
+        Function<SamplePermId, SampleUpdate> clearParents = (parent) -> updateSampleClearParents();
+        Function<SamplePermId, SampleUpdate> addChild = (child) -> updateSampleAddChild(child);
+        Function<SamplePermId, SampleUpdate> clearChildren = (child) -> updateSampleClearChildren();
+
+        Object[][] combinations = new Object[][] {
+                // 0. add parent : sample(project11) -> sample(project21)
+                new Object[] { sampleInProject11, sampleInProject21, addParent,
+                        List.of(instanceAdmin, space1UserAndSpace2Observer, project11UserAndProject21Observer),
+                        List.of(space1User, project11User, space2User, project21User) },
+                // 1. remove parent : sample(project11) -> sample(project21)
+                new Object[] { sampleInProject11WithParentAndChildInProject21, null, clearParents,
+                        List.of(instanceAdmin, space1PowerUserAndSpace2Observer, project11PowerUserAndProject21Observer),
+                        List.of(space1UserAndSpace2Observer, project11UserAndProject21Observer) },
+                // 2. add child : sample(project11) -> sample(project21)
+                new Object[] { sampleInProject11, sampleInProject21, addChild,
+                        List.of(instanceAdmin, space1UserAndSpace2Observer, project11UserAndProject21Observer),
+                        List.of(space1User, project11User, space2User, project21User) },
+                // 3. remove child : sample(project11) -> sample(project21)
+                new Object[] { sampleInProject11WithParentAndChildInProject21, null, clearChildren,
+                        List.of(instanceAdmin, space1PowerUserAndSpace2Observer, project11PowerUserAndProject21Observer),
+                        List.of(space1UserAndSpace2Observer, project11UserAndProject21Observer) },
+        };
+
+        List<Object[]> results = new LinkedList<Object[]>();
+
+        for (int index = 0; index < combinations.length; index++)
+        {
+            logger.info("Combination started: " + index);
+
+            Object[] combination = combinations[index];
+            Function<String, SamplePermId> sampleCreation = (Function<String, SamplePermId>) combination[0];
+            Function<String, SamplePermId> relatedCreation = (Function<String, SamplePermId>) combination[1];
+            Function<SamplePermId, SampleUpdate> sampleUpdateSupplier = (Function<SamplePermId, SampleUpdate>) combination[2];
+            List<PersonPermId> allowedUsers = (List<PersonPermId>) combination[3];
+            List<PersonPermId> disallowedUsers = (List<PersonPermId>) combination[4];
+
+            for (PersonPermId allowedUser : allowedUsers)
+            {
+                String sampleCode = null;
+                SampleUpdate sampleUpdate = null;
+
+                try
+                {
+                    // create samples with the admin user
+                    SamplePermId sampleId = sampleCreation.apply(adminSessionToken);
+                    SamplePermId relatedSampleId = relatedCreation != null ? relatedCreation.apply(adminSessionToken) : null;
+
+                    Sample sample = v3api.getSamples(adminSessionToken, List.of(sampleId), new SampleFetchOptions()).get(sampleId);
+                    assertNotNull(sample);
+                    sampleCode = sample.getCode();
+
+                    // update the sample with a user that should be allowed to do it
+                    String userSessionToken = v3api.login(allowedUser.getPermId(), PASSWORD);
+
+                    sampleUpdate = sampleUpdateSupplier.apply(relatedSampleId);
+                    sampleUpdate.setSampleId(sampleId);
+                    v3api.updateSamples(userSessionToken, List.of(sampleUpdate));
+
+                    logger.info("Combination successfully finished: " + index);
+                    results.add(new Object[] { index, sampleCode, allowedUser, sampleUpdate, null });
+                } catch (Throwable t)
+                {
+                    logger.info("Combination failed: " + index, t);
+                    results.add(new Object[] { index, sampleCode, allowedUser, sampleUpdate, t });
+                }
+            }
+
+            for (PersonPermId disallowedUser : disallowedUsers)
+            {
+                String sampleCode = null;
+                SampleUpdate sampleUpdate = null;
+
+                try
+                {
+                    // create samples with the admin user
+                    SamplePermId sampleId = sampleCreation.apply(adminSessionToken);
+                    SamplePermId relatedSampleId = relatedCreation != null ? relatedCreation.apply(adminSessionToken) : null;
+
+                    Sample sample = v3api.getSamples(adminSessionToken, List.of(sampleId), new SampleFetchOptions()).get(sampleId);
+                    assertNotNull(sample);
+                    sampleCode = sample.getCode();
+
+                    // try to update the sample with a user that shouldn't be allowed to do it
+                    String userSessionToken = v3api.login(disallowedUser.getPermId(), PASSWORD);
+                    sampleUpdate = sampleUpdateSupplier.apply(relatedSampleId);
+                    sampleUpdate.setSampleId(sampleId);
+                    try
+                    {
+                        v3api.updateSamples(userSessionToken, List.of(sampleUpdate));
+                        fail();
+                    } catch (Exception e)
+                    {
+                        logger.info("Combination successfully finished: " + index);
+                        results.add(new Object[] { index, sampleCode, disallowedUser, sampleUpdate, null });
+                        // expected
+                    }
+                } catch (Throwable t)
+                {
+                    logger.info("Combination failed: " + index, t);
+                    results.add(new Object[] { index, sampleCode, disallowedUser, sampleUpdate, t });
+                }
+            }
+        }
+
+        StringBuilder message = new StringBuilder("Test results:\n");
+        boolean error = false;
+
+        for (Object[] result : results)
+        {
+            Integer index = (Integer) result[0];
+            String sampleCode = (String) result[1];
+            IPersonId userId = (IPersonId) result[2];
+            SampleUpdate sampleUpdate = (SampleUpdate) result[3];
+            Throwable throwable = (Throwable) result[4];
+
+            message.append(throwable != null ? "(ERROR)" : "(OK)").append(" index=").append(index).append(", sample=").append(sampleCode)
+                    .append(", user=").append(userId).append(", parents=").append(sampleUpdate.getParentIds()).append(", children=")
+                    .append(sampleUpdate.getChildIds()).append("\n");
+
+            if (throwable != null)
+            {
+                error = true;
+            }
+        }
+
+        if (error)
+        {
+            throw new RuntimeException(message.toString());
+        } else
+        {
+            logger.info(message.toString());
+        }
+    }
+
     private SampleUpdate updateSampleSpace(ISpaceId spaceId)
     {
         SampleUpdate update = new SampleUpdate();
@@ -3150,6 +3366,34 @@ public class UpdateSampleTest extends AbstractSampleTest
         SampleUpdate update = new SampleUpdate();
         update.setSpaceId(spaceId);
         update.setProjectId(projectId);
+        return update;
+    }
+
+    private SampleUpdate updateSampleAddParent(ISampleId parentId)
+    {
+        SampleUpdate update = new SampleUpdate();
+        update.getParentIds().add(parentId);
+        return update;
+    }
+
+    private SampleUpdate updateSampleClearParents()
+    {
+        SampleUpdate update = new SampleUpdate();
+        update.getParentIds().set();
+        return update;
+    }
+
+    private SampleUpdate updateSampleAddChild(ISampleId childId)
+    {
+        SampleUpdate update = new SampleUpdate();
+        update.getChildIds().add(childId);
+        return update;
+    }
+
+    private SampleUpdate updateSampleClearChildren()
+    {
+        SampleUpdate update = new SampleUpdate();
+        update.getChildIds().set();
         return update;
     }
 
