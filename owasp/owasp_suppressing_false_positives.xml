@@ -52,10 +52,21 @@
 	<!-- [2027-06-01] CVE-2023-50572 is for jline-groovy v3.24.1
 	     GroovyEngine.execute. The reported jline:jline 0.9.94 artifact is the
 	     legacy JLine 1 API used by CLI code and does not contain the JLine 3
-	     groovy module. CPE over-match - annual re-check. -->
+	     groovy module. CPE over-match - annual re-check.
+	     CVE-2026-56740/CVE-2026-56741 are the same shape: both are resource-
+	     exhaustion bugs in JLine 3's optional org.jline "remote-telnet" Telnet
+	     server module (TelnetIO.readNEVariables/handleNAWS). jline:jline
+	     0.9.94 is a different Maven group entirely (legacy JLine 1, no Telnet
+	     server ever existed in that line), used here only for plain console
+	     line-reading in the admin console (server-application-server,
+	     server-original-data-store, server-screening, core-plugin-openbis) -
+	     grepping the codebase for "telnet" finds nothing. NVD's CPE dictionary
+	     shares one cpe:jline:jline product id across both artifacts. -->
 	<suppress until="2027-06-01Z">
 		<packageUrl>pkg:maven/jline/jline@0.9.94</packageUrl>
 		<cve>CVE-2023-50572</cve>
+		<cve>CVE-2026-56740</cve>
+		<cve>CVE-2026-56741</cve>
 	</suppress>
 	<!-- [2027-06-01] CVE-2023-1932 applies to org.hibernate.validator
 	     hibernate-validator versions before 6.2. OWASP matches the unrelated
@@ -196,5 +207,20 @@
 	<suppress until="2027-06-01Z">
 		<packageUrl regex="true">^pkg:maven/jakarta\.authentication/jakarta\.authentication-api@.*$</packageUrl>
 		<cve>CVE-2025-7962</cve>
+	</suppress>
+	<!-- [2027-06-01] CVE-2026-53914 is an unsafe-deserialization RCE in the Kotlin
+	     Gradle plugin's own build-cache metadata handling. kotlin-reflect /
+	     kotlin-stdlib / kotlin-stdlib-common 1.6.21 here are plain runtime and
+	     reflection libraries transitively pulled in by cz.habarta.typescript-
+	     generator:typescript-generator-core (applied as a Gradle plugin in
+	     api-openbis-typescript/build.gradle for build-time Java->TypeScript
+	     codegen), not the Kotlin build-plugin artifact that actually contains the
+	     vulnerable cache-deserialization code, and never shipped in any openBIS
+	     server artifact. CPE over-match on the shared jetbrains:kotlin product id,
+	     same shape as the kotlin-stdlib 1.8.10 / CVE-2020-29582 entry above -
+	     annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-(reflect|stdlib|stdlib-common)@1\.6\.21$</packageUrl>
+		<cve>CVE-2026-53914</cve>
 	</suppress>
 </suppressions>

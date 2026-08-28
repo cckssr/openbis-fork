@@ -21,7 +21,7 @@ cisd-cisd-hotdeploy = "13.01.0"
 cisd-cisd-image-readers = "r1553067167"
 cisd-cisd-openbis-knime-server = "13.6.0.r29301"
 com-fasterxml-classmate = "1.7.3"
-com-fasterxml-jackson = "2.21.4"
+com-fasterxml-jackson = "2.21.5"
 com-fasterxml-jackson-core-jackson-annotations = "2.21"
 com-github-freva-ascii-table = "1.9.0"
 com-github-node-gradle-node = "7.1.0"
@@ -57,6 +57,7 @@ io-netty-netty-all = "4.1.136.Final"
 io-quarkus = "3.36.3"
 io-rest-assured-rest-assured = "5.5.7"
 io-smallrye-jandex = "3.5.3"
+io-vertx-vertx-core = "4.5.30"
 it-unimi-dsi-fastutil = "5.1.5"
 izpack-izpack = "5.0-beta9-SNAPSHOT-2022-03-22"
 jakarta-activation-jakarta-activation-api = "2.1.4"
@@ -198,6 +199,7 @@ io-quarkus-quarkus-bom = { module = "io.quarkus:quarkus-bom", version.ref = "io-
 io-quarkus-quarkus-resteasy = { module = "io.quarkus:quarkus-resteasy", version.ref = "io-quarkus" }
 io-rest-assured-rest-assured = { module = "io.rest-assured:rest-assured", version.ref = "io-rest-assured-rest-assured" }
 io-smallrye-jandex = { module = "io.smallrye:jandex", version.ref = "io-smallrye-jandex" }
+io-vertx-vertx-core = { module = "io.vertx:vertx-core", version.ref = "io-vertx-vertx-core" }
 it-unimi-dsi-fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "it-unimi-dsi-fastutil" }
 izpack-izpack = { module = "izpack:izpack", version.ref = "izpack-izpack" }
 jakarta-activation-jakarta-activation-api = { module = "jakarta.activation:jakarta.activation-api", version.ref = "jakarta-activation-jakarta-activation-api" }

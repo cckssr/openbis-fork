@@ -39,6 +39,15 @@ configurations.all {
         if (details.requested.group == 'io.netty' && !details.requested.name.startsWith('netty-tcnative')) {
             details.useVersion libs.io.netty.netty.all.get().versionConstraint.requiredVersion
         }
+        // The Quarkus 3.36.3 BOM pins vert.x to 4.5.28, which is still within
+        // the vulnerable range of CVE-2026-15075/CVE-2026-15076 (fixed in
+        // 4.5.30); vertx-uri-template additionally lags the rest of the
+        // family at 4.5.26 in the openbis-ivy mirror. Force every io.vertx
+        // module to a single patched version so the whole family stays
+        // consistent and closes both CVEs.
+        if (details.requested.group == 'io.vertx') {
+            details.useVersion libs.io.vertx.vertx.core.get().versionConstraint.requiredVersion
+        }
     }
 
     exclude group: 'log4j', module: 'log4j'
