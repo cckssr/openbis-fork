@@ -509,6 +509,12 @@ class TestCase(systemtest.testcase.TestCase):
             # Legacy microscopy/screening data keeps RESOLUTION in the internal namespace, not as system-managed.
             "UPDATE property_types SET is_managed_internally = 'f' "
             + "WHERE code = 'RESOLUTION' AND is_managed_internally = 't'",
+            # The data_source fixture predates the ELN-LIMS master data change that widened
+            # PRODUCT.DESCRIPTION to MULTILINE_VARCHAR; freshly installed instances (e.g. harvester)
+            # already get the new type since it's only created, never updated, on existing databases.
+            "UPDATE property_types SET daty_id = (SELECT id FROM data_types WHERE code = 'MULTILINE_VARCHAR') "
+            + "WHERE code = 'PRODUCT.DESCRIPTION' AND is_managed_internally = 't' "
+            + "AND daty_id = (SELECT id FROM data_types WHERE code = 'VARCHAR')",
         ]
 
         for statement in statements:
