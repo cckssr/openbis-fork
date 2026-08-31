@@ -2816,11 +2816,20 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         results.nodes.push(this._createOtherToolsNode())
 
         var extraPluginUtilities = profile.getPluginUtilities()
+
+        var hiddenNodes = [];
         extraPluginUtilities.forEach((extraPluginUtility) => {
-            if(!extraPluginUtility.isHidden || (extraPluginUtility.isHidden && !extraPluginUtility.isHidden())) {
+            if(!extraPluginUtility.isHidden) {
                 results.nodes.push(this._createExtraPluginNode(extraPluginUtility))
+            } else {
+                hiddenNodes.push(extraPluginUtility.isHidden((isHidden) => {
+                    if(!isHidden) {
+                        results.nodes.push(this._createExtraPluginNode(extraPluginUtility));
+                    }
+                }))
             }
         })
+        await Promise.all(hiddenNodes)
 
         results.nodes = results.nodes.filter((node) => !!node)
 
