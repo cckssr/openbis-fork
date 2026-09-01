@@ -104,15 +104,7 @@ public class ResourceListParserData
     
     public List<IncomingSpace> getRelevantSpacesToProcess()
     {
-        List<IncomingSpace> result = new ArrayList<>();
-        for (IncomingSpace incomingSpace : spacesToProcess)
-        {
-            if (harvesterSpaceList.contains(incomingSpace.getPermID()))
-            {
-                result.add(incomingSpace);
-            }
-        }
-        return result;
+        return new ArrayList<>(spacesToProcess);
     }
 
     public Map<String, IncomingProject> getProjectsToProcess()
