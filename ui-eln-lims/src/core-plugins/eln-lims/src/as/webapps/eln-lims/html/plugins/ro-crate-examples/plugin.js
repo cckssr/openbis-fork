@@ -35,6 +35,25 @@ $.extend(RoCrateExamplesPluginViewTechnology.prototype, ELNLIMSPlugin.prototype,
                 .append($("<h1>").append($icon).append(" RO-Crate Examples"))
                 .append($("<div>").append("This is page with example data imports for RO-Crate tests"));
 
+            var $result = $("<div>");
+
+
+            var printResultList = function(methodName, resultList) {
+                $result.empty();
+                $result.append($('<br>'));
+                var resultHeader = $('<label>', {class : 'control-label' }).text("Import entities:")
+                $result.append(resultHeader);
+                var $list = $("<ul>");
+
+                for (let identifier of resultList)
+                {
+                    let $li = $("<li>");
+                    $li.append($("<span>").text(identifier))
+                    $list.append($li);
+                }
+                $result.append($list);
+            }
+
             var addButton = function(container, methodName) {
                 var $div = $("<div>");
                 $div.append($('<br>'));
@@ -49,6 +68,17 @@ $.extend(RoCrateExamplesPluginViewTechnology.prototype, ELNLIMSPlugin.prototype,
                             Util.showError(result.message, function() {}, true);
                         } else {
                             Util.showSuccess("Import successful", function () { Util.unblockUI(); });
+                            let ids = result.result.objectIds
+                                .filter( x => !x.constructor.name.includes('Type') )
+                                .filter( x => !x.constructor.name.includes('PluginPermId'))
+                                .filter( x => !x.constructor.name.includes('Vocabulary'))
+                                .map( x => {
+                                    if(x.constructor.name === "SpacePermId") {
+                                        return "/" + x.permId;
+                                    }
+                                    return x.identifier;
+                                }).sort();
+                            printResultList(methodName, ids);
                         }
                     }
 
@@ -109,7 +139,7 @@ $.extend(RoCrateExamplesPluginViewTechnology.prototype, ELNLIMSPlugin.prototype,
                                             Util.showError("Import failed to validate:\n" + JSON.stringify(result.validationResult.errors, null, "\t"));
                                         } else {
                                             Util.showSuccess("Import is completed.", function () { Util.unblockUI(); });
-                                            mainController.refreshView();
+                                            printResultList(methodName, Object.keys(result.importResponse.externalToOpenBisIdentifier).sort());
                                         }
                                     } else if(result.status === "FAILED") {
                                         Util.showError(result.errors);
@@ -187,6 +217,7 @@ $.extend(RoCrateExamplesPluginViewTechnology.prototype, ELNLIMSPlugin.prototype,
             addButton($content, 'scicat');
             addRoCrateImportButton($content, 'publication');
             addRoCrateImportButton($content, 'logbook');
+            $content.append($result);
 
         }
     },
