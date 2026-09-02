@@ -16,15 +16,7 @@
 package ch.ethz.sis.openbis.generic.server.xls.importer.delay;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -142,6 +134,8 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
     private final Map<Map.Entry<IEntityTypeId, String>, List<SemanticAnnotation>> propertyAssignmentToSemanticAnnotationMap;
     private final Map<SemanticAnnotationRecord, List<SemanticAnnotation>> recordToAnnotationMap;
 
+    private final Map<String, Set<String>> samplePropertiesDependencyGraphs;
+
     public boolean isSystem()
     {
         return sessionToken.startsWith("system");
@@ -160,6 +154,7 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         this.propertyTypeToSemanticAnnotationMap = new HashMap<>();
         this.propertyAssignmentToSemanticAnnotationMap = new HashMap<>();
         this.recordToAnnotationMap = new HashMap<>();
+        this.samplePropertiesDependencyGraphs = new HashMap<>();
     }
 
     private void addIdsAndExecuteDelayed(IObjectId id, ImportTypes importTypes, String variable)
@@ -216,11 +211,72 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
             }
             for (DelayedExecution delayedExecution : delayedExecutionsAsList)
             {
-                errors.add("sheet: " + (delayedExecution.getPage() + 1) + " line: " + (delayedExecution.getLine() + 1) + " message: Entity "
-                        + delayedExecution.getDependencies() + " could not be found. Either you forgot to register it or mistyped the identifier.");
+                Map.Entry<String, List<String>> cycle = detectCycles();
+                if(cycle != null) {
+                    errors.add(String.format("sheet: %s line %s message: Detected mandatory sample property cycle in property '%s' cycle: %s",
+                                    delayedExecution.getPage() + 1,
+                                    delayedExecution.getLine() + 1,
+                                    cycle.getKey(),
+                                    String.join(" -> ", cycle.getValue())));
+                } else {
+                    errors.add("sheet: " + (delayedExecution.getPage() + 1) + " line: " + (delayedExecution.getLine() + 1) + " message: Entity "
+                            + delayedExecution.getDependencies() + " could not be found. Either you forgot to register it or mistyped the identifier.");
+                }
             }
             throw new UserFailureException(errors.toString());
         }
+    }
+
+    /**
+     * Cycle detection algorithm for mandatory sample properties detected during
+     * @return
+     */
+    private Map.Entry<String, List<String>> detectCycles() {
+        for (String propertyCode : samplePropertiesDependencyGraphs.keySet())
+        {
+            Set<String> visited = new HashSet<>();
+            Map<String, String> path = new HashMap<>();
+            for (String node : samplePropertiesDependencyGraphs.keySet())
+            {
+                if (!visited.contains(node))
+                {
+                    Stack<String> stack = new Stack<>();
+                    stack.push(node);
+                    while (!stack.isEmpty())
+                    {
+                        String visitedNode = stack.pop();
+                        visited.add(visitedNode);
+                        for (String neighbour : samplePropertiesDependencyGraphs.get(visitedNode))
+                        {
+                            path.put(neighbour, visitedNode);
+                            if (!visited.contains(neighbour))
+                            {
+                                stack.push(neighbour);
+                            } else
+                            {
+                                //cycle detected
+                                List<String> result = new ArrayList<>();
+                                String root = neighbour;
+                                String pathElement = neighbour;
+                                result.add(root);
+                                while (true)
+                                {
+                                    pathElement = path.get(pathElement);
+                                    result.add(pathElement);
+                                    if (pathElement.equalsIgnoreCase(neighbour))
+                                    {
+                                        Collections.reverse(result);
+                                        return Map.entry(propertyCode, result);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+        return null;
     }
 
     private void resolveDependencies(IObjectId id)
@@ -412,17 +468,24 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         ExperimentIdentifier experimentIdentifier =
                 new ExperimentIdentifier(experimentCreation.getProjectId().toString() + "/" + experimentCreation.getCode());
 
-        // Manage Sample properties cyclical dependencies
-        resolveAndScheduleAssignmentOfSampleProperties(experimentIdentifier,
-                experimentCreation, page, line);
-        //
+        List<IObjectId> dependencies = new ArrayList<>();
 
         // check project
         IProjectId projectId = experimentCreation.getProjectId();
         if (getProject(projectId, new ProjectFetchOptions()) == null)
+        {
+            dependencies.add(projectId);
+        }
+
+        // Manage Sample properties cyclical dependencies
+        resolveAndScheduleAssignmentOfSampleProperties(experimentIdentifier,
+                experimentCreation, page, line, dependencies);
+        //
+
+        if (dependencies.isEmpty() == false)
         {// Delay
             DelayedExecution delayedExecution = new DelayedExecution(null, experimentIdentifier, experimentCreation, page, line);
-            delayedExecution.addDependencies(List.of(projectId));
+            delayedExecution.addDependencies(dependencies);
             addDelayedExecution(delayedExecution);
 
         } else
@@ -433,17 +496,23 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
 
     public void updateExperiment(ExperimentUpdate experimentUpdate, int page, int line)
     {
-        // Manage Sample properties cyclical dependencies
-        resolveAndScheduleAssignmentOfSampleProperties(experimentUpdate.getExperimentId(),
-                experimentUpdate, page, line);
-        //
+        List<IObjectId> dependencies = new ArrayList<>();
 
+        // check project
         IExperimentId experimentId = experimentUpdate.getExperimentId();
         IProjectId projectId = experimentUpdate.getProjectId().getValue();
-        if (projectId != null && getProject(projectId, new ProjectFetchOptions()) == null)
+        if (projectId != null && getProject(projectId, new ProjectFetchOptions()) == null) {
+            dependencies.add(projectId);
+        }
+
+        // Manage Sample properties cyclical dependencies
+        resolveAndScheduleAssignmentOfSampleProperties(experimentUpdate.getExperimentId(),
+                experimentUpdate, page, line, dependencies);
+
+        if(dependencies.isEmpty() == false)
         { // Delay
             DelayedExecution delayedExecution = new DelayedExecution(null, experimentId, experimentUpdate, page, line);
-            delayedExecution.addDependencies(List.of(projectId));
+            delayedExecution.addDependencies(dependencies);
             addDelayedExecution(delayedExecution);
         } else
         {// Execute
@@ -506,6 +575,7 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         {
             v3.updateExperimentTypes(this.sessionToken, List.of(experimentTypeUpdate));
             this.ids.add(experimentTypeUpdate.getTypeId());
+            propertyAssignmentCache.remove(experimentTypeUpdate.getObjectId());
         }
     }
 
@@ -552,7 +622,7 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         }
 
         // Manage Sample properties cyclical dependencies
-        resolveAndScheduleAssignmentOfSampleProperties(sampleId, sampleCreation, page, line);
+        resolveAndScheduleAssignmentOfSampleProperties(sampleId, sampleCreation, page, line, dependencies);
         //
 
         // parents/children variable substitution
@@ -698,7 +768,8 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         }
     }
 
-    private void resolveAndScheduleAssignmentOfSampleProperties(IObjectId objectId, IPropertiesHolder sampleOrExperimentDTO, int page, int line)
+    private void resolveAndScheduleAssignmentOfSampleProperties(IObjectId objectId, IPropertiesHolder sampleOrExperimentDTO,
+            int page, int line, List<IObjectId> sampleDependencies)
     {
         samplePropertiesVariableReplacer(sampleOrExperimentDTO); // Update properties before deciding to schedule anything
 
@@ -717,16 +788,24 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
                     {
                         ISampleId sampleId = ImportUtils.buildSampleIdentifier(propertyValue);
                         // 1. Check if they are dependencies or not
-                        if (sampleId instanceof IdentifierVariable && !resolvedVariables.containsKey(sampleId))
+                        if (sampleId instanceof IdentifierVariable variable && !resolvedVariables.containsKey(sampleId))
                         {
                             // Not resolved variable => Dependency
                             dependencies.add(sampleId);
                             dependencyFound = true;
-                        } else if (sampleId instanceof SampleIdentifier && getSample(sampleId, new SampleFetchOptions()) == null)
+                            if(!variable.equals(objectId)) {
+                                //skip dependencies to itself
+                                sampleDependencies.add(sampleId);
+                            }
+                        } else if (sampleId instanceof SampleIdentifier sampleIdentifier && getSample(sampleId, new SampleFetchOptions()) == null)
                         {
                             // Not found sample => Dependency
                             dependencies.add(sampleId);
                             dependencyFound = true;
+                            if(!sampleIdentifier.equals(objectId)) {
+                                //skip dependencies to itself
+                                sampleDependencies.add(sampleId);
+                            }
                         } else
                         {
                             // Not a dependency
@@ -744,26 +823,64 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         if (dependencies.isEmpty() == false)
         { // We only create an update if dependencies are not resolved
             IObjectUpdate entityToUpdate = null;
-            if (sampleOrExperimentDTO instanceof SampleCreation || sampleOrExperimentDTO instanceof SampleUpdate)
+
+            EntityTypePermId entityTypePermId = null;
+
+
+            if (sampleOrExperimentDTO instanceof SampleCreation creation)
             {
+                entityTypePermId = (EntityTypePermId) creation.getTypeId();
                 SampleUpdate entityUpdate = new SampleUpdate();
                 entityUpdate.setSampleId((ISampleId) objectId);
                 entityUpdate.getProperties().putAll(sampleProperties);
                 entityToUpdate = entityUpdate;
-            } else if (sampleOrExperimentDTO instanceof ExperimentCreation || sampleOrExperimentDTO instanceof ExperimentUpdate)
+            } else if( sampleOrExperimentDTO instanceof SampleUpdate update)
             {
+                SampleFetchOptions fetchOptions = new SampleFetchOptions();
+                fetchOptions.withType();
+                entityTypePermId = getSample(update.getSampleId(), fetchOptions).getType().getPermId();
+                SampleUpdate entityUpdate = new SampleUpdate();
+                entityUpdate.setSampleId((ISampleId) objectId);
+                entityUpdate.getProperties().putAll(sampleProperties);
+                entityToUpdate = entityUpdate;
+            } else if (sampleOrExperimentDTO instanceof ExperimentCreation creation)
+            {
+                entityTypePermId = (EntityTypePermId) creation.getTypeId();
+                ExperimentUpdate entityUpdate = new ExperimentUpdate();
+                entityUpdate.setExperimentId((IExperimentId) objectId);
+                entityUpdate.getProperties().putAll(sampleProperties);
+                entityToUpdate = entityUpdate;
+            } else if(sampleOrExperimentDTO instanceof ExperimentUpdate update) {
+                ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+                fetchOptions.withType();
+                entityTypePermId = getExperiment(update.getExperimentId(), fetchOptions).getType().getPermId();
                 ExperimentUpdate entityUpdate = new ExperimentUpdate();
                 entityUpdate.setExperimentId((IExperimentId) objectId);
                 entityUpdate.getProperties().putAll(sampleProperties);
                 entityToUpdate = entityUpdate;
             }
 
+            List<PropertyAssignment> assignments = getPropertyAssignments(entityTypePermId);
+
             // Remove all sample properties scheduled for update
             for (String samplePropertyKey : sampleProperties.keySet())
             {
-                sampleOrExperimentDTO.getProperties().remove(samplePropertyKey);
-            }
+                for(PropertyAssignment assignment : assignments) {
+                    if(assignment.getPropertyType().getCode().equalsIgnoreCase(samplePropertyKey)) {
+                        if(!assignment.isMandatory()) {
+                            // we can remove non-mandatory sample properties and update them later
+                            sampleOrExperimentDTO.getProperties().remove(samplePropertyKey);
+                        } else {
+                            // build graph for mandatory sample properties
+                            samplePropertiesDependencyGraphs.putIfAbsent(objectId.toString(), new HashSet<>());
+                            for (String propertyValue : getSamplePropertyValues(properties.get(samplePropertyKey))) {
+                                samplePropertiesDependencyGraphs.get(objectId.toString()).add(propertyValue);
+                            }
+                        }
 
+                    }
+                }
+            }
             // If is a creation the entity is a dependency
             if (sampleOrExperimentDTO instanceof SampleCreation ||
                     sampleOrExperimentDTO instanceof ExperimentCreation)
@@ -836,9 +953,9 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         }
 
         // Manage Sample properties cyclical dependencies
-        resolveAndScheduleAssignmentOfSampleProperties(sampleUpdate.getSampleId(),
-                sampleUpdate, page, line);
-        //
+        resolveAndScheduleAssignmentOfSampleProperties(
+                sampleUpdate.getSampleId(),
+                sampleUpdate, page, line, dependencies);
 
         // parents/children variable substitution
         List<ISampleId> parentIdsAdded = new ArrayList<>();
@@ -972,6 +1089,7 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         {
             v3.updateSampleTypes(this.sessionToken, List.of(sampleTypeUpdate));
             this.ids.add(sampleTypeUpdate.getTypeId());
+            propertyAssignmentCache.remove(sampleTypeUpdate.getObjectId());
         }
     }
 
