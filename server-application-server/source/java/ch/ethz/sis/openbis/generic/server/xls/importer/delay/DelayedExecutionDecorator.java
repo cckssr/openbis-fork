@@ -211,13 +211,12 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
             }
             for (DelayedExecution delayedExecution : delayedExecutionsAsList)
             {
-                Map.Entry<String, List<String>> cycle = detectCycles();
-                if(cycle != null) {
-                    errors.add(String.format("sheet: %s line %s message: Detected mandatory sample property cycle in property '%s' cycle: %s",
+                List<String> cycle = detectCycles();
+                if(!cycle.isEmpty()) {
+                    errors.add(String.format("sheet: %s line %s message: Detected mandatory sample property cycle: %s",
                                     delayedExecution.getPage() + 1,
                                     delayedExecution.getLine() + 1,
-                                    cycle.getKey(),
-                                    String.join(" -> ", cycle.getValue())));
+                                    String.join(" -> ", cycle)));
                 } else {
                     errors.add("sheet: " + (delayedExecution.getPage() + 1) + " line: " + (delayedExecution.getLine() + 1) + " message: Entity "
                             + delayedExecution.getDependencies() + " could not be found. Either you forgot to register it or mistyped the identifier.");
@@ -231,52 +230,49 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
      * Cycle detection algorithm for mandatory sample properties detected during
      * @return
      */
-    private Map.Entry<String, List<String>> detectCycles() {
-        for (String propertyCode : samplePropertiesDependencyGraphs.keySet())
+    private List<String> detectCycles() {
+        Set<String> visited = new HashSet<>();
+        Map<String, String> path = new HashMap<>();
+        for (String node : samplePropertiesDependencyGraphs.keySet())
         {
-            Set<String> visited = new HashSet<>();
-            Map<String, String> path = new HashMap<>();
-            for (String node : samplePropertiesDependencyGraphs.keySet())
+            if (!visited.contains(node))
             {
-                if (!visited.contains(node))
+                Stack<String> stack = new Stack<>();
+                stack.push(node);
+                while (!stack.isEmpty())
                 {
-                    Stack<String> stack = new Stack<>();
-                    stack.push(node);
-                    while (!stack.isEmpty())
+                    String visitedNode = stack.pop();
+                    visited.add(visitedNode);
+                    for (String neighbour : samplePropertiesDependencyGraphs.get(visitedNode))
                     {
-                        String visitedNode = stack.pop();
-                        visited.add(visitedNode);
-                        for (String neighbour : samplePropertiesDependencyGraphs.get(visitedNode))
+                        path.put(neighbour, visitedNode);
+                        if (!visited.contains(neighbour))
                         {
-                            path.put(neighbour, visitedNode);
-                            if (!visited.contains(neighbour))
+                            stack.push(neighbour);
+                        } else
+                        {
+                            //cycle detected
+                            List<String> result = new ArrayList<>();
+                            String root = neighbour;
+                            String pathElement = neighbour;
+                            result.add(root);
+                            while (true)
                             {
-                                stack.push(neighbour);
-                            } else
-                            {
-                                //cycle detected
-                                List<String> result = new ArrayList<>();
-                                String root = neighbour;
-                                String pathElement = neighbour;
-                                result.add(root);
-                                while (true)
+                                pathElement = path.get(pathElement);
+                                result.add(pathElement);
+                                if (pathElement.equalsIgnoreCase(neighbour))
                                 {
-                                    pathElement = path.get(pathElement);
-                                    result.add(pathElement);
-                                    if (pathElement.equalsIgnoreCase(neighbour))
-                                    {
-                                        Collections.reverse(result);
-                                        return Map.entry(propertyCode, result);
-                                    }
+                                    Collections.reverse(result);
+                                    return result;
                                 }
                             }
                         }
                     }
-
                 }
+
             }
         }
-        return null;
+        return new ArrayList<>();
     }
 
     private void resolveDependencies(IObjectId id)
