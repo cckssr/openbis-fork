@@ -287,7 +287,7 @@ public class ImportSamplesTest extends AbstractImportTest
 
 
     @Test(expectedExceptions = UserFailureException.class,
-            expectedExceptionsMessageRegExp = "(s?).*Detected mandatory sample property cycle in property 'SAMPLE_PROP' cycle: "
+            expectedExceptionsMessageRegExp = "(s?).*Detected mandatory sample property cycle: "
                     + "/TEST_SPACE/BBB -> /TEST_SPACE/CCC -> /TEST_SPACE/AAA -> /TEST_SPACE/BBB.*")
     @DirtiesContext
     public void testSamplesAreCreatedWithCyclicMandatorySampleProperties() throws IOException
@@ -305,7 +305,7 @@ public class ImportSamplesTest extends AbstractImportTest
 
 
     @Test(expectedExceptions = UserFailureException.class,
-            expectedExceptionsMessageRegExp = "(s?).*Detected mandatory sample property cycle in property 'SAMPLE_PROP' cycle: "
+            expectedExceptionsMessageRegExp = "(s?).*Detected mandatory sample property cycle: "
                     + "/TEST_SPACE/BBB -> /TEST_SPACE/CCC -> /TEST_SPACE/AAA -> /TEST_SPACE/BBB.*")
     @DirtiesContext
     public void testSamplesAreCreatedWithCyclicMandatoryMultivalueSampleProperties() throws IOException
