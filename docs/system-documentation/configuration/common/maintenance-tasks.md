@@ -692,8 +692,8 @@ interval = 1 day
 **Description**: Finds archived data sets which are no longer in openBIS
 (at least not marked as present-in-archive). A report will be created
 and sent to the specified list of e-mail addresses (mandatory
-property `email-addresses`). The task also looks for data sets which are
-present-in-archive but actually not found in the archive.
+property `email-addresses`). Subject of emails sent by the task can be customized and start with a configurable prefix (optional property `email-subject-prefix`, default: null).
+The task also looks for data sets which are present-in-archive but actually not found in the archive.
 
 This orphan finder task only works for Multi Data Set Archiver. It
 doesn't work for RsyncArchiver, TarArchiver or ZipArchiver.
@@ -706,6 +706,7 @@ doesn't work for RsyncArchiver, TarArchiver or ZipArchiver.
 class = ch.systemsx.cisd.etlserver.plugins.DataSetArchiverOrphanFinderTask
 interval = 60 s
 email-addresses = email1@bsse.ethz.ch, email2@bsse.ethz.ch
+email-subject-prefix = my email prefix
 ```
 
 
@@ -885,14 +886,15 @@ mail.smtp.password = <can be empty>
 **Configuration**:
 
 
-|Property Key|Description|
+| Property Key            | Description                                                                                                                                                                                                                                                                    |
 |--- |--- |
-|interval|Determines the length of period: daily if less than or equal one day, weekly if less than or equal seven days, monthly if above seven days. The actual period is always the day/week/month before the execution day|
-|email-addresses|Comma-separated e-mail addresses which will receive the report as an attached text file (format: TSV).|
-|user-reporting-type|Type of reporting individual user activities. Possible values are<br /><ul><li>NONE: No reporting</li><li>ALL: Activities inside and outside groups and for all users</li><li>OUTSIDE_GROUP_ONLY: Activities outside groups and users of no groups</li></ul><br />Default: ALL|
-|spaces-to-be-ignored|Optional list of comma-separated space codes of all the spaces which should be ignored for the report.|
-|configuration-file-path|Optional configuration file defining groups.|
-|count-all-entities|If `true` shows the number of all entities (collections, objects, data sets) in an additional column. Default: `false`|
+| interval                | Determines the length of period: daily if less than or equal one day, weekly if less than or equal seven days, monthly if above seven days. The actual period is always the day/week/month before the execution day                                                            |
+| email-addresses         | Comma-separated e-mail addresses which will receive the report as an attached text file (format: TSV).                                                                                                                                                                         |
+| email-subject-prefix    | Prefix of email subject. Default: null                                                                                                                                                                                                  |
+| user-reporting-type     | Type of reporting individual user activities. Possible values are<br /><ul><li>NONE: No reporting</li><li>ALL: Activities inside and outside groups and for all users</li><li>OUTSIDE_GROUP_ONLY: Activities outside groups and users of no groups</li></ul><br />Default: ALL |
+| spaces-to-be-ignored    | Optional list of comma-separated space codes of all the spaces which should be ignored for the report.                                                                                                                                                                         |
+| configuration-file-path | Optional configuration file defining groups.                                                                                                                                                                                                                                   |
+| count-all-entities      | If `true` shows the number of all entities (collections, objects, data sets) in an additional column. Default: `false`                                                                                                                                                         |
 
 **Example**:
 

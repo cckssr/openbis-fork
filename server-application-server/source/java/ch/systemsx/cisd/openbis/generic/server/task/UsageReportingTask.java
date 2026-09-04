@@ -97,6 +97,8 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
 
     static final String TITLE_NAME_PREFIX = "title-name-prefix";
 
+    static final String EMAIL_SUBJECT_PREFIX = "email-subject-prefix";
+
     static final String REPORT_NAME_PREFIX = "report-name-prefix";
 
     static final String PATH_TO_SAVE_REPORT = "path-to-save-report";
@@ -117,7 +119,7 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
 
     private Set<String> spacesToBeIgnored;
 
-    private String titleNamePrefix;
+    private String emailSubjectPrefix;
 
     private String reportNamePrefix;
 
@@ -163,7 +165,11 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
         spacesToBeIgnored = new HashSet<>(PropertyUtils.getList(properties, "spaces-to-be-ignored"));
         userReportingType = UserReportingType.valueOf(properties.getProperty(USER_REPORTING_KEY, UserReportingType.ALL.name()));
         countAllEntities = PropertyUtils.getBoolean(properties, COUNT_ALL_ENTITIES_KEY, false);
-        titleNamePrefix = PropertyUtils.getProperty(properties, TITLE_NAME_PREFIX);
+        // TITLE_NAME_PREFIX is an old name, EMAIL_SUBJECT_PREFIX is a new name also used in other tasks
+        emailSubjectPrefix = PropertyUtils.getProperty(properties, EMAIL_SUBJECT_PREFIX);
+        if (emailSubjectPrefix == null || emailSubjectPrefix.isEmpty()) {
+            emailSubjectPrefix = PropertyUtils.getProperty(properties, TITLE_NAME_PREFIX);;
+        }
         reportNamePrefix = PropertyUtils.getProperty(properties, REPORT_NAME_PREFIX);
         pathToSaveReport = PropertyUtils.getProperty(properties, PATH_TO_SAVE_REPORT);
     }
@@ -287,9 +293,9 @@ public class UsageReportingTask extends AbstractGroupMaintenanceTask
         String subject = "";
         String fileName = "";
 
-        if (titleNamePrefix != null && !titleNamePrefix.isEmpty())
+        if (emailSubjectPrefix != null && !emailSubjectPrefix.isEmpty())
         {
-            subject = titleNamePrefix + " ";
+            subject = emailSubjectPrefix + " ";
         }
         if (reportNamePrefix != null && !reportNamePrefix.isEmpty())
         {

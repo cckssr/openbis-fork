@@ -200,6 +200,7 @@ last-sync-timestamp-file = ../../data/last-sync-timestamp-file_HRVSTR.txt
 log-file = log/synchronization.log
 
 email-addresses = <e-mail 1>, <e-mail 2>, ...
+email-subject-prefix = my email prefix
 
 translate-using-data-source-alias = true
 verbose = true

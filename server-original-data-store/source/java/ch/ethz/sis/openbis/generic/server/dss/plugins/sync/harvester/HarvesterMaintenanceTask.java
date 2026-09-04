@@ -415,6 +415,11 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
 
     private void sendErrorEmail(SyncConfig config, String subject)
     {
+        if (config.getEmailSubjectPrefix() != null && !config.getEmailSubjectPrefix().isEmpty())
+        {
+            subject = config.getEmailSubjectPrefix() + " " + subject;
+        }
+
         if (config.getLogFilePath() != null)
         {
             // send the operation log as attachment

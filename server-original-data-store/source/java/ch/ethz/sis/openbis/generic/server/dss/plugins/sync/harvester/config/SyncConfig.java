@@ -252,6 +252,8 @@ public class SyncConfig
 
     private List<EMailAddress> emailAddresses = new ArrayList<>();
 
+    private String emailSubjectPrefix;
+
     private String logFilePath;
 
     private static final String SEPARATOR = ",";
@@ -298,6 +300,16 @@ public class SyncConfig
         {
             this.emailAddresses.add(new EMailAddress(token.trim()));
         }
+    }
+
+    public String getEmailSubjectPrefix()
+    {
+        return emailSubjectPrefix;
+    }
+
+    public void setEmailSubjectPrefix(final String emailSubjectPrefix)
+    {
+        this.emailSubjectPrefix = emailSubjectPrefix;
     }
 
     public void setAuthCredentials(String realm, String user, String pass)

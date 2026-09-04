@@ -73,6 +73,8 @@ public class SynchronizationConfigReader
 
     private static final String EMAIL_ADDRESSES_PROPERTY_NAME = "email-addresses";
 
+    private static final String EMAIL_SUBJECT_PREFIX_PROPERTY_NAME = "email-subject-prefix";
+
     private static final String TRANSLATE_USING_DATA_SOURCE_ALIAS_PROPERTY_NAME = "translate-using-data-source-alias";
 
     private static final String FULL_SYNC_PROPERTY_NAME = "full-sync";
@@ -139,6 +141,7 @@ public class SynchronizationConfigReader
             String section = reader.getSection(i);
             SyncConfig config = new SyncConfig();
             config.setEmailAddresses(reader.getString(section, EMAIL_ADDRESSES_PROPERTY_NAME, null, true));
+            config.setEmailSubjectPrefix(reader.getString(section, EMAIL_SUBJECT_PREFIX_PROPERTY_NAME, null, false));
             config.setDataSourceAlias(reader.getString(section, DATA_SOURCE_ALIAS_PROPERTY_NAME, section, false));
             String defaultLogFilePath = DEFAULT_LOG_FILE_PATH.replaceFirst(Pattern.quote("{alias}"), config.getDataSourceAlias());
             config.setLogFilePath(reader.getString(section, LOG_FILE_PROPERTY_NAME, defaultLogFilePath, false)
