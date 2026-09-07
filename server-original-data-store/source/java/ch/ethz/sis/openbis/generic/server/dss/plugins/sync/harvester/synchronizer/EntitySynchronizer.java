@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchroniz
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.FullDataSetCreat
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SkinnyEntityRetriever;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.EntityGraph;
@@ -84,6 +86,8 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.IN
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.ParallelizedExecutionPreferences;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.datasourceconnector.DataSourceConnector;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AfsDataSynchronizationSummary;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AfsDataSynchronizer;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentSynchronizationSummary;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentsSynchronizer;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.DataSetRegistrationTaskExecutor;
@@ -173,6 +177,8 @@ public class EntitySynchronizer
 
     private final Set<String> blackListedDataSetCodes;
 
+    private ResourceListParserData synchronizedResourceListData;
+
     public EntitySynchronizer(SynchronizationContext synContext)
     {
         service = synContext.getService();
@@ -191,6 +197,7 @@ public class EntitySynchronizer
 
     public Date synchronizeEntities() throws Exception
     {
+        synchronizedResourceListData = null;
         Document doc = getResourceList();
         ResourceListParserData data = parseResourceList(doc);
 
@@ -213,7 +220,17 @@ public class EntitySynchronizer
             updateFrozenFlags(data);
         }
 
+        synchronizedResourceListData = data;
         return data.getResourceListTimestamp();
+    }
+
+    public void synchronizeAFSData() throws Exception
+    {
+        if (synchronizedResourceListData == null)
+        {
+            throw new IllegalStateException("AFS synchronization requires completed entity synchronization");
+        }
+        synchronizeAfsData(synchronizedResourceListData);
     }
 
     private void updateTimestampsAndUsers(ResourceListParserData data)
@@ -691,6 +708,88 @@ public class EntitySynchronizer
         SummaryUtils.printShortRemovedSummary(operationLog, syncSummary.deletedCount.intValue(), "attachments");
         SummaryUtils.printShortSummaryFooter(operationLog);
         monitor.log();
+    }
+
+    private void synchronizeAfsData(ResourceListParserData data) throws Exception
+    {
+        String dataSourceAfsUrl = data.getDataSourceAfsUrl();
+        String harvesterAfsUrl = config.getHarvesterAfsURL();
+        if (dataSourceAfsUrl == null || dataSourceAfsUrl.isBlank() || harvesterAfsUrl == null || harvesterAfsUrl.isBlank())
+        {
+            return;
+        }
+        Monitor monitor = new Monitor("Synchronize AFS data", operationLog);
+        operationLog.info("Synchronizing AFS data...");
+        List<AfsDataSynchronizer.AfsOwner> owners = collectAllAfsOwners(data);
+        monitor.log(owners.size() + " owners with AFS data to process");
+
+        AfsDataSynchronizationSummary syncSummary = new AfsDataSynchronizationSummary();
+        if (owners.isEmpty() == false)
+        {
+            IApplicationServerApi v3apiDataSource = ServiceUtils.createAsV3Api(config.getDataSourceOpenbisURL());
+            String sessionTokenDataSource = v3apiDataSource.login(config.getUser(), config.getPassword());
+            AfsClient sourceAfsClient = new AfsClient(URI.create(dataSourceAfsUrl));
+            sourceAfsClient.setSessionToken(sessionTokenDataSource);
+            AfsClient harvesterAfsClient = new AfsClient(URI.create(harvesterAfsUrl));
+            harvesterAfsClient.setSessionToken(service.getSessionToken());
+            File tempDirBase = new File(storeRoot, config.getHarvesterTempDir());
+            tempDirBase.mkdirs();
+
+            ParallelizedExecutionPreferences preferences = config.getParallelizedExecutionPrefs();
+            List<List<AfsDataSynchronizer.AfsOwner>> ownerChunks = chunkAfsOwners(owners);
+            ParallelizedExecutor.process(ownerChunks,
+                    new AfsDataSynchronizer(sourceAfsClient, harvesterAfsClient, tempDirBase, syncSummary, config.isDryRun()),
+                    preferences.getMachineLoad(), preferences.getMaxThreads(), "process AFS data", preferences.getRetriesOnFail(),
+                    preferences.isStopOnFailure());
+        }
+        SummaryUtils.printShortSummaryHeader(operationLog);
+        SummaryUtils.printShortAddedSummary(operationLog, syncSummary.addedCount.intValue(), "AFS files");
+        SummaryUtils.printShortUpdatedSummary(operationLog, syncSummary.updatedCount.intValue(), "AFS files");
+        SummaryUtils.printShortRemovedSummary(operationLog, syncSummary.deletedCount.intValue(), "AFS files");
+        SummaryUtils.printShortSummaryFooter(operationLog);
+        monitor.log();
+    }
+
+    /**
+     * Collects AFS owners from the complete resource list, deliberately without applying the AS modification timestamp cutoff. An AFS-only
+     * change does not update its owner's AS modification timestamp, so every owner in the configured synchronization scope must remain eligible.
+     */
+    static List<AfsDataSynchronizer.AfsOwner> collectAllAfsOwners(ResourceListParserData data)
+    {
+        List<AfsDataSynchronizer.AfsOwner> owners = new ArrayList<>();
+        for (IncomingSample sample : data.getSamplesToProcess().values())
+        {
+            owners.add(new AfsDataSynchronizer.AfsOwner(sample.getPermID(), sample.getAfsFiles(), sample.getAfsDirectories(),
+                    sample.getTrashedAfsFiles(), sample.getTrashedAfsDirectories(), sample.getAfsFileSnapshots()));
+        }
+        for (IncomingExperiment experiment : data.getExperimentsToProcess().values())
+        {
+            owners.add(new AfsDataSynchronizer.AfsOwner(experiment.getPermID(), experiment.getAfsFiles(), experiment.getAfsDirectories(),
+                    experiment.getTrashedAfsFiles(), experiment.getTrashedAfsDirectories(), experiment.getAfsFileSnapshots()));
+        }
+//        for (IncomingDataSet dataSet : data.getDataSetsToProcess().values())
+//        {
+//            owners.add(new AfsDataSynchronizer.AfsOwner(dataSet.getFullDataSet().getMetadataCreation().getCode(), dataSet.getAfsFiles(),
+//                    dataSet.getAfsDirectories(), dataSet.getTrashedAfsFiles(), dataSet.getTrashedAfsDirectories(),
+//                    dataSet.getAfsFileSnapshots()));
+//        }
+        return owners;
+    }
+
+    private List<List<AfsDataSynchronizer.AfsOwner>> chunkAfsOwners(List<AfsDataSynchronizer.AfsOwner> owners)
+    {
+        List<List<AfsDataSynchronizer.AfsOwner>> chunks = new ArrayList<>();
+        List<AfsDataSynchronizer.AfsOwner> chunk = null;
+        for (AfsDataSynchronizer.AfsOwner owner : owners)
+        {
+            if (chunk == null || chunk.size() >= 1000)
+            {
+                chunk = new ArrayList<>();
+                chunks.add(chunk);
+            }
+            chunk.add(owner);
+        }
+        return chunks;
     }
 
     private void populateFileServiceRepository(ResourceListParserData data)

@@ -141,7 +141,12 @@ Supported commands:
     status  -> prints the status of the background service
 
     config  -> prints the configuration with which the background service is running
-    config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120   -> sets configuration parameters: two-letter ISO-code for language, synchronization-interval in seconds (defaults: false, 'en', 120 seconds = 2 minutes)
+    config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120 -expPatWarningDays=7
+            -> sets configuration parameters:
+               -startAtLogin : start the background-service at login (defaults to false)
+               -language : two-letter ISO-code for language (defaults to 'en') (affects only the graphical interface)
+               -syncInterval : synchronization-interval in seconds (defaults to 120 seconds = 2 minutes)
+               -expPatWarningDays : advance warning days for expiring PAT-sessions (defaults to 7 days) (affects only the graphical interface)
     config ignored-path-patterns -> shows the active global default list of ignored file patterns (glob syntax)
     config ignored-path-patterns -showFactoryDefault -> shows the showFactoryDefault (not necessarily active) global default list of ignored file patterns (glob syntax)
     config ignored-path-patterns -reset -> resets the active global default list of ignored file patterns to factory-default values
@@ -179,6 +184,7 @@ OpenBIS Drive Service is running with this configuration:
 Start-at-login: false
 Language: en
 Sync-interval: 60 seconds
+Advance expiring PAT-session warning days: 7 days
 Synchronization-jobs: 
 ----------
 Title: Descriptive title...
@@ -228,6 +234,7 @@ Prints the current configuration of the background-process:
 Start-at-login: false
 Language: en
 Sync-interval: 60 seconds
+Advance expiring PAT-session warning days: 7 days
 Synchronization-jobs: 
 ----------
 Title: Descriptive title...
@@ -250,12 +257,13 @@ it affects only the graphical interface
 Use the `config` command with options to modify the configuration 
 (not necessarily all options have to be specified):
 ```shell
-./openbis-drive -startAtLogin=true -language=fr -syncInterval=60
+./openbis-drive -startAtLogin=true -language=fr -syncInterval=60 -expPatWarningDays=10
 ```
 ```
 Start-at-login: true
 Language: fr
 Sync-interval: 60 seconds
+Advance expiring PAT-session warning days: 10 days
 Synchronization-jobs: 
 ----------
 Title: Descriptive title...

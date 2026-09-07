@@ -60,6 +60,16 @@ public class SyncConfig
         this.dataSourceDSSURL = dataSourceDSSURL;
     }
 
+    public String getHarvesterAfsURL()
+    {
+        return harvesterAfsURL;
+    }
+
+    public void setHarvesterAfsURL(String harvesterAfsURL)
+    {
+        this.harvesterAfsURL = harvesterAfsURL;
+    }
+
     public String getLastSyncTimestampFileName()
     {
         return lastSyncTimestampFileName;
@@ -204,6 +214,8 @@ public class SyncConfig
 
     private String dataSourceDSSURL;
 
+    private String harvesterAfsURL;
+
     private String lastSyncTimestampFileName;
 
     private String notSyncedEntitiesFileName;
@@ -239,6 +251,8 @@ public class SyncConfig
     private String fileServiceReporitoryPath;
 
     private List<EMailAddress> emailAddresses = new ArrayList<>();
+
+    private String emailSubjectPrefix;
 
     private String logFilePath;
 
@@ -286,6 +300,16 @@ public class SyncConfig
         {
             this.emailAddresses.add(new EMailAddress(token.trim()));
         }
+    }
+
+    public String getEmailSubjectPrefix()
+    {
+        return emailSubjectPrefix;
+    }
+
+    public void setEmailSubjectPrefix(final String emailSubjectPrefix)
+    {
+        this.emailSubjectPrefix = emailSubjectPrefix;
     }
 
     public void setAuthCredentials(String realm, String user, String pass)

@@ -287,7 +287,7 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
     private Set<String> getGroups()
     {
         Set<String> groupKeys = new TreeSet<>();
-        UserManagerConfig groupDefinitions = readGroupDefinitions(null);
+        UserManagerConfig groupDefinitions = readUserManagerConfig(null);
         if (groupDefinitions != null)
         {
             List<UserGroup> groups = groupDefinitions.getGroups();

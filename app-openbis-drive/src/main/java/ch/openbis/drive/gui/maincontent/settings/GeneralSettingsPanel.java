@@ -41,8 +41,12 @@ public class GeneralSettingsPanel extends ResizablePanel {
     private final BooleanProperty startAtLogin = new SimpleBooleanProperty(false);
     private final StringProperty language = new SimpleStringProperty("en");
     private final ObjectProperty<Integer> syncIntervalMinutes = new SimpleObjectProperty<>(1);
+    private final ObjectProperty<Integer> expiringSessionWarningDays = new SimpleObjectProperty<>(
+            Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS
+    );
     final TextArea ignoredPathPatterns = new TextArea();
     Accordion advancedSettingsAccordion = new Accordion();
+    final VBox mainContentVBox = new VBox();
 
     final BooleanProperty ignoredPathPatternPropertyError = new SimpleBooleanProperty(false);
     final List<BooleanProperty> validationErrors = List.of(
@@ -58,9 +62,8 @@ public class GeneralSettingsPanel extends ResizablePanel {
         this.refreshAll = refreshAll;
         I18n i18n = SharedContext.getContext().getI18n();
 
-        VBox vBox = new VBox();
-        vBox.getStyleClass().add(DisplaySettings.MAIN_CONTENT_PADDED_FRAME_CLASS);
-        this.getChildren().add(vBox);
+        mainContentVBox.getStyleClass().add(DisplaySettings.MAIN_CONTENT_PADDED_FRAME_CLASS);
+        this.getChildren().add(mainContentVBox);
 
         ServiceCallHandler.ServiceCallResult<Settings> settingsResult = SharedContext.getContext().getServiceCallHandler(parent).getSettings();
         if (settingsResult.isOk()) {
@@ -68,25 +71,34 @@ public class GeneralSettingsPanel extends ResizablePanel {
             this.startAtLogin.setValue(settings.isStartAtLogin());
             this.language.setValue(settings.getLanguage());
             this.syncIntervalMinutes.setValue((int)Math.ceil(((double) settings.getSyncInterval()) / 60));
+            this.expiringSessionWarningDays.setValue(settings.getExpiringSessionWarningDays());
 
             //Initialize content of general settings
             CheckBox startAtLoginCheckbox = getStartAtLoginCheckbox(i18n);
-            vBox.getChildren().add(startAtLoginCheckbox);
+            mainContentVBox.getChildren().add(startAtLoginCheckbox);
 
             Label languageSelectionLabel = new Label();
             languageSelectionLabel.textProperty().bind(i18n.createStringBinding("main_panel.settings.general.language_selection_label"));
-            vBox.getChildren().add(languageSelectionLabel);
+            mainContentVBox.getChildren().add(languageSelectionLabel);
 
             ChoiceBox<String> languageChoiceBox = getLanguageChoiceBox(i18n);
-            vBox.getChildren().add(languageChoiceBox);
+            mainContentVBox.getChildren().add(languageChoiceBox);
 
             Label syncCheckIntervalLabel = new Label();
             syncCheckIntervalLabel.setPadding(new Insets(40, 0, 0, 0));
             syncCheckIntervalLabel.textProperty().bind(i18n.createStringBinding("main_panel.settings.general.sync_check_interval_label"));
-            vBox.getChildren().add(syncCheckIntervalLabel);
+            mainContentVBox.getChildren().add(syncCheckIntervalLabel);
 
             HBox syncIntervalControlRow = getSyncIntervalControlRow();
-            vBox.getChildren().add(syncIntervalControlRow);
+            mainContentVBox.getChildren().add(syncIntervalControlRow);
+
+            Label expiringSessionWarningDaysLabel = new Label();
+            expiringSessionWarningDaysLabel.setPadding(new Insets(40, 0, 0, 0));
+            expiringSessionWarningDaysLabel.textProperty().bind(SharedContext.getContext().getI18n().createStringBinding("main_panel.settings.general.expiring_session_warning"));
+            mainContentVBox.getChildren().add(expiringSessionWarningDaysLabel);
+
+            HBox expiringSessionWarningDaysControlRow = getExpiringSessionWarningDaysControlRow();
+            mainContentVBox.getChildren().add(expiringSessionWarningDaysControlRow);
 
             advancedSettingsAccordion.setPadding(new Insets(40, 0, 0, 0));
             VBox ignoredFilesBox = new VBox();
@@ -101,7 +113,7 @@ public class GeneralSettingsPanel extends ResizablePanel {
             if (generalSettingsPanelContext.isOpenAdvancedSettings()) {
                 advancedSettingsAccordion.setExpandedPane(ignoredFilesPane);
             }
-            vBox.getChildren().add(advancedSettingsAccordion);
+            mainContentVBox.getChildren().add(advancedSettingsAccordion);
 
             HBox confirmCancelButtons = new HBox();
             confirmCancelButtons.setPadding(new Insets(20, 0, 0, 0));
@@ -110,7 +122,7 @@ public class GeneralSettingsPanel extends ResizablePanel {
             Button cancelButton = getCancelButton();
             confirmCancelButtons.getChildren().add(okButton);
             confirmCancelButtons.getChildren().add(cancelButton);
-            vBox.getChildren().add(confirmCancelButtons);
+            mainContentVBox.getChildren().add(confirmCancelButtons);
             confirmCancelButtons.getStyleClass().add(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS);
             toBeApplied.addListener(new ChangeListener<Boolean>() {
                 @Override
@@ -126,7 +138,7 @@ public class GeneralSettingsPanel extends ResizablePanel {
             resize();
         } else {
             ErrorLabel errorLabel = new ErrorLabel();
-            vBox.getChildren().add(errorLabel);
+            mainContentVBox.getChildren().add(errorLabel);
         }
     }
 
@@ -163,6 +175,45 @@ public class GeneralSettingsPanel extends ResizablePanel {
         syncIntervalControlRow.getChildren().add(syncIntervalField);
         syncIntervalControlRow.getChildren().add(minutesTemporalUnitLabel);
         return syncIntervalControlRow;
+    }
+
+    private HBox getExpiringSessionWarningDaysControlRow() {
+        HBox expiringSessionWarningDaysControlRow = new HBox();
+        expiringSessionWarningDaysControlRow.setSpacing(20);
+        Spinner<Integer> expiringSessionWarningDaysField = new Spinner<>(1,100000, expiringSessionWarningDays.getValue());
+        expiringSessionWarningDaysField.setEditable(true);
+        expiringSessionWarningDaysField.setMaxWidth(200);
+        expiringSessionWarningDaysField.getEditor().textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
+                try {
+                    int newIntValue = Integer.parseInt(newValue);
+                    if(newIntValue > 1 && newIntValue < 100001) {
+                        expiringSessionWarningDaysField.commitValue();
+                    } else {
+                        expiringSessionWarningDaysField.getEditor().setText(
+                                String.valueOf(Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS)
+                        );
+                    }
+                } catch (Exception e) {
+                    expiringSessionWarningDaysField.getEditor().setText(
+                            String.valueOf(Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS)
+                    );
+                }
+            }
+        });
+        expiringSessionWarningDaysField.valueProperty().addListener(new ChangeListener<Integer>() {
+            @Override
+            public void changed(ObservableValue<? extends Integer> observableValue, Integer oldValue, Integer newValue) {
+                expiringSessionWarningDays.setValue(newValue);
+                toBeApplied.setValue(true);
+            }
+        });
+        Label daysTemporalUnitLabel = new Label();
+        daysTemporalUnitLabel.textProperty().bind(SharedContext.getContext().getI18n().createStringBinding("main_panel.settings.general.days_time_unit"));
+        expiringSessionWarningDaysControlRow.getChildren().add(expiringSessionWarningDaysField);
+        expiringSessionWarningDaysControlRow.getChildren().add(daysTemporalUnitLabel);
+        return expiringSessionWarningDaysControlRow;
     }
 
     private ChoiceBox<String> getLanguageChoiceBox(I18n i18n) {
@@ -221,6 +272,7 @@ public class GeneralSettingsPanel extends ResizablePanel {
                             current.setLanguage(language.getValue());
                             current.setStartAtLogin(startAtLogin.getValue());
                             current.setSyncInterval(syncIntervalMinutes.getValue() * 60);
+                            current.setExpiringSessionWarningDays(expiringSessionWarningDays.getValue());
                             current.setIgnoredPathPatterns(
                                     new ArrayList<>(Arrays.stream(ignoredPathPatterns.getText().split("[\\r\\n]+"))
                                             .filter(str -> !str.isBlank())
@@ -256,6 +308,7 @@ public class GeneralSettingsPanel extends ResizablePanel {
     void initializeIgnoredPathPatternsTextArea(@NonNull List<String> ignoredPathPatternsStrings) {
         ignoredPathPatterns.setEditable(false);
         ignoredPathPatterns.setStyle("-fx-text-fill: grey");
+        ignoredPathPatterns.setPrefHeight(400);
         ignoredPathPatterns.setText(
                 String.join(LINE_SEPARATOR, ignoredPathPatternsStrings)
         );
@@ -372,6 +425,7 @@ public class GeneralSettingsPanel extends ResizablePanel {
     protected synchronized void resize() {
         this.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         this.setPrefSize(parent.getWidth(), parent.getHeight());
+        this.mainContentVBox.setPrefHeight(parent.getHeight());
     }
 
     @Value

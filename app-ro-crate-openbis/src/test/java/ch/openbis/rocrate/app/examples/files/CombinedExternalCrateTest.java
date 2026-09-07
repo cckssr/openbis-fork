@@ -81,7 +81,8 @@ public class CombinedExternalCrateTest
         Sample sample = (Sample) openBisModel.getEntities().get(objectIdentifier);
 
         String abstractString = sample.getProperties().get("abstract").toString();
-        Assert.assertTrue(abstractString.contains(actual));
+        String imagePropertyPath = "/openbis/openbis/file-service/eln-lims/image/test" +  actual.substring(prefix.length());
+        Assert.assertTrue(abstractString.contains(imagePropertyPath));
 
         byte[] writtenStuff = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, openBisModel);
         try (FileOutputStream byteArrayOutputStream = new FileOutputStream(

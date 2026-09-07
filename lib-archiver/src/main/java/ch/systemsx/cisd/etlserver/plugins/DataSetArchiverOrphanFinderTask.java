@@ -51,9 +51,13 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
 
     public static final String EMAIL_ADDRESSES_KEY = "email-addresses";
 
+    public static final String EMAIL_SUBJECT_PREFIX = "email-subject-prefix";
+
     private static final String SEPARATOR = ",";
 
     private List<EMailAddress> emailAddresses;
+
+    private String emailSubjectPrefix;
 
     private IMailClient mailClient;
 
@@ -76,6 +80,7 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
     {
         operationLog.info("Task " + pluginName + " initialized.");
         emailAddresses = getEMailAddresses(properties);
+        emailSubjectPrefix = PropertyUtils.getProperty(properties, EMAIL_SUBJECT_PREFIX);
     }
 
     // @Transactional
@@ -207,7 +212,14 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
         {
             operationLog.info("5. Send email with not found files.");
             String subject = "openBIS Data Set Archive Orphan Finder report";
+
+            if (emailSubjectPrefix != null && !emailSubjectPrefix.isEmpty())
+            {
+                subject = emailSubjectPrefix + " " + subject;
+            }
+
             String content = "";
+
             Collections.sort(onFSandNotDB);
             for (File notFound : onFSandNotDB)
             {

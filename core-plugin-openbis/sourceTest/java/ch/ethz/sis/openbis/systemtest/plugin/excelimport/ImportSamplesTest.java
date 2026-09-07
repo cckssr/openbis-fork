@@ -106,6 +106,14 @@ public class ImportSamplesTest extends AbstractImportTest
 
     private static final String SAMPLE_WITH_SEMANTIC_ANNOTATIONS = "samples/sample_with_semantic_annotations.xls";
 
+    private static final String SAMPLE_WITH_CYCLIC_MANDATORY_SAMPLE_PROPERTY = "samples/sample_with_cyclic_mandatory_sample_property.xls";
+
+    private static final String SAMPLE_WITH_CYCLIC_MANDATORY_MULTIVALUE_SAMPLE_PROPERTY = "samples/sample_with_cyclic_mandatory_multivalue_sample_property.xls";
+
+    private static final String SAMPLE_WITH_MANDATORY_SAMPLE_PROPERTY = "samples/sample_with_mandatory_sample_property.xls";
+
+    private static final String SAMPLE_WITH_MANDATORY_SAMPLE_PROPERTY_POINTING_TO_ITSELF = "samples/sample_with_mandatory_sample_property_pointing_to_itself.xls";
+
     private static String FILES_DIR;
 
     @BeforeClass
@@ -223,6 +231,94 @@ public class ImportSamplesTest extends AbstractImportTest
         final String sessionWorkspaceFilePathForSamplesSpaceElsewhere = uploadToAsSessionWorkspace(sessionToken,
                 FilenameUtils.concat(FILES_DIR, SAMPLES_SPACE_ELSEWHERE));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(sessionWorkspaceFilePathForSamplesSpaceElsewhere));
+    }
+
+    @Test
+    @DirtiesContext
+    public void testSamplesAreCreatedWithMandatorySampleProperties() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath =
+                uploadToAsSessionWorkspace(sessionToken,
+                        FilenameUtils.concat(FILES_DIR, SAMPLE_WITH_MANDATORY_SAMPLE_PROPERTY));
+        List<IObjectId> ids = TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS,
+                Paths.get(sessionWorkspaceFilePath));
+
+        List<ISampleId> sampleIds = List.of((SampleIdentifier)ids.get(10), (SampleIdentifier)ids.get(11), (SampleIdentifier)ids.get(12));
+        List<Sample> samples = TestUtils.getSamplesById(v3api, sessionToken, sampleIds);
+
+        String sampleProp = (String) samples.get(1).getProperty("SAMPLE_PROP");
+        String permId = samples.get(0).getPermId().getPermId();
+        assertEquals(sampleProp, permId);
+
+        sampleProp = (String) samples.get(2).getProperty("SAMPLE_PROP");
+        permId = samples.get(1).getPermId().getPermId();
+        assertEquals(sampleProp, permId);
+    }
+
+    @Test
+    @DirtiesContext
+    public void testSamplesAreCreatedWithMandatorySamplePropertiesPointingToItself() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath =
+                uploadToAsSessionWorkspace(sessionToken,
+                        FilenameUtils.concat(FILES_DIR, SAMPLE_WITH_MANDATORY_SAMPLE_PROPERTY_POINTING_TO_ITSELF));
+        List<IObjectId> ids = TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS,
+                Paths.get(sessionWorkspaceFilePath));
+
+        List<ISampleId> sampleIds = List.of((SampleIdentifier)ids.get(10), (SampleIdentifier)ids.get(11));
+        List<Sample> samples = TestUtils.getSamplesById(v3api, sessionToken, sampleIds);
+
+        String sampleProp = (String) samples.get(0).getProperty("SAMPLE_PROP");
+        String permId = samples.get(0).getPermId().getPermId();
+        assertEquals(sampleProp, permId);
+
+        sampleProp = (String) samples.get(1).getProperty("SAMPLE_PROP");
+        permId = samples.get(1).getPermId().getPermId();
+        assertEquals(sampleProp, permId);
+    }
+
+
+    @Test(expectedExceptions = UserFailureException.class,
+            expectedExceptionsMessageRegExp = "(s?).*Detected mandatory sample property cycle: "
+                    + "/TEST_SPACE/BBB -> /TEST_SPACE/CCC -> /TEST_SPACE/AAA -> /TEST_SPACE/BBB.*")
+    @DirtiesContext
+    public void testSamplesAreCreatedWithCyclicMandatorySampleProperties() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath =
+                uploadToAsSessionWorkspace(sessionToken,
+                        FilenameUtils.concat(FILES_DIR, SAMPLE_WITH_CYCLIC_MANDATORY_SAMPLE_PROPERTY));
+        TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS,
+                Paths.get(sessionWorkspaceFilePath));
+    }
+
+
+    @Test(expectedExceptions = UserFailureException.class,
+            expectedExceptionsMessageRegExp = "(s?).*Detected mandatory sample property cycle: "
+                    + "/TEST_SPACE/BBB -> /TEST_SPACE/CCC -> /TEST_SPACE/AAA -> /TEST_SPACE/BBB.*")
+    @DirtiesContext
+    public void testSamplesAreCreatedWithCyclicMandatoryMultivalueSampleProperties() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath =
+                uploadToAsSessionWorkspace(sessionToken,
+                        FilenameUtils.concat(FILES_DIR, SAMPLE_WITH_CYCLIC_MANDATORY_MULTIVALUE_SAMPLE_PROPERTY));
+        TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS,
+                Paths.get(sessionWorkspaceFilePath));
     }
 
     @Test

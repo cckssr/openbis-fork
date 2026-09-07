@@ -2,7 +2,9 @@ package ch.openbis.drive.gui.maincontent.syncjobs;
 
 import ch.openbis.drive.gui.MainViewController;
 import ch.openbis.drive.gui.i18n.I18n;
+import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.SharedContext;
+import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.util.OpenBISQueryUtil;
 import ch.openbis.drive.util.ParallelExecutionUtil;
@@ -17,9 +19,14 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +34,7 @@ import java.util.concurrent.Future;
 
 
 public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogContext, SyncJob> {
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private final ConcurrentHashMap<RadioButton, OpenBISQueryUtil.AvailableSession> availableSessionMap =
             new ConcurrentHashMap<>();
 
@@ -34,6 +42,8 @@ public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogC
     private volatile Node content;
     private volatile CompletableFuture<DialogStepResult<SyncJobDialogContext, SyncJob>> result;
     private volatile EventHandler<ActionEvent> applyButtonHandler;
+
+    private volatile long acceptedValidityMillisLeftForPATs = Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS * 24 * 60 * 60 * 1000;
 
     @Override
     public void initialize(
@@ -43,6 +53,8 @@ public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogC
             @lombok.NonNull CompletableFuture<DialogStepResult<SyncJobDialogContext, SyncJob>> resultFuture
     ) {
         this.result = resultFuture;
+        this.acceptedValidityMillisLeftForPATs = context.acceptedValidityMillisLeftForPATs();
+
         I18n i18n = SharedContext.getContext().getI18n();
 
         VBox progressIndicatorBox = new VBox();
@@ -102,7 +114,8 @@ public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogC
                 protected Void call() throws Exception {
                     Set<OpenBISQueryUtil.AvailableSession> availableSessionSet =
                             OpenBISQueryUtil.getInstance().getAvailableSessions(
-                                    context.currentSyncJobs()
+                                    context.currentSyncJobs(),
+                                    acceptedValidityMillisLeftForPATs
                             );
 
                     if (availableSessionSet.isEmpty()) {
@@ -112,7 +125,8 @@ public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogC
                                     new SyncJobDialogContext(
                                             context.toBeModified(),
                                             context.currentSyncJobs(),
-                                            new SyncJobSessionChoiceResult(true, null)
+                                            new SyncJobSessionChoiceResult(true, null),
+                                            acceptedValidityMillisLeftForPATs
                                     ),
                                     null
                                 )
@@ -121,16 +135,23 @@ public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogC
                         Platform.runLater(
                                 () -> {
                                     for (OpenBISQueryUtil.AvailableSession availableSession : availableSessionSet) {
-                                        RadioButton sessionChoice = new RadioButton(
-                                                availableSession.username() + " @ " + availableSession.openBISUrl() +
-                                                        " (" + i18n.get("sync_tasks.session_choice.expires") + ": " +
-                                                        availableSession.validUntil() + ")"
-                                        );
+                                        RadioButton sessionChoice = new RadioButton(availableSession.username() + " @ " + availableSession.openBISUrl());
+                                        Label intervalOfTimeBeforeExpiry = new Label(SyncJobCard.formatExpiresInText(Date.from(availableSession.validUntil().toInstant())));
+                                        intervalOfTimeBeforeExpiry.getStyleClass().add(DisplaySettings.BOLD_TEXT);
+                                        List<Label> sessionChoiceLabels = List.of(
+                                                new Label(" (" + i18n.get("sync_tasks.modal_panel.sync_task_modal.expires_in")),
+                                                intervalOfTimeBeforeExpiry,
+                                                new Label(i18n.get("sync_tasks.modal_panel.sync_task_modal.on_date") + " " + DATE_TIME_FORMATTER.format(
+                                                        availableSession.validUntil().toInstant().atZone(ZoneId.systemDefault())
+                                                ) + ")"));
+                                        HBox sessionChoiceBox = new HBox();
+                                        sessionChoiceBox.setSpacing(4);
+                                        sessionChoiceBox.getChildren().add(sessionChoice);
+                                        sessionChoiceBox.getChildren().addAll(sessionChoiceLabels);
                                         availableSessionMap.put(sessionChoice, availableSession);
                                         sessionChoice.setToggleGroup(sessionChoices);
-                                        vBox.getChildren().add(sessionChoice);
+                                        vBox.getChildren().add(sessionChoiceBox);
                                     }
-
                                     scrollPane.setContent(vBox);
                                 }
                         );
@@ -148,7 +169,8 @@ public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogC
                                 new SyncJobDialogContext(
                                         context.toBeModified(),
                                         context.currentSyncJobs(),
-                                        new SyncJobSessionChoiceResult(true, availableSessionMap.get((RadioButton) sessionChoices.getSelectedToggle()))
+                                        new SyncJobSessionChoiceResult(true, availableSessionMap.get((RadioButton) sessionChoices.getSelectedToggle())),
+                                        acceptedValidityMillisLeftForPATs
                                 ),
                                 null
                         )

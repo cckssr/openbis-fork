@@ -1,3 +1,92 @@
+// CKEditor 5's UMD bundle (window.CKEDITOR) ships without any plugins pre-selected, unlike the
+// old custom webpack build. Bake the plugin list and shared config into the editor classes once,
+// the same way the previous custom build did via InlineEditor.builtinPlugins/defaultConfig.
+(function() {
+    var ckeditorPlugins = [
+        CKEDITOR.Essentials,
+        CKEDITOR.Alignment,
+        CKEDITOR.Font,
+        CKEDITOR.Highlight,
+        CKEDITOR.SimpleUploadAdapter,
+        CKEDITOR.Bold,
+        CKEDITOR.Italic,
+        CKEDITOR.Strikethrough,
+        CKEDITOR.Underline,
+        CKEDITOR.Subscript,
+        CKEDITOR.Superscript,
+        CKEDITOR.BlockQuote,
+        CKEDITOR.Heading,
+        CKEDITOR.Image,
+        CKEDITOR.ImageCaption,
+        CKEDITOR.ImageStyle,
+        CKEDITOR.ImageToolbar,
+        CKEDITOR.ImageUpload,
+        CKEDITOR.ImageResize,
+        CKEDITOR.Link,
+        CKEDITOR.List,
+        CKEDITOR.MediaEmbed,
+        CKEDITOR.Paragraph,
+        CKEDITOR.PasteFromOffice,
+        CKEDITOR.Table,
+        CKEDITOR.TableToolbar,
+        CKEDITOR.TableProperties,
+        CKEDITOR.TableCellProperties,
+        CKEDITOR.RemoveFormat,
+        CKEDITOR.SpecialCharacters,
+        CKEDITOR.SpecialCharactersEssentials
+    ];
+
+    var ckeditorConfig = {
+        // Self-hosted open-source usage; shows the "Powered by CKEditor" badge.
+        licenseKey: 'GPL',
+        toolbar: {
+            viewportTopOffset: 156,
+            items: [
+                'heading', '|',
+                'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
+                'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'Superscript', 'highlight', '|',
+                'specialCharacters', '|',
+                'alignment', '|',
+                'numberedList', 'bulletedList', '|',
+                'link', 'blockquote', 'imageUpload', 'insertTable', '|',
+                'undo', 'redo'
+            ]
+        },
+        fontFamily: {
+            options: [
+                'default',
+                'Arial, Helvetica, sans-serif',
+                'Courier New, Courier, monospace',
+                'Georgia, serif',
+                'Lucida Sans Unicode, Lucida Grande, sans-serif',
+                'Tahoma, Geneva, sans-serif',
+                'Times New Roman, Times, serif',
+                'Trebuchet MS, Helvetica, sans-serif',
+                'Verdana, Geneva, sans-serif',
+                'Calibri, sans-serif',
+                'Arial Unicode MS, sans-serif',
+                'Comic Sans MS/Comic Sans MS, cursive;'
+            ]
+        },
+        fontSize: {
+            options: [9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 'default', 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+        },
+        image: {
+            styles: ['full', 'alignLeft', 'alignRight'],
+            toolbar: ['imageStyle:alignLeft', 'imageStyle:full', 'imageStyle:alignRight', '|', 'imageTextAlternative']
+        },
+        table: {
+            contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+        },
+        language: 'en'
+    };
+
+    CKEDITOR.InlineEditor.builtinPlugins = ckeditorPlugins;
+    CKEDITOR.InlineEditor.defaultConfig = ckeditorConfig;
+    CKEDITOR.DecoupledEditor.builtinPlugins = ckeditorPlugins;
+    CKEDITOR.DecoupledEditor.defaultConfig = ckeditorConfig;
+})();
+
 var FormUtil = new function() {
 	this.profile = null;
 	
@@ -1521,6 +1610,8 @@ var FormUtil = new function() {
                     })
                     .then( editor => {
                         editor.acceptedData = ""; // Is used to undo paste events containing images coming from a different domain
+						const modeFeatureId = 'editor-mode';
+
                         if (value) {
                             editor.preprocessingFinished = false;
                             if(isReadOnly && ids.length > 0)
@@ -1551,7 +1642,7 @@ var FormUtil = new function() {
                                         ind += newLink.length - matchedId.value.length;
                                     }
 
-                                    editor.isReadOnly = false;
+									editor.disableReadOnlyMode(modeFeatureId);
                                     editor.setData(value);
                                     editor.acceptedData = editor.getData();
 
@@ -1576,7 +1667,7 @@ var FormUtil = new function() {
 
                                     }
                                     editor.preprocessingFinished = true;
-                                    editor.isReadOnly = true;
+									editor.enableReadOnlyMode(modeFeatureId);
                                 });
 
                             } else {
@@ -1587,7 +1678,11 @@ var FormUtil = new function() {
                             }
                         }
 
-                        editor.isReadOnly = isReadOnly;
+						if (isReadOnly) {
+							editor.enableReadOnlyMode(modeFeatureId);
+						} else {
+							editor.disableReadOnlyMode(modeFeatureId);
+						}
                         editor.model.document.on('change:data', function (event, data) {
                             var newData = editor.getData();
                             var preprocessing = editor.preprocessingFinished ?? true;

@@ -40,7 +40,7 @@ public class DriveAPIServerImplTest extends DriveTestCase {
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", false);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "/remotedir2", "/localdir2", true);
-        Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)), new ArrayList<>(List.of("aaa", "bbb")));
+        Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
 
         Mockito.doReturn(settings2).when(settingsManager).getSettings();
         Assert.assertEquals(settings2, driveAPIServerImpl.getSettings());
@@ -74,7 +74,7 @@ public class DriveAPIServerImplTest extends DriveTestCase {
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "/localdir1", true);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "/localdir2", false);
-        Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)), new ArrayList<>(List.of("aaa", "bbb")));
+        Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
 
         Mockito.doReturn(settings1.getJobs()).when(settingsManager).getSyncJobs();
         Assert.assertEquals(Collections.emptyList(), driveAPIServerImpl.getSyncJobs());
@@ -93,7 +93,7 @@ public class DriveAPIServerImplTest extends DriveTestCase {
         TaskManager taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
         DriveAPIServerImpl driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO, systemTrayUtil));
 
-        Settings settings = new Settings(true, "it", 15, new ArrayList<>(), new ArrayList<>(List.of("aaa", "bbb")));
+        Settings settings = new Settings(true, "it", 15, new ArrayList<>(), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
         Mockito.doReturn(settings).when(settingsManager).getSettings();
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", false);

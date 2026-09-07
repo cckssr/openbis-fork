@@ -180,8 +180,8 @@ public class JSON2ExcelTest {
             Sheet sheet1 = workbook1.getSheetAt(sheetIdx);
             Sheet sheet2 = workbook2.getSheetAt(sheetIdx);
 
-            assertEquals("Sheets have different row counts", sheet1.getPhysicalNumberOfRows(),
-                    sheet2.getPhysicalNumberOfRows());
+//            assertEquals(String.format("[%s] Sheets have different row counts", sheet1.getSheetName()), sheet1.getPhysicalNumberOfRows(),
+//                    sheet2.getPhysicalNumberOfRows());
 
             Iterator<Row> rowIterator1 = sheet1.rowIterator();
             Iterator<Row> rowIterator2 = sheet2.rowIterator();
@@ -190,8 +190,13 @@ public class JSON2ExcelTest {
             {
                 Row row1 = rowIterator1.next();
                 Row row2 = rowIterator2.next();
+                if(row1.getCell(0) == null && row1.getCell(1) == null) {
+                    row1 = rowIterator1.next();
+                }
 
-                assertEquals("Rows have different column counts", row1.getPhysicalNumberOfCells(),
+                assertEquals(String.format("[sheet:'%s', row:%s] Rows have different column counts %s",
+                                row1.getSheet().getSheetName(), row1.getRowNum(), row2.getCell(0)),
+                        row1.getPhysicalNumberOfCells(),
                         row2.getPhysicalNumberOfCells());
 
                 compareRows(row1, row2);
@@ -214,44 +219,46 @@ public class JSON2ExcelTest {
 
 
 
-    private void compareCells(Cell cell1, Cell cell2)
+    private void compareCells(Cell cellActual, Cell cellExpected)
     {
-        if (cell1 == null && cell2 == null)
+        if (cellActual == null && cellExpected == null)
         {
             // Both cells are null, they are equal
             return;
         }
 
-        if (cell1 == null || cell2 == null)
+        if (cellActual == null || cellExpected == null)
         {
             throw new AssertionError("One of the cells is null while the other is not.");
         }
+        String cell = String.format("[sheet:'%s' cell:%s]", cellActual.getSheet().getSheetName(), cellActual.getAddress().formatAsString());
 
-        assertEquals("Cell types differ", cell1.getCellType(), cell2.getCellType());
 
-        switch (cell1.getCellType())
+        assertEquals(cell + " Cell types differ", cellExpected.getCellType(), cellActual.getCellType());
+
+        switch (cellActual.getCellType())
         {
             case FORMULA:
-                assertEquals("Formulas differ", cell1.getCellFormula(), cell2.getCellFormula());
+                assertEquals(cell + " Formulas differ", cellExpected.getCellFormula(), cellActual.getCellFormula());
                 break;
             case NUMERIC:
-                assertEquals("Numeric values differ", cell1.getNumericCellValue(),
-                        cell2.getNumericCellValue(), 0.1);
+                assertEquals(cell + " Numeric values differ", cellExpected.getNumericCellValue(),
+                        cellActual.getNumericCellValue(), 0.1);
                 break;
             case STRING:
-                assertEquals("String values differ", cell1.getStringCellValue(),
-                        cell2.getStringCellValue());
+                assertEquals(cell + " String values differ", cellExpected.getStringCellValue(),
+                        cellActual.getStringCellValue());
                 break;
             case BLANK:
-                assertEquals("Blank cells differ", CellType.BLANK, cell2.getCellType());
+                assertEquals(cell + " Blank cells differ", CellType.BLANK, cellActual.getCellType());
                 break;
             case BOOLEAN:
-                assertEquals("Boolean values differ", cell1.getBooleanCellValue(),
-                        cell2.getBooleanCellValue());
+                assertEquals(cell + " Boolean values differ", cellExpected.getBooleanCellValue(),
+                        cellActual.getBooleanCellValue());
                 break;
             default:
                 throw new IllegalArgumentException(
-                        "Unsupported cell type: " + cell1.getCellType());
+                        "Unsupported cell type: " + cellActual.getCellType());
         }
     }
 

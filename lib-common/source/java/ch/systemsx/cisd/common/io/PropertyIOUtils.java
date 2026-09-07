@@ -160,6 +160,13 @@ public class PropertyIOUtils
         FileUtilities.writeToFile(propertiesFile, builder.toString());
     }
 
+    /***
+     * Resolve property values against System properties ot environment variables. The priority is:
+     *  1. System properties
+     *  2. Environment variables
+     *  3. service.porperties
+     * @param properties
+     */
     public static void resolveLoadedProperties(final Properties properties) {
         String propertyPrefix = properties.getProperty(SYSTEM_PROPERTY_PREFIX_KEY, "");
         if(propertyPrefix != null && !propertyPrefix.isBlank()) {

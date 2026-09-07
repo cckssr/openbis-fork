@@ -95,6 +95,11 @@ public class RelationshipServiceStub implements IRelationshipService
     {
     }
 
+    @Override public void addChildToSample(final IAuthSession session, final SamplePE sample, final SamplePE child)
+    {
+
+    }
+
     @Override
     public void setSampleParentChildAnnotations(IAuthSession session, SamplePE child, SamplePE parent,
             Map<String, String> childAnnotations, Map<String, String> parentAnnotations)
@@ -105,6 +110,11 @@ public class RelationshipServiceStub implements IRelationshipService
     public void removeParentFromSample(IAuthSession session, SamplePE sample,
             SamplePE parent)
     {
+    }
+
+    @Override public void removeChildFromSample(final IAuthSession session, final SamplePE sample, final SamplePE child)
+    {
+
     }
 
     @Override

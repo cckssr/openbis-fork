@@ -37,13 +37,7 @@ import static ch.ethz.sis.openbis.generic.server.xls.export.helper.AbstractXLSEx
 import static ch.systemsx.cisd.openbis.generic.shared.Constants.DOWNLOAD_URL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.executor.exporter.ExportPropertiesUtils.BUFFER_SIZE;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -1205,6 +1199,21 @@ public class ExportExecutor implements IExportExecutor
         return docFile;
     }
 
+    private static void writeLargeString(final Path file, final String text) throws IOException
+    {
+        final int chunkSize = 512 * 1024; // 512 KiB of characters
+
+        try (final BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8))
+        {
+            for (int offset = 0; offset < text.length(); )
+            {
+                final int count = Math.min(chunkSize, text.length() - offset);
+                writer.write(text, offset, count);
+                offset += count;
+            }
+        }
+    }
+
     private void createDocFilesForEntity(final String sessionToken, final File docDirectory,
             final Map<String, List<Map<String, String>>> entityTypeExportFieldsMap,
             final ICodeHolder entity, final String spaceCode, final String projectCode, final String experimentCode,
@@ -1214,48 +1223,18 @@ public class ExportExecutor implements IExportExecutor
         final boolean hasHtmlFormat = exportFormats.contains(ExportFormat.HTML);
         final boolean hasPdfFormat = exportFormats.contains(ExportFormat.PDF);
         final String html = getHtml(sessionToken, entity, entityTypeExportFieldsMap);
-        final byte[] htmlBytes = html.getBytes(StandardCharsets.UTF_8);
 
         if (hasHtmlFormat)
         {
             final File htmlFile = createNextDocFile(docDirectory, spaceCode, projectCode, experimentCode, experimentName, containerCode, sampleCode,
                     sampleName, dataSetCode, HTML_EXTENSION);
-            try (final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(htmlFile), BUFFER_SIZE))
-            {
-                writeInChunks(bos, htmlBytes);
-                bos.flush();
-            }
+            writeLargeString(htmlFile.toPath(), html);
         }
 
         if (hasPdfFormat)
         {
             final File pdfFile = createNextDocFile(docDirectory, spaceCode, projectCode, experimentCode, experimentName, containerCode, sampleCode,
                     sampleName, dataSetCode, PDF_EXTENSION);
-            buildPdf(pdfFile, html);
-        }
-    }
-
-    private void createDocFilesForDataSet(final String sessionToken, final File docDirectory,
-            final DataSet dataSet, final Set<ExportFormat> exportFormats) throws IOException
-    {
-        final boolean hasHtmlFormat = exportFormats.contains(ExportFormat.HTML);
-        final boolean hasPdfFormat = exportFormats.contains(ExportFormat.PDF);
-        final String html = getHtml(sessionToken, dataSet, null);
-        final byte[] htmlBytes = html.getBytes(StandardCharsets.UTF_8);
-
-        if (hasHtmlFormat)
-        {
-            final File htmlFile = new File(docDirectory, dataSet.getCode() + HTML_EXTENSION);
-            try (final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(htmlFile), BUFFER_SIZE))
-            {
-                writeInChunks(bos, htmlBytes);
-                bos.flush();
-            }
-        }
-
-        if (hasPdfFormat)
-        {
-            final File pdfFile = new File(docDirectory, dataSet.getCode() + PDF_EXTENSION);
             buildPdf(pdfFile, html);
         }
     }

@@ -360,7 +360,14 @@ class DataBrowser extends React.Component {
 
   async fetchDataSet(){
     var dataSet = await this.controller.getDataSet()
-    this.setState({ archived : isArchived(dataSet), frozen: isFrozen(dataSet) })
+    if (dataSet) {
+      this.setState({archived: isArchived(dataSet), frozen: isFrozen(dataSet)})
+    } else {
+      var dataSetOwner = await this.controller.getDataSetOwner()
+      if(dataSetOwner) {
+        this.setState({archived: false, frozen: dataSetOwner.getImmutableDataDate() !== null})
+      }
+    }
   }
 
   async componentDidMount() {

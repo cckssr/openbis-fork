@@ -38,6 +38,8 @@ class UserManagerConfig
 
     private List<String> instanceAdmins;
 
+    private List<String> instanceAdminGroups;
+
     private List<String> usersToBeIgnored;
 
     public List<String> getGlobalSpaces()
@@ -98,6 +100,16 @@ class UserManagerConfig
     public void setInstanceAdmins(List<String> instanceAdmins)
     {
         this.instanceAdmins = instanceAdmins;
+    }
+
+    public List<String> getInstanceAdminGroups()
+    {
+        return instanceAdminGroups;
+    }
+
+    public void setInstanceAdminGroups(List<String> instanceAdminGroups)
+    {
+        this.instanceAdminGroups = instanceAdminGroups;
     }
 
     public List<String> getUsersToBeIgnored()

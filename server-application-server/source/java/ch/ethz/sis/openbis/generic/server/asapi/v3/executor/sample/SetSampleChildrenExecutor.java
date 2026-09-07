@@ -57,7 +57,7 @@ public class SetSampleChildrenExecutor extends SetSampleToSampleParentChildRelat
         {
             if (false == existingChildren.contains(child))
             {
-                relationshipService.addParentToSample(context.getSession(), child, parent);
+                relationshipService.addChildToSample(context.getSession(), parent, child);
                 existingChildren.add(child);
             }
         }

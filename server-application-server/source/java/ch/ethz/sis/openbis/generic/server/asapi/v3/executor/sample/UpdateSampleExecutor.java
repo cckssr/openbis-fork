@@ -141,6 +141,7 @@ public class UpdateSampleExecutor
             if (update.isImmutableData() && entity.getImmutableDataDate() == null)
             {
                 entity.setImmutableDataDate(new Date());
+                freezingFlags.freezeData();
             }
             if (update.shouldBeFrozen())
             {
@@ -149,6 +150,7 @@ public class UpdateSampleExecutor
                 if (entity.getImmutableDataDate() == null)
                 {
                     entity.setImmutableDataDate(new Date());
+                    freezingFlags.freezeData();
                 }
                 freezingFlags.freeze();
             }

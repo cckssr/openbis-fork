@@ -82,4 +82,74 @@ public class IncomingDataSet extends AbstractTimestampsAndUserHolder implements 
         // TODO do this better
         this.connections = conns;
     }
+
+    private List<IncomingAfsFile> afsFiles = new ArrayList<IncomingAfsFile>();
+
+    public List<IncomingAfsFile> getAfsFiles()
+    {
+        return afsFiles;
+    }
+
+    public void setAfsFiles(List<IncomingAfsFile> afsFiles)
+    {
+        this.afsFiles = afsFiles;
+    }
+
+    public boolean hasAfsFiles()
+    {
+        return afsFiles.isEmpty() == false;
+    }
+
+    private List<String> afsDirectories = new ArrayList<String>();
+
+    public List<String> getAfsDirectories()
+    {
+        return afsDirectories;
+    }
+
+    public void setAfsDirectories(List<String> afsDirectories)
+    {
+        this.afsDirectories = afsDirectories;
+    }
+
+    private List<IncomingAfsFile> trashedAfsFiles = new ArrayList<IncomingAfsFile>();
+
+    public List<IncomingAfsFile> getTrashedAfsFiles()
+    {
+        return trashedAfsFiles;
+    }
+
+    public void setTrashedAfsFiles(List<IncomingAfsFile> trashedAfsFiles)
+    {
+        this.trashedAfsFiles = trashedAfsFiles;
+    }
+
+    private List<String> trashedAfsDirectories = new ArrayList<String>();
+
+    public List<String> getTrashedAfsDirectories()
+    {
+        return trashedAfsDirectories;
+    }
+
+    public void setTrashedAfsDirectories(List<String> trashedAfsDirectories)
+    {
+        this.trashedAfsDirectories = trashedAfsDirectories;
+    }
+
+    public boolean hasAfsDirectories()
+    {
+        return afsDirectories.isEmpty() == false;
+    }
+
+    private List<IncomingAfsFile> afsFileSnapshots = new ArrayList<IncomingAfsFile>();
+
+    public List<IncomingAfsFile> getAfsFileSnapshots()
+    {
+        return afsFileSnapshots;
+    }
+
+    public void setAfsFileSnapshots(List<IncomingAfsFile> afsFileSnapshots)
+    {
+        this.afsFileSnapshots = afsFileSnapshots;
+    }
 }

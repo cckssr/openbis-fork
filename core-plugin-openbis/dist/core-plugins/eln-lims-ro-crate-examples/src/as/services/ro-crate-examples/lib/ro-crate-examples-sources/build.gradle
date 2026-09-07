@@ -54,15 +54,11 @@ jar {
     archiveFileName = roCrateExamplesJar
     includeEmptyDirs false
     from sourceSets.main.allSource
+    finalizedBy('releaseRoCrateExamples')
 }
 
 tasks.register('releaseRoCrateExamples', Copy) {
     dependsOn jar
     from("${project.buildDir}/libs/${roCrateExamplesJar}")
     into ".."
-    doLast {
-//        delete "${project.buildDir}/${roCrateExamplesJar}"
-//        delete "${project.buildDir}"
-//        delete
-    }
 }

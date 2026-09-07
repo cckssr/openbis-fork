@@ -33,7 +33,7 @@ public class DriveAPIGrpcImplTest extends DriveTestCase {
         StreamObserver<DriveApiService.Empty> streamObserver = Mockito.mock(StreamObserver.class);
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-        )), new ArrayList<>(List.of("aaa", "bbb")));
+        )), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
         driveAPIGrpc.setSettings(ProtobufConversionUtil.toProtobufSettings(settings, "seCReT".getBytes(StandardCharsets.UTF_8)), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(1)).setSettings(settings);
         Mockito.verify(streamObserver, Mockito.times(1)).onNext(DriveApiService.Empty.newBuilder().build());
@@ -57,7 +57,7 @@ public class DriveAPIGrpcImplTest extends DriveTestCase {
         StreamObserver<DriveApiService.Empty> streamObserver = Mockito.mock(StreamObserver.class);
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-        )), new ArrayList<>(List.of("aaa", "bbb")));
+        )), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
 
         driveAPIGrpc.setSettings(ProtobufConversionUtil.toProtobufSettings(settings, "wrong_seCReT".getBytes(StandardCharsets.UTF_8)), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(0)).setSettings(settings);
@@ -71,7 +71,7 @@ public class DriveAPIGrpcImplTest extends DriveTestCase {
         StreamObserver<DriveApiService.Empty> streamObserver = Mockito.mock(StreamObserver.class);
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-        )), new ArrayList<>(List.of("aaa", "bbb")));
+        )), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
 
         driveAPIGrpc.setSettings(ProtobufConversionUtil.toProtobufSettings(settings, null), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(0)).setSettings(settings);
@@ -85,7 +85,7 @@ public class DriveAPIGrpcImplTest extends DriveTestCase {
         StreamObserver<DriveApiService.Settings> streamObserver = Mockito.mock(StreamObserver.class);
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-        )), new ArrayList<>(List.of("aaa", "bbb")));
+        )), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
         Mockito.doReturn(settings).when(driveAPIServer).getSettings();
         driveAPIGrpc.getSettings(ProtobufConversionUtil.toProtobufEmpty("seCReT".getBytes(StandardCharsets.UTF_8)), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(1)).getSettings();
@@ -110,7 +110,7 @@ public class DriveAPIGrpcImplTest extends DriveTestCase {
         StreamObserver<DriveApiService.Settings> streamObserver = Mockito.mock(StreamObserver.class);
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-        )), new ArrayList<>(List.of("aaa", "bbb")));
+        )), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
         Mockito.doReturn(settings).when(driveAPIServer).getSettings();
 
         driveAPIGrpc.getSettings(ProtobufConversionUtil.toProtobufEmpty("wrong_seCReT".getBytes(StandardCharsets.UTF_8)), streamObserver);
@@ -125,7 +125,7 @@ public class DriveAPIGrpcImplTest extends DriveTestCase {
         StreamObserver<DriveApiService.Settings> streamObserver = Mockito.mock(StreamObserver.class);
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-        )), new ArrayList<>(List.of("aaa", "bbb")));
+        )), new ArrayList<>(List.of("aaa", "bbb")), Settings.DEFAULT_EXPIRING_SESSION_WARNING_DAYS);
         Mockito.doReturn(settings).when(driveAPIServer).getSettings();
 
         driveAPIGrpc.getSettings(ProtobufConversionUtil.toProtobufEmpty(null), streamObserver);

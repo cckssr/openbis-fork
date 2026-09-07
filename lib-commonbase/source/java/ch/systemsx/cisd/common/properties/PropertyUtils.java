@@ -84,6 +84,16 @@ public final class PropertyUtils
        return getValue(properties, key, null);
     }
 
+    /***
+     * During server startup, all properties in service.properties are resolved
+     * (i.e. if there are system properties or env variables overrides) by
+     * PropertyIOUtils.resolveLoadedProperties method. However not all properties are defined in service.properites
+     * These properties are being caught by this method during lookup.
+     * @param properties - already resolved properties
+     * @param key - property key to lookup
+     * @param defaultValue - default result to use in case value is missing
+     * @return resolved property value
+     */
     private static String getValue(final Properties properties, String key, String defaultValue) {
 
         String result = properties.getProperty(key);

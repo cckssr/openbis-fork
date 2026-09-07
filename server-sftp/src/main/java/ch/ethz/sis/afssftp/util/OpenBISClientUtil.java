@@ -41,6 +41,22 @@ public class OpenBISClientUtil implements AuthenticationProvider
     @Override
     public String login(String userId, String password)
     {
-        return getOpenBISClient().login(userId, password);
+        if (
+                userId == null || userId.isBlank() ||
+                password == null || password.isBlank()
+        ) {
+            return null;
+        }
+        if (!"?".equals(userId.trim())) {
+            return getOpenBISClient().login(userId, password);
+        } else {
+            OpenBIS openBIS = getOpenBISClient();
+            openBIS.setSessionToken(password);
+            if (openBIS.isSessionActive()) {
+                return password;
+            } else {
+                return null;
+            }
+        }
     }
 }

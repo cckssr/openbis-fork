@@ -149,7 +149,7 @@ public class ImportExecutor implements IImportExecutor
                             transactionCoordinatorApi.beginTransaction(transactionId, sessionToken, interactiveSessionKey);
                             operationLog.info(String.format("Transaction %s import phase 1: metadata import", transactionId));
                             importMetaData(xlsImport, result);
-                            operationLog.info(String.format("Transaction %s import phase 2: metadata import", transactionId));
+                            operationLog.info(String.format("Transaction %s import phase 2: data import", transactionId));
                             xlsImport.importZipAfsData();
                             operationLog.info(String.format("Commiting transaction %s", transactionId));
                             transactionCoordinatorApi.commitTransaction(transactionId, sessionToken, interactiveSessionKey);

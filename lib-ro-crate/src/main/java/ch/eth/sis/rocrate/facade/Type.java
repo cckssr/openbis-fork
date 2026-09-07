@@ -51,13 +51,13 @@ public class Type implements IType
     @Override
     public String getComment()
     {
-        return null;
+        return this.comment;
     }
 
     @Override
     public String getLabel()
     {
-        return null;
+        return this.label;
     }
 
     @Override

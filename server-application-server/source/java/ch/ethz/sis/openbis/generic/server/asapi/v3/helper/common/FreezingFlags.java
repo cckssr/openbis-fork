@@ -38,6 +38,12 @@ public class FreezingFlags
         return this;
     }
 
+    public FreezingFlags freezeData()
+    {
+        freezingFlags.add("freezeData");
+        return this;
+    }
+
     public FreezingFlags freezeForChildren()
     {
         freezingFlags.add("freezeForChildren");

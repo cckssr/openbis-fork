@@ -123,19 +123,20 @@
 
 ### Usage Reporting (Optional)
 
-| Key                                                    | Example Value                                                     | Short Explanation                                                                                                          |
+| Key                                     | Example Value                                                     | Short Explanation                      |
 |--------------------------------------------------------|-------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| usage-reporting.class | ch.systemsx.cisd.openbis.generic.server.task.UsageReportingTask |  |
-| usage-reporting.configuration-file-path | ${root-dir}/user-management-maintenance-config.json |  |
-| usage-reporting.email-addresses |  |
-| usage-reporting.interval | 60 min |  |
-| usage-reporting.path-to-save-report | ${root-dir} |  |
-| usage-reporting.report-name-prefix |  |  |
-| usage-reporting.run-schedule | 1. 00:15 |  |
-| usage-reporting.spaces-to-be-ignored |  |  |
-| usage-reporting.start | 00:15 |  |
-| usage-reporting.title-name-prefix |  |  |
-| usage-reporting.user-reporting-type | ALL |  |
+| usage-reporting.class                   | ch.systemsx.cisd.openbis.generic.server.task.UsageReportingTask |                                        |
+| usage-reporting.configuration-file-path | ${root-dir}/user-management-maintenance-config.json |                                        |
+| usage-reporting.email-addresses         |  |
+| usage-reporting.interval                | 60 min |                                        |
+| usage-reporting.path-to-save-report     | ${root-dir} |                                        |
+| usage-reporting.report-name-prefix      |  |                                        |
+| usage-reporting.run-schedule            | 1. 00:15 |                                        |
+| usage-reporting.spaces-to-be-ignored    |  |                                        |
+| usage-reporting.start                   | 00:15 |                                        |
+| usage-reporting.email-subject-prefix    |  | Prefix of email subject. Default: null |
+| usage-reporting.title-name-prefix       |  | The same as email-subject-prefix       |
+| usage-reporting.user-reporting-type     | ALL |                                        |
 
 ### User Management (Optional, Required for multi-group setups)
 
@@ -317,26 +318,27 @@
 
 ### Maintenance Plugins (Optional)
 
-| Key                                    | Example Value                                                          | Short Explanation                                            |
+| Key                                                                            | Example Value                                                          | Short Explanation                                            |
 |----------------------------------------|------------------------------------------------------------------------|--------------------------------------------------------------|
-| maintenance-plugins                    | post-registration, path-info-deletion, data-set-and-path-info-db-consistency-check-task, fill-unknown-data-set-size-in-openbis-db-from-path-info-db, data-set-archiver-orphan-finder-task | Comma separated names of maintenance plugins. |
-| path-info-deletion.class               | ch.systemsx.cisd.etlserver.plugins.DeleteFromExternalDBMaintenanceTask | Maintenance task for deleting entries from pathinfo database |
-| path-info-deletion.interval            | 120                                                                    |                                                              |
-| path-info-deletion.data-source         | path-info-db                                                           |                                                              |
-| path-info-deletion.data-set-table-name | data_sets                                                              |                                                              |
-| path-info-deletion.data-set-perm-id    | CODE                                                                   |                                                              |
-| data-set-and-path-info-db-consistency-check-task.checking-time-interval | 36500 days |  |
-| data-set-and-path-info-db-consistency-check-task.class | ch.systemsx.cisd.etlserver.path.DataSetAndPathInfoDBConsistencyCheckTask |  |
-| data-set-and-path-info-db-consistency-check-task.continuing-time-point | 22:00 |  |
-| data-set-and-path-info-db-consistency-check-task.pausing-time-point | 09:00 |  |
-| data-set-and-path-info-db-consistency-check-task.run-schedule | cron: 0 0 22 5 * * |  |
-| fill-unknown-data-set-size-in-openbis-db-from-path-info-db.class | ch.systemsx.cisd.etlserver.plugins.FillUnknownDataSetSizeInOpenbisDBFromPathInfoDBMaintenanceTask |  |
-| fill-unknown-data-set-size-in-openbis-db-from-path-info-db.data-set-chunk-size | 1000 |  |
-| fill-unknown-data-set-size-in-openbis-db-from-path-info-db.run-schedule | cron: 0 0 22 * * SUN |  |
-| fill-unknown-data-set-size-in-openbis-db-from-path-info-db.time-limit | 3 hours |  |
-| data-set-archiver-orphan-finder-task.class | ch.systemsx.cisd.etlserver.plugins.DataSetArchiverOrphanFinderTask |  |
-| data-set-archiver-orphan-finder-task.run-schedule | cron: 0 15 1 * * * |  |
-| data-set-archiver-orphan-finder-task.email-addresses |  |  |
+| maintenance-plugins                                                            | post-registration, path-info-deletion, data-set-and-path-info-db-consistency-check-task, fill-unknown-data-set-size-in-openbis-db-from-path-info-db, data-set-archiver-orphan-finder-task | Comma separated names of maintenance plugins.                |
+| path-info-deletion.class                                                       | ch.systemsx.cisd.etlserver.plugins.DeleteFromExternalDBMaintenanceTask | Maintenance task for deleting entries from pathinfo database |
+| path-info-deletion.interval                                                    | 120                                                                    |                                                              |
+| path-info-deletion.data-source                                                 | path-info-db                                                           |                                                              |
+| path-info-deletion.data-set-table-name                                         | data_sets                                                              |                                                              |
+| path-info-deletion.data-set-perm-id                                            | CODE                                                                   |                                                              |
+| data-set-and-path-info-db-consistency-check-task.checking-time-interval        | 36500 days |                                                              |
+| data-set-and-path-info-db-consistency-check-task.class                         | ch.systemsx.cisd.etlserver.path.DataSetAndPathInfoDBConsistencyCheckTask |                                                              |
+| data-set-and-path-info-db-consistency-check-task.continuing-time-point         | 22:00 |                                                              |
+| data-set-and-path-info-db-consistency-check-task.pausing-time-point            | 09:00 |                                                              |
+| data-set-and-path-info-db-consistency-check-task.run-schedule                  | cron: 0 0 22 5 * * |                                                              |
+| fill-unknown-data-set-size-in-openbis-db-from-path-info-db.class               | ch.systemsx.cisd.etlserver.plugins.FillUnknownDataSetSizeInOpenbisDBFromPathInfoDBMaintenanceTask |                                                              |
+| fill-unknown-data-set-size-in-openbis-db-from-path-info-db.data-set-chunk-size | 1000 |                                                              |
+| fill-unknown-data-set-size-in-openbis-db-from-path-info-db.run-schedule        | cron: 0 0 22 * * SUN |                                                              |
+| fill-unknown-data-set-size-in-openbis-db-from-path-info-db.time-limit          | 3 hours |                                                              |
+| data-set-archiver-orphan-finder-task.class                                     | ch.systemsx.cisd.etlserver.plugins.DataSetArchiverOrphanFinderTask |                                                              |
+| data-set-archiver-orphan-finder-task.run-schedule                              | cron: 0 15 1 * * * |                                                              |
+| data-set-archiver-orphan-finder-task.email-addresses                           |  |                                                              |
+| data-set-archiver-orphan-finder-task.email-subject-prefix                      |  | Prefix of email subject. Default: null                       |
 
 ### Archiver Configuration (Optional)
 

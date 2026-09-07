@@ -45,6 +45,8 @@ public class SynchronizationConfigReader
 
     private static final String DATA_SOURCE_DSS_URL_PROPERTY_NAME = "data-source-dss-url";
 
+    private static final String HARVESTER_AFS_URL_PROPERTY_NAME = "harvester-afs-url";
+
     private static final String DATA_SOURCE_SPACES_PROPERTY_NAME = "data-source-spaces";
 
     private static final String DATA_SOURCE_ALIAS_PROPERTY_NAME = "data-source-alias";
@@ -70,6 +72,8 @@ public class SynchronizationConfigReader
     private static final String HARVESTER_NOT_SYNCED_ENTITIES_FILE_NAME = "not-synced-entities-file";
 
     private static final String EMAIL_ADDRESSES_PROPERTY_NAME = "email-addresses";
+
+    private static final String EMAIL_SUBJECT_PREFIX_PROPERTY_NAME = "email-subject-prefix";
 
     private static final String TRANSLATE_USING_DATA_SOURCE_ALIAS_PROPERTY_NAME = "translate-using-data-source-alias";
 
@@ -137,6 +141,7 @@ public class SynchronizationConfigReader
             String section = reader.getSection(i);
             SyncConfig config = new SyncConfig();
             config.setEmailAddresses(reader.getString(section, EMAIL_ADDRESSES_PROPERTY_NAME, null, true));
+            config.setEmailSubjectPrefix(reader.getString(section, EMAIL_SUBJECT_PREFIX_PROPERTY_NAME, null, false));
             config.setDataSourceAlias(reader.getString(section, DATA_SOURCE_ALIAS_PROPERTY_NAME, section, false));
             String defaultLogFilePath = DEFAULT_LOG_FILE_PATH.replaceFirst(Pattern.quote("{alias}"), config.getDataSourceAlias());
             config.setLogFilePath(reader.getString(section, LOG_FILE_PROPERTY_NAME, defaultLogFilePath, false)
@@ -144,6 +149,7 @@ public class SynchronizationConfigReader
             config.setDataSourceURI(reader.getString(section, DATA_SOURCE_URL_PROPERTY_NAME, null, true));
             config.setDataSourceOpenbisURL(reader.getString(section, DATA_SOURCE_OPENBIS_URL_PROPERTY_NAME, null, true));
             config.setDataSourceDSSURL(reader.getString(section, DATA_SOURCE_DSS_URL_PROPERTY_NAME, null, true));
+            config.setHarvesterAfsURL(reader.getString(section, HARVESTER_AFS_URL_PROPERTY_NAME, null, false));
             String realm = reader.getString(section, DATA_SOURCE_AUTH_REALM_PROPERTY_NAME, null, true);
             String dataSourceUser = reader.getString(section, DATA_SOURCE_AUTH_USER_PROPERTY_NAME, null, true);
             String dataSourcePassword = reader.getString(section, DATA_SOURCE_AUTH_PASS_PROPERTY_NAME, null, true);

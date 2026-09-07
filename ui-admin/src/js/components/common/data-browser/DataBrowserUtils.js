@@ -37,11 +37,16 @@ const isArchived = (dataSet) => {
 
 const isFrozen = (dataSet) => {
   if (dataSet !== null) {
-    if (dataSet.getExperiment() !== null) {
-      return dataSet.getExperiment().getImmutableDataDate() !== null
-    } else if(dataSet.getSample() !== null) {
-      return dataSet.getSample().getImmutableDataDate() !== null
-    }
+      if(dataSet.getDataStore() !== null && dataSet.getDataStore().getCode() === "AFS") {
+          if (dataSet.getExperiment() !== null) {
+              return dataSet.getExperiment().getImmutableDataDate() !== null
+          } else if (dataSet.getSample() !== null) {
+              return dataSet.getSample().getImmutableDataDate() !== null
+          }
+      } else {
+          // old data set
+          return true;
+      }
   }
   return false
 }

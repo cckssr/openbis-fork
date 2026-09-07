@@ -139,6 +139,18 @@ public class DataSourceRequestHandlerTest
     }
 
     @Test
+    public void testGetVerbsWithMissingVerbReturnsEmptySet()
+    {
+        assertEquals(DataSourceRequestHandler.getVerbs(Collections.emptyMap()), Collections.emptySet());
+    }
+
+    @Test
+    public void testGetVerbs()
+    {
+        assertEquals(DataSourceRequestHandler.getVerbs(Map.of("verb", List.of("about.xml"))), Set.of("about.xml"));
+    }
+
+    @Test
     public void testCollectEntityTypeSeedsWithNoEntitiesReturnsNothing()
     {
         List<ExportablePermId> seeds = DataSourceRequestHandler.collectEntityTypeSeeds(api, SESSION_TOKEN, new EnumMap<>(ExportableKind.class));

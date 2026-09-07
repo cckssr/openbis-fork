@@ -294,7 +294,7 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
                 }
             }
         } else {
-            writableValue = value.toString();
+            writableValue = value != null ? value.toString() : null;
         }
         return writableValue;
     }

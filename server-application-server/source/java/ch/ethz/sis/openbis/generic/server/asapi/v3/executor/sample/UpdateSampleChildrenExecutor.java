@@ -74,13 +74,13 @@ public class UpdateSampleChildrenExecutor extends AbstractUpdateSampleToSamplePa
     @Override
     protected void add(IOperationContext context, SamplePE entity, SamplePE related)
     {
-        relationshipService.addParentToSample(context.getSession(), related, entity);
+        relationshipService.addChildToSample(context.getSession(), entity, related);
     }
 
     @Override
     protected void remove(IOperationContext context, SamplePE entity, SamplePE related)
     {
-        relationshipService.removeParentFromSample(context.getSession(), related, entity);
+        relationshipService.removeChildFromSample(context.getSession(), entity, related);
     }
 
     @Override

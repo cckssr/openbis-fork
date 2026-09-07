@@ -549,6 +549,7 @@ public class XLSImport
         try {
             boolean isAfsAvailable = afsDataImportHelper.isAfsConnectionAvailable();
             if(!isAfsAvailable) {
+                operationLog.error("AFS is not available");
                 throw new UserFailureException("Imported file contains AFS data but connection is not available.");
             }
             final ISessionWorkspaceProvider sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider();
@@ -557,7 +558,7 @@ public class XLSImport
 
             for (int i = 0; i < this.sessionWorkspaceFiles.length; i++)
             {
-                List<String> dataFilePaths = new ArrayList<>();
+                Set<String> dataPaths = new HashSet<>();
                 if (this.sessionWorkspaceFiles[i].toLowerCase().endsWith(ZIP_EXTENSION))
                 {
                     ZipFile zipFile = new ZipFile(new File(sessionWorkspaceFile, this.sessionWorkspaceFiles[i]));
@@ -575,9 +576,7 @@ public class XLSImport
                             if(filePath.isEmpty()) {
                                 // Do nothing
                             } else if(filePath.startsWith(HIERARCHY + PATH_SEPARATOR) && filePath.contains(PATH_SEPARATOR + DATA_FOLDER_NAME)) {
-                                if(filePath.endsWith(DATA_FOLDER_NAME)) {
-                                    dataFilePaths.add(filePath);
-                                }
+                                dataPaths.add(filePath.substring(0, filePath.indexOf("/data/") + "/data/".length()));
                                 if (entry.isDirectory())
                                 {
                                     createDirectory(new File(afsDir, entry.getName().substring(
@@ -591,19 +590,19 @@ public class XLSImport
                     }
                 }
 
-                if(!dataFilePaths.isEmpty()) {
-                    for(String dataFilePath : dataFilePaths)
+                operationLog.info(String.format("Found %s files to import", dataPaths.size()));
+                if(!dataPaths.isEmpty()) {
+
+                    for(String dataFilePath : dataPaths)
                     {
-                        // afsDataImportHelper.beginIfNotStarted();
+                        operationLog.info(String.format("Importing file: %s", dataFilePath));
                         afsDataImportHelper.importData(afsDir, dataFilePath);
                     }
                 }
             }
             afsDir.delete();
-//            afsDataImportHelper.commit();
         } catch (Exception e)
         {
-//            afsDataImportHelper.rollback();
             Throwable throwable = ExceptionUtils.getEndOfChain(e);
             if(throwable instanceof Error || throwable instanceof Exception) {
                 throw CheckedExceptionTunnel.wrapIfNecessary(throwable);
