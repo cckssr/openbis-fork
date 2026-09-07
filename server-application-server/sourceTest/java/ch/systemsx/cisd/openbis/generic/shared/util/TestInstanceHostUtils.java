@@ -107,6 +107,11 @@ public class TestInstanceHostUtils
         return 8800 + getProjectNumber() + 7;
     }
 
+    public static int getAFSPort(String projectName)
+    {
+        return 8800 + getProjectNumber(projectName) + 7;
+    }
+
     public static int getAFSProxyPort()
     {
         return getAFSPort() + 1000;
@@ -115,6 +120,11 @@ public class TestInstanceHostUtils
     public static String getAFSUrl()
     {
         return OPENBIS_URL + ":" + getAFSPort();
+    }
+
+    public static String getAFSUrl(String projectName)
+    {
+        return OPENBIS_URL + ":" + getAFSPort(projectName);
     }
 
     public static String getAFSProxyUrl()

@@ -73,6 +73,13 @@ public class MasterDataParser
                     }
                 };
 
+    private final MasterDataSchemaFeatures schemaFeatures = new MasterDataSchemaFeatures();
+
+    public MasterDataSchemaFeatures getSchemaFeatures()
+    {
+        return schemaFeatures;
+    }
+
     private final INameTranslator nameTranslator;
 
     private Map<String, Script> validationPlugins = new HashMap<String, Script>();
@@ -310,6 +317,52 @@ public class MasterDataParser
         }
     }
 
+    private boolean parseBoolean(Element element, String attribute) throws XPathExpressionException
+    {
+        String value = element.getAttribute(attribute);
+        if ("true".equals(value) || "false".equals(value))
+        {
+            return Boolean.parseBoolean(value);
+        }
+        throw new XPathExpressionException("Invalid " + attribute + " value: " + value);
+    }
+
+    private Map<String, String> parseMetaData(Element type) throws XPathExpressionException
+    {
+        Map<String, String> result = null;
+        for (Node child = type.getFirstChild(); child != null; child = child.getNextSibling())
+        {
+            if (!(child instanceof Element) || !"xmd:metaData".equals(child.getNodeName()))
+            {
+                continue;
+            }
+            if (result != null)
+            {
+                throw new XPathExpressionException("Duplicate metadata for " + type.getAttribute("code"));
+            }
+            result = new HashMap<>();
+            for (Node node = child.getFirstChild(); node != null; node = node.getNextSibling())
+            {
+                if (!(node instanceof Element))
+                {
+                    continue;
+                }
+                Element entry = (Element) node;
+                if (!"xmd:entry".equals(entry.getTagName()) || !entry.hasAttribute("key"))
+                {
+                    throw new XPathExpressionException("Invalid metadata entry for " + type.getAttribute("code"));
+                }
+                String key = entry.getAttribute("key");
+                if (result.containsKey(key))
+                {
+                    throw new XPathExpressionException("Duplicate metadata key: " + key);
+                }
+                result.put(key, entry.getTextContent());
+            }
+        }
+        return result;
+    }
+
     private String getAttribute(Element termElement, String attr)
     {
         Node node = termElement.getAttributes().getNamedItem(attr);
@@ -332,6 +385,12 @@ public class MasterDataParser
             ExperimentType expType = new ExperimentType();
             expType.setCode(nameTranslator.translate(getAttribute(expTypeElement, "code")));
             expType.setDescription(getAttribute(expTypeElement, "description"));
+            Map<String, String> metaData = parseMetaData(expTypeElement);
+            if (metaData != null)
+            {
+                expType.setMetaData(metaData);
+                schemaFeatures.getEntityTypeMetaData().put(expType.getEntityKind().name(), expType.getCode(), metaData);
+            }
             expType.setModificationDate(DSPropertyUtils.convertFromW3CDate(getAttribute(expTypeElement, "modification-timestamp")));
             expType.setValidationScript(getValidationPlugin(expTypeElement));
             experimentTypes.put(expType.getCode(), expType);
@@ -356,6 +415,12 @@ public class MasterDataParser
             SampleType sampleType = new SampleType();
             sampleType.setCode(nameTranslator.translate(getAttribute(sampleTypeElement, "code")));
             sampleType.setDescription(getAttribute(sampleTypeElement, "description"));
+            Map<String, String> metaData = parseMetaData(sampleTypeElement);
+            if (metaData != null)
+            {
+                sampleType.setMetaData(metaData);
+                schemaFeatures.getEntityTypeMetaData().put(sampleType.getEntityKind().name(), sampleType.getCode(), metaData);
+            }
             sampleType.setListable(Boolean.valueOf(getAttribute(sampleTypeElement, "listable")));
             sampleType.setShowContainer(Boolean.valueOf(getAttribute(sampleTypeElement, "showContainer")));
             sampleType.setShowParents(Boolean.valueOf(getAttribute(sampleTypeElement, "showParents")));
@@ -387,6 +452,12 @@ public class MasterDataParser
             DataSetType dataSetType = new DataSetType();
             dataSetType.setCode(nameTranslator.translate(getAttribute(dataSetTypeElement, "code")));
             dataSetType.setDescription(getAttribute(dataSetTypeElement, "description"));
+            Map<String, String> metaData = parseMetaData(dataSetTypeElement);
+            if (metaData != null)
+            {
+                dataSetType.setMetaData(metaData);
+                schemaFeatures.getEntityTypeMetaData().put(dataSetType.getEntityKind().name(), dataSetType.getCode(), metaData);
+            }
             String mainDataSetPattern = getAttribute(dataSetTypeElement, "mainDataSetPattern");
             if (StringUtils.isNotBlank(mainDataSetPattern))
             {
@@ -439,6 +510,12 @@ public class MasterDataParser
             assignment.setEntityKind(entityType.getEntityKind());
             assignment.setEntityTypeCode(entityType.getCode());
             assignment.setMandatory(Boolean.valueOf(getAttribute(propertyAssignmentElement, "mandatory")));
+            if (propertyAssignmentElement.hasAttribute("unique"))
+            {
+                boolean unique = parseBoolean(propertyAssignmentElement, "unique");
+                assignment.setUnique(unique);
+                schemaFeatures.getUnique().put(entityKind.name(), entityType.getCode(), assignment.getPropertyTypeCode(), unique);
+            }
             assignment.setSection(getAttribute(propertyAssignmentElement, "section"));
             // ch.systemsx.cisd.openbis.generic.server.business.bo.EntityTypePropertyTypeBO.createAssignment() increases
             // the provided ordinal by one. Thus, we have to subtract 1 in order to get the same ordinal.
@@ -481,6 +558,17 @@ public class MasterDataParser
             String code = nameTranslator.translate(
                     nameMapper.registerName(getAttribute(propertyTypeElement, "code"), managedInternally, registratorId));
             newPropertyType.setCode(code);
+            Map<String, String> metaData = parseMetaData(propertyTypeElement);
+            if (metaData != null)
+            {
+                schemaFeatures.getPropertyTypeMetaData().put(code, metaData);
+            }
+            if (propertyTypeElement.hasAttribute("multiValue"))
+            {
+                boolean multiValue = parseBoolean(propertyTypeElement, "multiValue");
+                newPropertyType.setMultiValue(multiValue);
+                schemaFeatures.getMultiValue().put(code, multiValue);
+            }
             newPropertyType.setLabel(getAttribute(propertyTypeElement, "label"));
             DataTypeCode dataTypeCode = DataTypeCode.valueOf(getAttribute(propertyTypeElement, "dataType"));
             newPropertyType.setDataType(new DataType(dataTypeCode));

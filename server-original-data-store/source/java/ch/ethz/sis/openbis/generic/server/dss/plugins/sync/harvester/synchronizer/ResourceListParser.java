@@ -263,6 +263,7 @@ public class ResourceListParser
         MasterData masterData = data.getMasterData();
         masterData.setValidationPluginsToProcess(mdParser.getValidationPlugins());
         masterData.setVocabulariesToProcess(mdParser.getVocabularies());
+        masterData.setSchemaFeatures(mdParser.getSchemaFeatures());
         masterData.setPropertyTypesToProcess(mdParser.getPropertyTypes());
         masterData.setSampleTypesToProcess(mdParser.getSampleTypes());
         masterData.setDataSetTypesToProcess(mdParser.getDataSetTypes());

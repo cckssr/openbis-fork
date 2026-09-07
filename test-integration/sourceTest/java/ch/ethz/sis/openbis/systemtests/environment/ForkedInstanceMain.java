@@ -29,6 +29,8 @@ public final class ForkedInstanceMain
 
     public static final String DSS_PROPERTIES_PROPERTY = "forked.instance.dss.properties";
 
+    public static final String AFS_PROPERTIES_PROPERTY = "forked.instance.afs.properties";
+
     public static final String STARTED_MARKER = "FORKED_INSTANCE_STARTED";
 
     public static void main(String[] args) throws Exception
@@ -39,6 +41,10 @@ public final class ForkedInstanceMain
         IntegrationTestEnvironment environment = new IntegrationTestEnvironment();
         environment.createApplicationServer(asProperties);
         environment.createDataStoreServer(dssProperties);
+        if (System.getProperty(AFS_PROPERTIES_PROPERTY) != null)
+        {
+            environment.createAfsServer(loadProperties(AFS_PROPERTIES_PROPERTY));
+        }
 
         // Stop the servers (and drop the instance's databases) when the parent kills this process.
         Runtime.getRuntime().addShutdownHook(new Thread(() ->

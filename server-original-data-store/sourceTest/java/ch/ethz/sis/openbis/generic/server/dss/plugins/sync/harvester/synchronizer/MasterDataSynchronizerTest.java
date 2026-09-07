@@ -372,7 +372,7 @@ public class MasterDataSynchronizerTest
         context.checking(new Expectations()
             {
                 {
-                    one(facade).registerPropertyType(propertyType);
+                    one(facade).registerPropertyType(propertyType, null);
                 }
             });
     }

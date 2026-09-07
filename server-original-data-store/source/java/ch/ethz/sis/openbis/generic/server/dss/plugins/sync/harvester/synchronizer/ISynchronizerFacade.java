@@ -16,6 +16,7 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
 import java.util.List;
+import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.create.ExternalDmsCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
@@ -44,10 +45,6 @@ public interface ISynchronizerFacade
 
     public void unassignPropertyType(EntityKind entityKind, String propertyTypeCode, String entityTypeCode);
 
-    public void updatePropertyType(PropertyType propertyType, String diff);
-
-    public void registerPropertyType(PropertyType propertyType);
-
     public void updateValidationPlugin(Script script, String diff);
 
     public void registerValidationPlugin(Script script);
@@ -75,6 +72,10 @@ public interface ISynchronizerFacade
     public void createExternalDataManagementSystems(List<ExternalDmsCreation> creations);
 
     public void updateExternalDataManagementSystems(List<ExternalDmsUpdate> updates);
+
+    void registerPropertyType(PropertyType type, Map<String, String> metaData);
+
+    void updatePropertyType(PropertyType type, Map<String, String> metaData, String diff);
 
     public void printSummary();
 }

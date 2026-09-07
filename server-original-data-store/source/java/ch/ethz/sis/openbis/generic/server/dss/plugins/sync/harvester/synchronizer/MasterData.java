@@ -33,6 +33,18 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 
 class MasterData
 {
+    private MasterDataSchemaFeatures schemaFeatures = new MasterDataSchemaFeatures();
+
+    public MasterDataSchemaFeatures getSchemaFeatures()
+    {
+        return schemaFeatures;
+    }
+
+    public void setSchemaFeatures(MasterDataSchemaFeatures schemaFeatures)
+    {
+        this.schemaFeatures = schemaFeatures;
+    }
+
     private final INameTranslator nameTranslator;
 
     private Map<String, ExternalDms> externalDataManagementSystemsToProcess = new HashMap<>();

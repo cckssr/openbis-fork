@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.testng.annotations.AfterSuite;
@@ -44,12 +45,24 @@ import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
@@ -113,7 +126,41 @@ public class IntegrationOpenbisSyncTest
     private static final String TOP_SAMPLE_CODE_2 = "SYNC_TOP_SAMPLE_2";
     private static final String TOP_SAMPLE_CODE_3 = "SYNC_TOP_SAMPLE_3";
 
-    private static final String HARVESTER_CONFIG_FILE = "etc/suite/openbis-sync/dss/harvester-config.txt";
+    // --- Scenario: entity/property type schema features (BIS-2820 ext.4: multiValue, metaData, unique) ---
+
+    private static final String SCHEMA_FEATURES_SPACE_CODE = "SYNC_SCHEMA_FEATURES_SPACE";
+
+    private static final String SCHEMA_FEATURES_PROPERTY_TYPE_CODE = "SYNC_SCHEMA_FEATURES_PROPERTY";
+
+    private static final String SCHEMA_FEATURES_SAMPLE_TYPE_CODE = "SYNC_SCHEMA_FEATURES_SAMPLE_TYPE";
+
+    private static final String SCHEMA_FEATURES_SAMPLE_CODE = "SYNC_SCHEMA_FEATURES_SAMPLE";
+
+    private static final Map<String, String> SCHEMA_FEATURES_PROPERTY_TYPE_METADATA = Map.of("unit", "nm");
+
+    private static final Map<String, String> SCHEMA_FEATURES_SAMPLE_TYPE_METADATA = Map.of("source", "sync-test");
+
+    // --- Scenario: AFS data attached to a sample and an experiment (BIS-2819 ext.3: AFS sync) ---
+
+    private static final String AFS_SAMPLE_SPACE_CODE = "SYNC_AFS_SAMPLE_SPACE";
+
+    private static final String AFS_SAMPLE_CODE = "SYNC_AFS_SAMPLE";
+
+    private static final String AFS_EXPERIMENT_SPACE_CODE = "SYNC_AFS_EXPERIMENT_SPACE";
+
+    private static final String AFS_EXPERIMENT_PROJECT_CODE = "SYNC_AFS_EXPERIMENT_PROJECT";
+
+    private static final String AFS_EXPERIMENT_CODE = "SYNC_AFS_EXPERIMENT";
+
+    private static final String AFS_SAMPLE_FILE = "sample-file.txt";
+
+    private static final byte[] AFS_SAMPLE_FILE_CONTENT = "sample AFS content".getBytes();
+
+    private static final String AFS_EXPERIMENT_FILE = "experiment-file.txt";
+
+    private static final byte[] AFS_EXPERIMENT_FILE_CONTENT = "experiment AFS content".getBytes();
+
+    private static final String HARVESTER_CONFIG_FILE = "etc/suite/openbis-sync/harvester/dss/harvester-config.txt";
 
     private static final long SYNC_VERIFICATION_TIMEOUT_MILLIS = 60_000L;
 
@@ -171,6 +218,59 @@ public class IntegrationOpenbisSyncTest
                 "no entity data must be delivered without an 'exportable_perm_id' selection: " + locations);
     }
 
+    @Test
+    public void testHarvestEntityAndPropertyTypeSchemaFeatures() throws Exception
+    {
+        IntegrationTestFacade facade = new IntegrationTestFacade(environment);
+        OpenBIS sourceOpenBIS = sourceLogin();
+        OpenBIS harvester = harvesterLogin();
+
+        List<String> exportablePermIds = createSchemaFeaturesScenario(facade, sourceOpenBIS);
+
+        assertNull(findHarvestedSpace(harvester, NAME_PREFIX + SCHEMA_FEATURES_SPACE_CODE),
+                "harvested schema-features space must not exist before sync");
+
+        runHarvester(exportablePermIds);
+
+        facade.waitUntilCondition(
+                () -> findHarvestedSample(harvester, NAME_PREFIX + SCHEMA_FEATURES_SPACE_CODE, SCHEMA_FEATURES_SAMPLE_CODE) != null,
+                SYNC_VERIFICATION_TIMEOUT_MILLIS);
+
+        verifySchemaFeatures(harvester);
+    }
+
+    @Test
+    public void testHarvestAfsDataAttachedToSampleAndExperiment() throws Exception
+    {
+        IntegrationTestFacade facade = new IntegrationTestFacade(environment);
+        OpenBIS sourceOpenBIS = sourceLogin();
+        OpenBIS harvester = harvesterLogin();
+
+        Space sampleSpace = facade.createSpace(sourceOpenBIS, AFS_SAMPLE_SPACE_CODE);
+        Sample sample = facade.createSample(sourceOpenBIS, sampleSpace.getPermId(), AFS_SAMPLE_CODE);
+        sourceOpenBIS.getAfsServerFacade().write(sample.getPermId().getPermId(), AFS_SAMPLE_FILE, 0L, AFS_SAMPLE_FILE_CONTENT);
+
+        Space experimentSpace = facade.createSpace(sourceOpenBIS, AFS_EXPERIMENT_SPACE_CODE);
+        Project experimentProject = facade.createProject(sourceOpenBIS, experimentSpace.getPermId(), AFS_EXPERIMENT_PROJECT_CODE);
+        Experiment experiment = facade.createExperiment(sourceOpenBIS, experimentProject.getPermId(), AFS_EXPERIMENT_CODE);
+        sourceOpenBIS.getAfsServerFacade().write(experiment.getPermId().getPermId(), AFS_EXPERIMENT_FILE, 0L, AFS_EXPERIMENT_FILE_CONTENT);
+
+        List<String> exportablePermIds = List.of(
+                "SAMPLE:" + sample.getPermId().getPermId(),
+                "EXPERIMENT:" + experiment.getPermId().getPermId());
+
+        runHarvester(exportablePermIds);
+
+        facade.waitUntilCondition(
+                () -> findHarvestedSample(harvester, NAME_PREFIX + AFS_SAMPLE_SPACE_CODE, AFS_SAMPLE_CODE) != null,
+                SYNC_VERIFICATION_TIMEOUT_MILLIS);
+
+        assertEquals(harvester.getAfsServerFacade().read(sample.getPermId().getPermId(), AFS_SAMPLE_FILE, 0L, AFS_SAMPLE_FILE_CONTENT.length),
+                AFS_SAMPLE_FILE_CONTENT, "harvested sample AFS file content");
+        assertEquals(harvester.getAfsServerFacade().read(experiment.getPermId().getPermId(), AFS_EXPERIMENT_FILE, 0L, AFS_EXPERIMENT_FILE_CONTENT.length),
+                AFS_EXPERIMENT_FILE_CONTENT, "harvested experiment AFS file content");
+    }
+
     // --- Scenario builders: create the source hierarchy, return the exportable-perm-id tokens to harvest ---
 
     private List<String> createSpaceSubtree(IntegrationTestFacade facade, OpenBIS sourceOpenBIS)
@@ -209,6 +309,43 @@ public class IntegrationOpenbisSyncTest
         return List.of(
                 "SAMPLE:" + sample1.getPermId().getPermId(),
                 "SAMPLE:" + sample2.getPermId().getPermId());
+    }
+
+    /**
+     * Creates a property type with {@code multiValue}/{@code metaData} set, a sample type with its own
+     * {@code metaData} that assigns the property type as {@code unique}, and one sample of that type -
+     * MasterDataDeliverer only delivers master data actually referenced by a synced entity, so a bare type
+     * registration with no instance would never be exported.
+     */
+    private List<String> createSchemaFeaturesScenario(IntegrationTestFacade facade, OpenBIS sourceOpenBIS)
+    {
+        PropertyTypeCreation propertyTypeCreation = new PropertyTypeCreation();
+        propertyTypeCreation.setCode(SCHEMA_FEATURES_PROPERTY_TYPE_CODE);
+        propertyTypeCreation.setLabel("Schema features property");
+        propertyTypeCreation.setDescription("Property exercising multiValue + metaData sync");
+        propertyTypeCreation.setDataType(DataType.VARCHAR);
+        propertyTypeCreation.setMultiValue(true);
+        propertyTypeCreation.setMetaData(SCHEMA_FEATURES_PROPERTY_TYPE_METADATA);
+        sourceOpenBIS.createPropertyTypes(List.of(propertyTypeCreation));
+
+        PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
+        assignmentCreation.setPropertyTypeId(new PropertyTypePermId(SCHEMA_FEATURES_PROPERTY_TYPE_CODE));
+        assignmentCreation.setUnique(true);
+
+        SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
+        sampleTypeCreation.setCode(SCHEMA_FEATURES_SAMPLE_TYPE_CODE);
+        sampleTypeCreation.setMetaData(SCHEMA_FEATURES_SAMPLE_TYPE_METADATA);
+        sampleTypeCreation.setPropertyAssignments(List.of(assignmentCreation));
+        sourceOpenBIS.createSampleTypes(List.of(sampleTypeCreation));
+
+        Space space = facade.createSpace(sourceOpenBIS, SCHEMA_FEATURES_SPACE_CODE);
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(new EntityTypePermId(SCHEMA_FEATURES_SAMPLE_TYPE_CODE));
+        sampleCreation.setSpaceId(space.getPermId());
+        sampleCreation.setCode(SCHEMA_FEATURES_SAMPLE_CODE);
+        sourceOpenBIS.createSamples(List.of(sampleCreation));
+
+        return List.of("SPACE:" + SCHEMA_FEATURES_SPACE_CODE);
     }
 
     // --- Scenario verifiers: look the harvested copies up through the harvester's V3 API ---
@@ -253,6 +390,29 @@ public class IntegrationOpenbisSyncTest
         // The unselected third sample must NOT have been dragged in with the pulled-from-above space.
         assertNull(findHarvestedSample(harvester, harvestedSpace, TOP_SAMPLE_CODE_3),
                 "the unselected third sample must not be harvested");
+    }
+
+    private void verifySchemaFeatures(OpenBIS harvester)
+    {
+        PropertyTypePermId propertyTypeId = new PropertyTypePermId(NAME_PREFIX + SCHEMA_FEATURES_PROPERTY_TYPE_CODE);
+        PropertyType propertyType = harvester.getPropertyTypes(List.of(propertyTypeId), new PropertyTypeFetchOptions()).get(propertyTypeId);
+        assertNotNull(propertyType, "harvested schema-features property type");
+        assertTrue(propertyType.isMultiValue(), "harvested property type must be multiValue");
+        assertEquals(propertyType.getMetaData(), SCHEMA_FEATURES_PROPERTY_TYPE_METADATA, "harvested property type metaData");
+
+        EntityTypePermId sampleTypeId = new EntityTypePermId(NAME_PREFIX + SCHEMA_FEATURES_SAMPLE_TYPE_CODE);
+        SampleTypeFetchOptions sampleTypeFetchOptions = new SampleTypeFetchOptions();
+        sampleTypeFetchOptions.withPropertyAssignments().withPropertyType();
+        SampleType sampleType = harvester.getSampleTypes(List.of(sampleTypeId), sampleTypeFetchOptions).get(sampleTypeId);
+        assertNotNull(sampleType, "harvested schema-features sample type");
+        assertEquals(sampleType.getMetaData(), SCHEMA_FEATURES_SAMPLE_TYPE_METADATA, "harvested sample type metaData");
+
+        String harvestedPropertyTypeCode = NAME_PREFIX + SCHEMA_FEATURES_PROPERTY_TYPE_CODE;
+        PropertyAssignment assignment = sampleType.getPropertyAssignments().stream()
+                .filter(a -> a.getPropertyType().getCode().equals(harvestedPropertyTypeCode))
+                .findFirst().orElse(null);
+        assertNotNull(assignment, "harvested property assignment for " + harvestedPropertyTypeCode);
+        assertTrue(assignment.isUnique(), "harvested property assignment must be unique");
     }
 
     private OpenBIS sourceLogin()

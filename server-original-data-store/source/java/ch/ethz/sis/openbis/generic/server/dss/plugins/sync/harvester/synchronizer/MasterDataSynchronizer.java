@@ -15,6 +15,9 @@
  */
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
+import java.util.Collections;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -103,8 +106,43 @@ public class MasterDataSynchronizer
         this.v3api = v3api;
     }
 
+    private MasterDataSchemaFeatures schemaFeatures = new MasterDataSchemaFeatures();
+
+    private final Map<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType> existingSchemaPropertyTypes = new HashMap<>();
+
+    private void loadExistingSchemaPropertyTypes(MasterData masterData)
+    {
+        existingSchemaPropertyTypes.clear();
+        if (!schemaFeatures.getPropertyTypeMetaData().isEmpty())
+        {
+            List<PropertyTypePermId> ids = masterData.getPropertyTypesToProcess().values().stream()
+                    .map(type -> new PropertyTypePermId(getCode(type, masterData.getNameTranslator())))
+                    .collect(Collectors.toList());
+            v3api.getPropertyTypes(sessionToken, ids, new PropertyTypeFetchOptions()).values()
+                    .forEach(type -> existingSchemaPropertyTypes.put(type.getCode(), type));
+        }
+    }
+
+    private static Map<String, String> normalizedMetaData(Map<String, String> metaData)
+    {
+        return metaData == null ? Collections.emptyMap() : metaData;
+    }
+
+    private Map<String, String> getMetaData(EntityType type)
+    {
+        switch (type.getEntityKind())
+        {
+            case SAMPLE: return ((SampleType) type).getMetaData();
+            case EXPERIMENT: return ((ExperimentType) type).getMetaData();
+            case DATA_SET: return ((DataSetType) type).getMetaData();
+            default: throw new IllegalArgumentException("Unsupported entity kind: " + type.getEntityKind());
+        }
+    }
+
     public void synchronizeMasterData(MasterData masterData, Monitor monitor)
     {
+        schemaFeatures = masterData.getSchemaFeatures();
+        loadExistingSchemaPropertyTypes(masterData);
         MultiKeyMap<String, List<NewETPTAssignment>> propertyAssignmentsToProcess = masterData.getPropertyAssignmentsToProcess();
         monitor.log("process validation plugins");
         processValidationPlugins(masterData.getValidationPluginsToProcess());
@@ -511,6 +549,11 @@ public class MasterDataSynchronizer
                 new DiffBuilder<Object>(existingEntityType, incomingEntityType, ToStringStyle.SHORT_PREFIX_STYLE, false)
                         .append("description", existingEntityType.getDescription(), incomingEntityType.getDescription())
                         .append("validationPlugin", getPluginName(existingEntityType), getPluginName(incomingEntityType));
+        Map<String, String> metaData = schemaFeatures.getEntityTypeMetaData().get(entityKind.name(), incomingEntityType.getCode());
+        if (metaData != null)
+        {
+            diffBuilder.append("metaData", normalizedMetaData(getMetaData(existingEntityType)), metaData);
+        }
         switch (entityKind)
         {
             case SAMPLE:
@@ -616,7 +659,8 @@ public class MasterDataSynchronizer
                     {
                         incomingPropertyType.setModificationDate(existingPropertyType.getModificationDate());
                         incomingPropertyType.setId(existingPropertyType.getId());
-                        synchronizerFacade.updatePropertyType(incomingPropertyType, diff);
+                        Map<String, String> metaData = schemaFeatures.getPropertyTypeMetaData().get(incomingPropertyType.getCode());
+                        synchronizerFacade.updatePropertyType(incomingPropertyType, metaData, diff);
                     }
                 } else if (getType(existingPropertyType).equals(getType(incomingPropertyType)) == false)
                 {
@@ -631,7 +675,8 @@ public class MasterDataSynchronizer
             } else
             {
                 incomingPropertyType.setManagedInternally(false);
-                synchronizerFacade.registerPropertyType(incomingPropertyType);
+                Map<String, String> metaData = schemaFeatures.getPropertyTypeMetaData().get(incomingPropertyType.getCode());
+                synchronizerFacade.registerPropertyType(incomingPropertyType, metaData);
             }
         }
     }
@@ -669,6 +714,16 @@ public class MasterDataSynchronizer
                                 incomingPropertyType.isManagedInternally())
                         .append("vocabulary", getCode(existingPropertyType.getVocabulary()),
                                 getCode(incomingPropertyType.getVocabulary()));
+        Map<String, String> metaData = schemaFeatures.getPropertyTypeMetaData().get(incomingPropertyType.getCode());
+        if (metaData != null)
+        {
+            var existing = existingSchemaPropertyTypes.get(existingPropertyType.getCode());
+            if (existing == null)
+            {
+                throw new UserFailureException("Property type disappeared during synchronization: " + existingPropertyType.getCode());
+            }
+            diffBuilder.append("metaData", normalizedMetaData(existing.getMetaData()), metaData);
+        }
         DiffResult<?> diffResult = diffBuilder.build();
         return render(diffResult, existingPropertyType, incomingPropertyType);
     }

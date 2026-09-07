@@ -43,7 +43,7 @@ public final class OpenbisSyncIntegrationTestEnvironment
 
     private static final File SYNC_PLUGIN_SOURCE = new File("../core-plugin-openbis/dist/core-plugins/openbis-sync");
 
-    private static final File HARVESTER_SYNC_PLUGIN_LINK = new File("etc/suite/openbis-sync/dss/core-plugins/openbis-sync");
+    private static final File HARVESTER_SYNC_PLUGIN_LINK = new File("etc/suite/openbis-sync/harvester/dss/core-plugins/openbis-sync");
 
     private static final File SOURCE_SYNC_PLUGIN_LINK = new File("etc/suite/openbis-sync/source/dss/core-plugins/openbis-sync");
 
@@ -69,7 +69,8 @@ public final class OpenbisSyncIntegrationTestEnvironment
             source = new ForkedOpenbisInstance(SOURCE_PROJECT_NAME)
                     .withLabel(SOURCE_LOG_LABEL)
                     .withApplicationServer("etc/suite/openbis-sync/source/as/service.properties")
-                    .withDataStoreServer("etc/suite/openbis-sync/source/dss/service.properties");
+                    .withDataStoreServer("etc/suite/openbis-sync/source/dss/service.properties")
+                    .withAfsServer("etc/suite/openbis-sync/source/afs/service.properties");
             source.start();
 
             // Bring up the in-JVM HARVESTER instance.
@@ -79,7 +80,9 @@ public final class OpenbisSyncIntegrationTestEnvironment
             // avoid errors in logs
             new File("targets/incoming-default").mkdirs();
             environment.createDataStoreServer(
-                    IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/openbis-sync/dss/service.properties")));
+                    IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/openbis-sync/harvester/dss/service.properties")));
+            environment.createAfsServer(
+                    IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/openbis-sync/harvester/afs/service.properties")));
             environment.start();
         } catch (RuntimeException | Error e)
         {

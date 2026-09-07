@@ -55,6 +55,8 @@ public final class ForkedOpenbisInstance
 
     private String dssProperties;
 
+    private String afsProperties;
+
     private Process process;
 
     private final CountDownLatch startedLatch = new CountDownLatch(1);
@@ -83,6 +85,12 @@ public final class ForkedOpenbisInstance
     public ForkedOpenbisInstance withDataStoreServer(String properties)
     {
         this.dssProperties = properties;
+        return this;
+    }
+
+    public ForkedOpenbisInstance withAfsServer(String properties)
+    {
+        this.afsProperties = properties;
         return this;
     }
 
@@ -163,7 +171,7 @@ public final class ForkedOpenbisInstance
     {
         return new OpenBIS(getOpenBISUrl() + TestInstanceHostUtils.getOpenBISPath(),
                 getDSSUrl() + TestInstanceHostUtils.getDSSPath(),
-                getOpenBISUrl() + TestInstanceHostUtils.getAFSPath());
+                TestInstanceHostUtils.getAFSUrl(projectName) + TestInstanceHostUtils.getAFSPath());
     }
 
     private List<String> buildCommand()
@@ -188,6 +196,10 @@ public final class ForkedOpenbisInstance
 
         command.add("-D" + ForkedInstanceMain.AS_PROPERTIES_PROPERTY + "=" + asProperties);
         command.add("-D" + ForkedInstanceMain.DSS_PROPERTIES_PROPERTY + "=" + dssProperties);
+        if (afsProperties != null)
+        {
+            command.add("-D" + ForkedInstanceMain.AFS_PROPERTIES_PROPERTY + "=" + afsProperties);
+        }
 
         command.add(ForkedInstanceMain.class.getName());
         return command;

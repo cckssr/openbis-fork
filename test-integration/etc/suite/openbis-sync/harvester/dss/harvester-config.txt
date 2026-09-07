@@ -29,6 +29,10 @@ harvester-pass = password
 # Prefix harvested entities with "<alias>_" so the copies form a parallel hierarchy (DS1_SYNC_SPACE).
 translate-using-data-source-alias = true
 
+# (etc/suite/openbis-sync/harvester/afs/service.properties), where synced AFS-attached sample/experiment
+# files get written (SynchronizationConfigReader; EntitySynchronizer.synchronizeAfsData no-ops without it).
+harvester-afs-url = http://localhost:8857/afs-server
+
 email-addresses = test@localhost
 max-threads = 1
 harvester-tmp-dir = targets/openbis-sync/harvester-tmp

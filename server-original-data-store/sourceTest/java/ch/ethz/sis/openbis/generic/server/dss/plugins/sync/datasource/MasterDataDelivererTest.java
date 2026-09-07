@@ -15,16 +15,26 @@
  */
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import java.io.StringWriter;
+import java.io.StringReader;
+import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.xml.sax.InputSource;
+import org.w3c.dom.Element;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.testng.annotations.DataProvider;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
@@ -151,8 +161,17 @@ public class MasterDataDelivererTest
         assertFalse(xml.contains("xmd:externalDataManagementSystems"), xml);
     }
 
-    @Test
-    public void testDeliverEntitiesFiltersByPermIdsAndDerivedReferences() throws Exception
+    @DataProvider
+    public Object[][] schemaFeatures()
+    {
+        Map<String, String> metadata = new LinkedHashMap<>();
+        metadata.put("z", "");
+        metadata.put("a<&\"", "Grüezi <xml> & \"quoted\"\nsecond line");
+        return new Object[][] { { true, metadata }, { false, Collections.emptyMap() }, { false, null } };
+    }
+
+    @Test(dataProvider = "schemaFeatures")
+    public void testDeliverEntitiesFiltersByPermIdsAndDerivedReferences(boolean enabled, Map<String, String> metadata) throws Exception
     {
         Map<ExportableKind, List<String>> permIdsByKind = new EnumMap<>(ExportableKind.class);
         permIdsByKind.put(ExportableKind.SAMPLE_TYPE, List.of("SAMPLE_TYPE_A"));
@@ -181,6 +200,12 @@ public class MasterDataDelivererTest
         DataSet dataSet = dataSetWithExternalDms("DATASET-1", externalDmsId);
         PropertyType propertyType = propertyType("PROP_A");
         ExternalDms externalDms = externalDms(externalDmsId, "EDMS_A");
+        sampleType.setMetaData(metadata);
+        experimentType.setMetaData(metadata);
+        dataSetType.setMetaData(metadata);
+        propertyType.setMetaData(metadata);
+        propertyType.setMultiValue(enabled);
+        sampleType.getPropertyAssignments().get(0).setUnique(enabled);
 
         mockery.checking(new Expectations()
         {
@@ -228,6 +253,29 @@ public class MasterDataDelivererTest
         assertTrue(xml.contains("PLUGIN_B"), xml);
         assertTrue(xml.contains("PROP_A"), xml);
         assertTrue(xml.contains("EDMS_A"), xml);
+
+        Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                .parse(new InputSource(new StringReader(xml)));
+        Element property = (Element) document.getElementsByTagName("xmd:propertyType").item(0);
+        assertEquals(property.getAttribute("multiValue"), Boolean.toString(enabled));
+        Element assignment = (Element) document.getElementsByTagName("xmd:propertyAssignment").item(0);
+        assertEquals(assignment.getAttribute("unique"), Boolean.toString(enabled));
+        for (String tag : List.of("xmd:propertyType", "xmd:objectType", "xmd:collectionType", "xmd:dataSetType"))
+        {
+            Element type = (Element) document.getElementsByTagName(tag).item(0);
+            NodeList containers = type.getElementsByTagName("xmd:metaData");
+            assertEquals(containers.getLength(), 1, tag);
+            assertEquals(containers.item(0).getParentNode(), type);
+            NodeList entries = ((Element) containers.item(0)).getElementsByTagName("xmd:entry");
+            Map<String, String> actual = new LinkedHashMap<>();
+            for (int i = 0; i < entries.getLength(); i++)
+            {
+                Element entry = (Element) entries.item(i);
+                actual.put(entry.getAttribute("key"), entry.getTextContent());
+            }
+            assertEquals(actual, metadata == null ? Collections.emptyMap() : metadata, tag);
+            assertEquals(List.copyOf(actual.keySet()), actual.keySet().stream().sorted().collect(java.util.stream.Collectors.toList()));
+        }
     }
 
     private String deliverEntities(Map<ExportableKind, List<String>> permIdsByKind) throws Exception
