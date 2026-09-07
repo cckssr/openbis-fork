@@ -153,9 +153,9 @@ public class ProtobufConversionUtilTest extends DriveTestCase {
         List<SyncJob> syncJobs = List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true),
                 new SyncJob(SyncJob.Type.Bidirectional, "http://loc2", "tkntkn2", "1234-abcd2", "title2", "/remDIR3", "/LOCdir3", false),
-                new SyncJob(SyncJob.Type.Bidirectional, "http://loc2", "tkntkn2", "1234-abcd2", SyncJob.EntityType.Sample, true, "title2", "/remDIR3", "/LOCdir3", false, SyncJob.IgnoredFilesMode.None, new ArrayList<>()),
-                new SyncJob(SyncJob.Type.Bidirectional, "http://loc2", "tkntkn2", "1234-abcd2", SyncJob.EntityType.Experiment, false, "title2", "/remDIR3", "/LOCdir3", true, SyncJob.IgnoredFilesMode.SpecificList, new ArrayList<>()),
-                new SyncJob(SyncJob.Type.Download, "http://loc2", "tkntkn2", "1234-abcd2", SyncJob.EntityType.Dataset, true, "title2", "/remDIR3", "/LOCdir3", false, SyncJob.IgnoredFilesMode.GlobalDefault, new ArrayList<>())
+                new SyncJob(SyncJob.Type.Bidirectional, "http://loc2", "tkntkn2", "1234-abcd2", SyncJob.EntityType.Sample, true, "title2", "user", "/remDIR3", "/LOCdir3", false, SyncJob.IgnoredFilesMode.None, new ArrayList<>()),
+                new SyncJob(SyncJob.Type.Bidirectional, "http://loc2", "tkntkn2", "1234-abcd2", SyncJob.EntityType.Experiment, false, "title2", "user", "/remDIR3", "/LOCdir3", true, SyncJob.IgnoredFilesMode.SpecificList, new ArrayList<>()),
+                new SyncJob(SyncJob.Type.Download, "http://loc2", "tkntkn2", "1234-abcd2", SyncJob.EntityType.Dataset, true, "title2", "user", "/remDIR3", "/LOCdir3", false, SyncJob.IgnoredFilesMode.GlobalDefault, new ArrayList<>())
         );
         syncJobs.get(0).setIgnoredPathPatterns(new ArrayList<>(List.of("aaa", "bbb")));
         syncJobs.get(1).setIgnoredPathPatterns(new ArrayList<>(List.of("aaa1", "bbb2")));

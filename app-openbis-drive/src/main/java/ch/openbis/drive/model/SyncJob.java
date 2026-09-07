@@ -26,6 +26,7 @@ public class SyncJob {
     private EntityType entityType;
     private boolean entityImmutable;
     @NonNull private String title;
+    private String username;
 
     @NonNull private String remoteDirectoryRoot;
     @NonNull private String localDirectoryRoot;

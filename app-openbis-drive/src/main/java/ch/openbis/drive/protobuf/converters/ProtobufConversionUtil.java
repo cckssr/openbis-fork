@@ -63,6 +63,7 @@ public class ProtobufConversionUtil {
             syncJob.setLocalDirectoryRoot(syncJobDto.getLocalDirectoryRoot());
             syncJob.setIgnoreFiles(fromProtobuftoSyncJobIgnoreFilesModeEnum(syncJobDto.getIgnoreFiles()));
             syncJob.setIgnoredPathPatterns(new ArrayList<>(syncJobDto.getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList()));
+            syncJob.setUsername(syncJobDto.hasUsername() ? syncJobDto.getUsername() : null);
             syncJobs.add(syncJob);
         }
 
@@ -88,6 +89,9 @@ public class ProtobufConversionUtil {
             syncJobBuilder.setRemoteDirectoryRoot(syncJob.getRemoteDirectoryRoot());
             syncJobBuilder.setIgnoreFiles(toProtobufSyncJobIgnoreFilesModeEnum(syncJob.getIgnoreFiles()));
             syncJobBuilder.setIgnoredPathPatterns(DriveApiService.IgnoredPathPatterns.newBuilder().addAllIgnoredPathPatterns(syncJob.getIgnoredPathPatterns()).build());
+            if (syncJob.getUsername() != null) {
+                syncJobBuilder.setUsername(syncJob.getUsername());
+            }
             builder.addSyncJobs(syncJobBuilder.build());
         }
 

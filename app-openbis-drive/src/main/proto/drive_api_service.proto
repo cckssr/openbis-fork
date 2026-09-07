@@ -25,6 +25,7 @@ message SyncJob {
     string title = 10;
     optional EntityType entity_type = 11;
     optional bool entity_immutable = 12;
+    optional string username = 13;
 
     enum Type {
       BIDIRECTIONAL = 0;

@@ -134,6 +134,11 @@ public class SyncJobLoginDialogStep implements DialogStep<SyncJobDialogContext, 
                 gridPane
         );
 
+        if (context.toBeModified() != null) {
+            openbisServerUrlValue.setText(context.toBeModified().getOpenBisUrl());
+            usernameValue.setText(context.toBeModified().getUsername());
+        }
+
         allValidListener = (obs, oldValue, newValue) -> {
             if (newValue) {
                 applyDisableProperty.setValue(false);

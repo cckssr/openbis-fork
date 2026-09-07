@@ -117,8 +117,7 @@ public class SyncJobFormDialogStep implements DialogStep<SyncJobDialogContext, S
         this.result = resultFuture;
 
         if (this.editedSyncJob != null &&
-                availableSession.openBISUrl().equals(this.editedSyncJob.getOpenBisUrl()) &&
-                availableSession.personalAccessToken().equals(this.editedSyncJob.getOpenBisPersonalAccessToken())
+                availableSession.openBISUrl().equals(this.editedSyncJob.getOpenBisUrl())
         ) {
             entityChosen.setValue(new ChosenEntity(
                     this.editedSyncJob.getEntityPermId(),
@@ -256,6 +255,7 @@ public class SyncJobFormDialogStep implements DialogStep<SyncJobDialogContext, S
                                     .toList())
                     );
                 }
+                newSyncJob.setUsername(availableSession.username());
                 result.complete(
                         new DialogStepResult<>(
                             DialogStepResultEnum.FINAL,

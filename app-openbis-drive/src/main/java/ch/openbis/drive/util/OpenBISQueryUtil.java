@@ -271,11 +271,11 @@ public class OpenBISQueryUtil {
             SearchResult<PersonalAccessToken> pats = openbis.searchPersonalAccessTokens(personalAccessTokenSearchCriteria, patFetchOptions);
 
             PersonalAccessToken alreadyAvailableSession = pats.getObjects().stream().filter(
-                pat -> pat.getValidFromDate().before(new Date()) &&
-                    pat.getValidToDate().after(
-                        new Date(System.currentTimeMillis() + acceptedValidityMillisLeftForPATs)
-                    )
-            ).findFirst().orElse(null);
+                    pat -> pat.getValidFromDate().before(new Date()) &&
+                            pat.getValidToDate().after(
+                                    new Date(System.currentTimeMillis() + acceptedValidityMillisLeftForPATs)
+                            )
+            ).max(Comparator.comparing(item -> item.getValidToDate().getTime())).orElse(null);
 
             if (alreadyAvailableSession != null) {
                 return new NewSessionResult(
