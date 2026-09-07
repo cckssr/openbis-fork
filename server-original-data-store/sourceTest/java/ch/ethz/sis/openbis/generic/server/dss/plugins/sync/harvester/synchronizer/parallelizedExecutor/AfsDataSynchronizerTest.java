@@ -405,10 +405,197 @@ public class AfsDataSynchronizerTest
         assertFalse(harvester.filePaths(OWNER).stream().anyMatch(AfsDataSynchronizer::isBackupPath));
     }
 
+    @Test
+    public void testEmptyFileReplacesNonemptyFile() throws Exception
+    {
+        assertFileReplacement("/file.txt", "", "/file.txt", "old");
+    }
+
+    @Test
+    public void testFilenameCanMatchTopDirectoryName() throws Exception
+    {
+        assertFileReplacement("/data/data", "new", null, null);
+    }
+
+    @Test
+    public void testFileCanReplacePreviouslyNonemptyDirectory() throws Exception
+    {
+        assertFileReplacement("/data", "new", "/data/old.txt", "old");
+    }
+
+    @Test
+    public void testPreservesDestinationOnlyStateWhenDeletionIsDisabled() throws Exception
+    {
+        InMemoryAfsApi source = new InMemoryAfsApi();
+        InMemoryAfsApi harvester = new InMemoryAfsApi();
+        IncomingAfsFile updated = sourceFile(source, "/file.txt", "new");
+        IncomingAfsFile added = sourceFile(source, "/empty/new.txt", "added");
+        harvester.addFile(OWNER, "/file.txt", bytes("history"));
+        harvester.snapshot(OWNER, "/file.txt");
+        harvester.addFile(OWNER, "/file.txt", bytes("old"));
+        harvester.addFile(OWNER, "/retained.txt", bytes("retained"));
+        harvester.addFile(OWNER, "/.afs.trash/trashed.txt", bytes("trashed"));
+        harvester.create(OWNER, "/empty", true);
+        harvester.create(OWNER, "/retained-directory", true);
+        harvester.create(OWNER, "/.afs.trash/retained-directory", true);
+        String snapshotPath = onlyPathBelow(harvester, "/.afs.snapshots/file.txt/");
+        AfsDataSynchronizer.AfsOwner desired = owner(List.of(updated, added), List.of(), List.of());
+
+        Status status = synchronizer(source, harvester, false).execute(List.of(desired));
+
+        assertTrue(status.isOK(), status.toString());
+        assertEquals(text(harvester.content(OWNER, "/file.txt")), "new");
+        assertEquals(text(harvester.content(OWNER, added.getPath())), "added");
+        assertEquals(text(harvester.content(OWNER, "/retained.txt")), "retained");
+        assertEquals(text(harvester.content(OWNER, "/.afs.trash/trashed.txt")), "trashed");
+        assertEquals(text(harvester.content(OWNER, snapshotPath)), "history");
+        assertTrue(harvester.directoryPaths(OWNER).contains("/retained-directory"));
+        assertTrue(harvester.directoryPaths(OWNER).contains("/.afs.trash/retained-directory"));
+        source.clearOperations();
+        harvester.clearOperations();
+        assertTrue(synchronizer(source, harvester, false).execute(List.of(desired)).isOK());
+        assertTrue(source.readSources().isEmpty());
+        assertTrue(harvester.fileMutationPaths().isEmpty());
+    }
+
+    @Test
+    public void testDeletesDestinationOnlyStatePermanentlyWhenDeletionIsEnabled() throws Exception
+    {
+        InMemoryAfsApi source = new InMemoryAfsApi();
+        InMemoryAfsApi harvester = new InMemoryAfsApi();
+        harvester.addFile(OWNER, "/removed.txt", bytes("removed"));
+        harvester.snapshot(OWNER, "/removed.txt");
+        harvester.addFile(OWNER, "/.afs.trash/trashed.txt", bytes("trashed"));
+        harvester.create(OWNER, "/empty", true);
+
+        Status status = synchronizer(source, harvester, true).execute(List.of(owner(List.of(), List.of(), List.of())));
+
+        assertTrue(status.isOK(), status.toString());
+        assertTrue(harvester.filePaths(OWNER).isEmpty());
+        assertFalse(harvester.directoryPaths(OWNER).contains("/empty"));
+    }
+
+    @Test
+    public void testDryRunDoesNotDeleteOrUpdateDestination() throws Exception
+    {
+        InMemoryAfsApi source = new InMemoryAfsApi();
+        InMemoryAfsApi harvester = new InMemoryAfsApi();
+        IncomingAfsFile file = sourceFile(source, "/new.txt", "new");
+        harvester.addFile(OWNER, "/retained.txt", bytes("retained"));
+        harvester.clearOperations();
+        AfsDataSynchronizer synchronizer = new AfsDataSynchronizer(client(source), client(harvester), tempDirectory,
+                new AfsDataSynchronizationSummary(), true, true);
+
+        Status status = synchronizer.execute(List.of(owner(List.of(file), List.of(), List.of())));
+
+        assertTrue(status.isOK(), status.toString());
+        assertEquals(harvester.filePaths(OWNER), Set.of("/retained.txt"));
+        assertTrue(harvester.fileMutationPaths().isEmpty());
+        assertTrue(source.readSources().isEmpty());
+    }
+
+    @Test
+    public void testPreservesRemovedSnapshotVersionsWhileAddingNewOnes() throws Exception
+    {
+        InMemoryAfsApi source = new InMemoryAfsApi();
+        InMemoryAfsApi harvester = new InMemoryAfsApi();
+        IncomingAfsFile current = sourceFile(source, "/file.txt", "current");
+        IncomingAfsFile newer = sourceFile(source, "/.afs.snapshots/file.txt/2026_01_02_00_00_00_000", "new history");
+        harvester.addFile(OWNER, "/file.txt", bytes("old history"));
+        harvester.snapshot(OWNER, "/file.txt");
+        harvester.snapshot(OWNER, "/file.txt");
+        harvester.addFile(OWNER, "/file.txt", bytes("current"));
+        AfsDataSynchronizer.AfsOwner desired = owner(List.of(current), List.of(), List.of(newer));
+
+        Status status = synchronizer(source, harvester, false).execute(List.of(desired));
+
+        assertTrue(status.isOK(), status.toString());
+        List<String> snapshots = pathsBelow(harvester, "/.afs.snapshots/file.txt/");
+        assertEquals(snapshots.size(), 3);
+        assertEquals(snapshots.stream().map(path -> text(harvester.content(OWNER, path))).toList(),
+                List.of("old history", "old history", "new history"));
+        assertTrue(synchronizer(source, harvester, false).execute(List.of(desired)).isOK());
+        assertEquals(pathsBelow(harvester, "/.afs.snapshots/file.txt/").size(), 3);
+    }
+
+    @Test
+    public void testRejectsDirectoryReplacementWithoutDeletingRetainedFiles() throws Exception
+    {
+        InMemoryAfsApi source = new InMemoryAfsApi();
+        InMemoryAfsApi harvester = new InMemoryAfsApi();
+        IncomingAfsFile file = sourceFile(source, "/data", "new");
+        harvester.addFile(OWNER, "/data/old.txt", bytes("old"));
+        harvester.clearOperations();
+
+        Status status = synchronizer(source, harvester, false).execute(List.of(owner(List.of(file), List.of(), List.of())));
+
+        assertTrue(status.isError());
+        assertTrue(status.toString().contains("deletion-allowed is false"));
+        assertEquals(text(harvester.content(OWNER, "/data/old.txt")), "old");
+        assertTrue(harvester.fileMutationPaths().isEmpty());
+    }
+
+    @Test
+    public void testRestoresDirectoryWhenItsReplacementFails() throws Exception
+    {
+        InMemoryAfsApi source = new InMemoryAfsApi();
+        InMemoryAfsApi harvester = new InMemoryAfsApi();
+        IncomingAfsFile file = sourceFile(source, "/data", "new");
+        harvester.addFile(OWNER, "/data/old.txt", bytes("old"));
+        source.setFailReads(true);
+
+        Status status = synchronizer(source, harvester).execute(List.of(owner(List.of(file), List.of(), List.of())));
+
+        assertTrue(status.isError());
+        assertEquals(harvester.filePaths(OWNER), Set.of("/data/old.txt"));
+        assertEquals(text(harvester.content(OWNER, "/data/old.txt")), "old");
+    }
+
+    @Test
+    public void testRebuildsEmptySnapshotVersion() throws Exception
+    {
+        InMemoryAfsApi source = new InMemoryAfsApi();
+        InMemoryAfsApi harvester = new InMemoryAfsApi();
+        IncomingAfsFile current = sourceFile(source, "/file.txt", "current");
+        IncomingAfsFile first = sourceFile(source, "/.afs.snapshots/file.txt/2026_01_01_00_00_00_000", "history");
+        IncomingAfsFile empty = sourceFile(source, "/.afs.snapshots/file.txt/2026_01_02_00_00_00_000", "");
+
+        Status status = synchronizer(source, harvester).execute(List.of(owner(List.of(current), List.of(), List.of(first, empty))));
+
+        assertTrue(status.isOK(), status.toString());
+        List<String> snapshots = pathsBelow(harvester, "/.afs.snapshots/file.txt/");
+        assertEquals(snapshots.size(), 2);
+        assertEquals(text(harvester.content(OWNER, snapshots.get(0))), "history");
+        assertEquals(harvester.content(OWNER, snapshots.get(1)), new byte[0]);
+        assertEquals(text(harvester.content(OWNER, "/file.txt")), "current");
+    }
+
+    private void assertFileReplacement(String sourcePath, String sourceText, String targetPath, String targetText) throws Exception
+    {
+        InMemoryAfsApi source = new InMemoryAfsApi();
+        InMemoryAfsApi harvester = new InMemoryAfsApi();
+        IncomingAfsFile file = sourceFile(source, sourcePath, sourceText);
+        if (targetPath != null)
+        {
+            harvester.addFile(OWNER, targetPath, bytes(targetText));
+        }
+
+        Status status = synchronizer(source, harvester).execute(List.of(owner(List.of(file), List.of(), List.of())));
+
+        assertTrue(status.isOK(), status.toString());
+        assertEquals(harvester.content(OWNER, sourcePath), bytes(sourceText));
+        assertEquals(harvester.filePaths(OWNER), Set.of(sourcePath));
+    }
+
     private AfsDataSynchronizer synchronizer(InMemoryAfsApi source, InMemoryAfsApi harvester)
     {
+        return synchronizer(source, harvester, true);
+    }
+
+    private AfsDataSynchronizer synchronizer(InMemoryAfsApi source, InMemoryAfsApi harvester, boolean deletionAllowed)
+    {
         return new AfsDataSynchronizer(client(source), client(harvester), tempDirectory,
-                new AfsDataSynchronizationSummary(), false);
+                new AfsDataSynchronizationSummary(), false, deletionAllowed);
     }
 
     private static AfsClient client(InMemoryAfsApi api)

@@ -17,6 +17,7 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchroniz
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.Date;
 import java.util.List;
@@ -24,12 +25,45 @@ import java.util.List;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AfsDataSynchronizer.AfsOwner;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.ParallelizedExecutionPreferences;
+import ch.systemsx.cisd.common.exceptions.Status;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 
 public class EntitySynchronizerAfsOwnerTest
 {
+    @Test
+    public void testPropagatesAfsFailuresAfterRetries()
+    {
+        int[] attempts = { 0 };
+        try
+        {
+            EntitySynchronizer.processAfsOwners(List.of(List.of()), owners ->
+            {
+                attempts[0]++;
+                return Status.createError("source read failed");
+            }, new ParallelizedExecutionPreferences(1.0, 1, 2, true));
+            fail("Expected AFS synchronization to fail after exhausting retries");
+        } catch (IllegalStateException e)
+        {
+            assertTrue(e.getMessage().contains("source read failed"));
+        }
+        assertEquals(attempts[0], 2);
+    }
+
+    @Test
+    public void testAcceptsAfsRetryThatSucceeds()
+    {
+        int[] attempts = { 0 };
+        EntitySynchronizer.processAfsOwners(List.of(List.of()), owners ->
+        {
+            attempts[0]++;
+            return attempts[0] == 1 ? Status.createError("temporary failure") : Status.OK;
+        }, new ParallelizedExecutionPreferences(1.0, 1, 2, true));
+        assertEquals(attempts[0], 2);
+    }
+
     @Test
     public void testCollectsAfsOwnersRegardlessOfTheirAsModificationDate()
     {

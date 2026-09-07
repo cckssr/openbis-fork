@@ -7,7 +7,7 @@ Sync is a service of openBIS and comes with every instance.
 Sync allows to synchronize two openBIS instances using the OAI-PMH protocol.
 
 This protocol has two participants:
-- One instance (called `Data Source`) provides the data (types, meta-data and data sets).
+- One instance (called `Data Source`) provides the data (types, meta-data, data sets and AFS files attached to samples and experiments).
 - Another instance (called `Harvester`) grabs these data and makes them available.
 
 In regular time intervals, the `Harvester` instance will synchronize its data with the data on the `Data Source` instance.
@@ -51,6 +51,7 @@ request-handler = ${openbis-sync.servlet-services.resource-sync.request-handler:
 request-handler.server-url = ${server-url}/openbis 
 request-handler.download-url = ${download-url}
 request-handler.file-service-repository-path = ${openbis-sync.servlet-services.resource-sync.request-handler.file-service-repository-path:../../data/file-server}
+request-handler.afs-url = ${afs-url:}
 authentication-handler = ${openbis-sync.servlet-services.resource-sync.authentication-handler:ch.systemsx.cisd.openbis.dss.generic.server.oaipmh.BasicHttpAuthenticationHandler}
 ```
 
@@ -193,6 +194,8 @@ with-levels-below = true
 
 harvester-user = <harvester user id>
 harvester-pass = <harvester user password>
+# Optional: enable AFS synchronization when the Data Source also publishes its AFS URL.
+# harvester-afs-url = https://<harvester AFS host>:<AFS port>/afs-server
 
 keep-original-timestamps-and-users = false
 harvester-tmp-dir = temp
@@ -226,6 +229,9 @@ verbose = true
 -   `<harvester user id>` and `<harvester user password>` are the
     credential to access the Harvester openBIS instance. It has to be a
     user with instance admin rights.
+-   `harvester-afs-url` is the target AFS endpoint, reachable from the Harvester DSS.
+    It has no default. AFS synchronization is skipped if this setting or the
+    Data Source's advertised AFS URL is missing. See [AFS synchronization](#afs-synchronization).
 -   `Temporary `files created during harvesting are stored
     in` harvester-tmp-dir` which is a path relative to the root of the
     data store. The root store is specified by `storeroot-dir` in
@@ -259,8 +265,9 @@ verbose = true
 -   `property-unassignment-allowed` flag allows to unassign property
     assignments, that is, removing property types from entity types.
     Default: `false`
--   `deletion-allowed` flag allows deletion of entities on the Harvester
-    openBIS instance. Default: `false`
+-   `deletion-allowed` flag allows deletion of entities and AFS content on the Harvester
+    openBIS instance.
+    Default: `false`
 -   `keep-original-timestamps-and-users` flag yields that time stamps
     and users are copied from the Data Source to the Harvester.
     Otherwise the entities will have harvester user and the actual
@@ -279,8 +286,8 @@ should be defined with the same value as the same property in AS service.propert
 
 In the first step it reads the configuration file from the file path
 specified by `harvester-config-file` in `plugins.properties`. Next, the
-following steps will be performed in DRY RUN mode. That is, all data are
-read, parsed and checked but nothing is changed on the Harvester. If no
+following steps, except the target AFS synchronization phase, will be performed
+in DRY RUN mode. Data are read, parsed and checked but nothing is changed on the Harvester. If no
 error occured and the `dry-run` flag isn't set the same steps are
 performed but this time the data is changed (i.e. synced) on the
 Harvester.
@@ -297,6 +304,8 @@ Harvester.
 8.  Update timestamps and users (if `keep-original-timestamps-and-users`
     flag is set).
 9.  Update frozen flags (if `keep-original-frozen-flags` flag is set).
+10. Synchronize AFS content for the selected samples and experiments,
+    when configured and outside dry-run mode.
 
 -   Data are registered if they do not exists on the Harvester.
     Otherwise they are updated if the Data Source version has a
@@ -306,6 +315,66 @@ Harvester.
     to spaces, types and materials when created. 
 -   To find out if an entity already exist on the Harvester the perm ID
     is used.
+
+### AFS synchronization
+
+AFS synchronization transfers mutable files attached to samples and experiments
+in the configured entity selection. Each owner's perm ID identifies its AFS
+content on both instances.
+
+#### Configuration
+
+On the **Data Source**, set the source AFS endpoint in the DSS `service.properties`:
+
+```properties
+afs-url = https://<data source AFS host>:<AFS port>/afs-server
+```
+
+The resource-sync plugin forwards this setting through
+`request-handler.afs-url = ${afs-url:}`. The endpoint must be reachable from both
+the Data Source DSS, which lists files, and the Harvester DSS, which
+downloads them.
+
+On the **Harvester**, set the target endpoint in each applicable source section
+of `harvester-config.txt`:
+
+```properties
+harvester-afs-url = https://<harvester AFS host>:<AFS port>/afs-server
+```
+
+The Harvester discovers the source endpoint from an
+`rs:ln` link with `rel="afs-service-url"` in the resource list.
+If either endpoint is missing, the AFS phase is skipped.
+
+#### Content and transfer behavior
+
+AFS synchronization includes live files, empty directories, trash content and
+snapshot history. Snapshot timestamps are regenerated on the target.
+`keep-original-timestamps-and-users` applies to entity metadata, not AFS file
+timestamps or user attribution.
+
+The resource list includes AFS metadata in an `x:binaryData` block with
+`source="afs"` inside each owner. File entries carry their path, length,
+last-modified timestamp and MD5 hash; empty directories are listed explicitly.
+
+Every selected sample and experiment is checked on each real run, even when its
+AS modification timestamp has not changed. This is necessary because an AFS file
+can change without modifying its owner in the AS.
+
+AFS follows the DSS deletion policy: `deletion-allowed=true` permits permanent
+removal of target-only content. When disabled, target-only content
+is retained while additions and updates synchronize. A conflicting file/directory
+replacement that would require deleting retained content fails the AFS phase.
+
+#### Dry runs and failures
+
+The dry run reads the source resource list, including AFS metadata when enabled,
+but does not execute the target AFS synchronization phase. It therefore does not
+validate target AFS writes or perform a trial file transfer.
+
+AFS runs after entity synchronization has committed. An AFS failure after retries
+prevents the sync timestamp from advancing. Previously committed entity changes
+remain in place.
 
 ### Master Data Synchronization Rules
 

@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -66,14 +67,17 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
 
     private final boolean dryRun;
 
+    private final boolean deletionAllowed;
+
     public AfsDataSynchronizer(AfsClient sourceAfsClient, AfsClient harvesterAfsClient, File tempDirBase,
-            AfsDataSynchronizationSummary summary, boolean dryRun)
+            AfsDataSynchronizationSummary summary, boolean dryRun, boolean deletionAllowed)
     {
         this.sourceAfsClient = sourceAfsClient;
         this.harvesterAfsClient = harvesterAfsClient;
         this.tempDirBase = tempDirBase;
         this.summary = summary;
         this.dryRun = dryRun;
+        this.deletionAllowed = deletionAllowed;
     }
 
     @Override
@@ -112,6 +116,10 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
         ensureOwnerRootExists(ownerPermId);
         // Snapshot the harvester's current live/trashed/snapshot files and directories into an AfsOwner
         DestinationState harvesterState = captureHarvesterState(ownerPermId);
+        if (deletionAllowed == false)
+        {
+            ownerDataSource = preserveDestinationOnlyState(ownerDataSource, harvesterState.owner());
+        }
         // expected units from data source meta data
         // A "unit" here is one logical file identified by its canonical live path, bundling that
         // path's live hash, trash hash, and snapshot history together (see FileUnitState/fileUnits())
@@ -229,6 +237,61 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
             // Propagate the original failure to the caller regardless of rollback outcome
             throw e;
         }
+    }
+
+    private AfsOwner preserveDestinationOnlyState(AfsOwner source, AfsOwner destination)
+    {
+        List<IncomingAfsFile> liveFiles = mergeFiles(source.afsFiles(), destination.afsFiles());
+        List<IncomingAfsFile> trashedFiles = mergeFiles(source.trashedAfsFiles(), destination.trashedAfsFiles());
+        List<IncomingAfsFile> snapshots = new ArrayList<>(source.afsFileSnapshots());
+        Map<String, List<SnapshotVersion>> unmatchedSourceVersions = snapshotHistories(source.afsFileSnapshots());
+        for (IncomingAfsFile snapshot : destination.afsFileSnapshots())
+        {
+            List<SnapshotVersion> versions = unmatchedSourceVersions.get(livePathForSnapshot(snapshot.getPath()));
+            SnapshotVersion version = new SnapshotVersion(isInTrash(snapshot.getPath()), snapshot.getHash());
+            // Snapshot timestamps are regenerated at the destination; compare versions, including repeated hashes.
+            if (versions == null || versions.remove(version) == false)
+            {
+                snapshots.add(snapshot);
+            }
+        }
+
+        Set<String> filePaths = new HashSet<>();
+        liveFiles.forEach(file -> filePaths.add(file.getPath()));
+        trashedFiles.forEach(file -> filePaths.add(file.getPath()));
+        snapshots.forEach(file -> filePaths.add(file.getPath()));
+        Set<String> directories = allDirectories(source);
+        directories.addAll(allDirectories(destination));
+        Set<String> requiredDirectories = new HashSet<>(directories);
+        Set<String> paths = new HashSet<>(filePaths);
+        paths.addAll(directories);
+        for (String path : paths)
+        {
+            String parent = path;
+            while (parent.lastIndexOf('/') > 0)
+            {
+                parent = parent.substring(0, parent.lastIndexOf('/'));
+                requiredDirectories.add(parent);
+            }
+        }
+        for (String path : requiredDirectories)
+        {
+            if (filePaths.contains(path))
+            {
+                throw new IllegalStateException("AFS path conflict at " + path + " requires deletion, but deletion-allowed is false");
+            }
+        }
+        directories.removeIf(path -> hasDescendantFile(path, filePaths));
+        return new AfsOwner(source.permId(), liveFiles,
+                directories.stream().filter(path -> isInTrash(path) == false).toList(), trashedFiles,
+                directories.stream().filter(AfsDataSynchronizer::isInTrash).toList(), snapshots);
+    }
+
+    private List<IncomingAfsFile> mergeFiles(List<IncomingAfsFile> source, List<IncomingAfsFile> destination)
+    {
+        Map<String, IncomingAfsFile> files = filesByPath(destination);
+        source.forEach(file -> files.put(file.getPath(), file));
+        return new ArrayList<>(files.values());
     }
 
     private DestinationState captureHarvesterState(String ownerPermId) throws Exception
@@ -681,6 +744,20 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
         for (IncomingAfsFile file : owner.afsFiles())
         {
             String path = file.getPath();
+            Optional<ch.ethz.sis.afsapi.dto.File> existing =
+                    AfsClientUploadHelper.getServerFilePresence(harvesterAfsClient, owner.permId(), path);
+            if (existing.isPresent() && Boolean.TRUE.equals(existing.get().getDirectory()))
+            {
+                // clearDelta removed and journaled the old children; remove the remaining directory before writing a file.
+                for (ch.ethz.sis.afsapi.dto.File child : list(owner.permId(), path, true))
+                {
+                    if (Boolean.TRUE.equals(child.getDirectory()) == false)
+                    {
+                        throw new IllegalStateException("Cannot replace nonempty AFS directory " + path);
+                    }
+                }
+                deleteIfPresent(owner.permId(), path);
+            }
             if (AfsClientUploadHelper.getServerFilePresence(harvesterAfsClient, owner.permId(), path).isPresent())
             {
                 // Snapshot rebuilding may already have restored the desired current file.
@@ -1025,18 +1102,23 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
         tempDir.mkdirs();
         try
         {
-            sourceAfsClient.download(ownerPermId, sourcePath, tempDir.toPath(), ClientAPI.overrideCollisionListener,
+            Path downloadDirectory = Files.createDirectory(tempDir.toPath().resolve("download"));
+            Path uploadDirectory = Files.createDirectory(tempDir.toPath().resolve("upload"));
+            sourceAfsClient.download(ownerPermId, sourcePath, downloadDirectory, ClientAPI.overrideCollisionListener,
                     new ClientAPI.DefaultTransferMonitorLister());
 
-            Path downloadedFile = tempDir.toPath().resolve(sourcePath.getFileName());
-            Path mirroredFile = tempDir.toPath().resolve(Paths.get("/").relativize(destinationPath));
-            if (mirroredFile.equals(downloadedFile) == false)
+            Path downloadedFile = downloadDirectory.resolve(sourcePath.getFileName());
+            Path mirroredFile = uploadDirectory.resolve(Paths.get("/").relativize(destinationPath));
+            Files.createDirectories(mirroredFile.getParent());
+            Files.move(downloadedFile, mirroredFile);
+            if (Files.size(mirroredFile) == 0
+                    && AfsClientUploadHelper.getServerFilePresence(harvesterAfsClient, ownerPermId, destinationPath.toString()).isPresent())
             {
-                Files.createDirectories(mirroredFile.getParent());
-                Files.move(downloadedFile, mirroredFile);
+                // The upload helper creates missing empty files but does not truncate existing ones.
+                harvesterAfsClient.truncate(ownerPermId, destinationPath.toString(), 0L);
             }
 
-            harvesterAfsClient.upload(tempDir.toPath(), ownerPermId, Paths.get("/"), ClientAPI.overrideCollisionListener,
+            harvesterAfsClient.upload(uploadDirectory, ownerPermId, Paths.get("/"), ClientAPI.overrideCollisionListener,
                     new ClientAPI.DefaultTransferMonitorLister());
         } finally
         {

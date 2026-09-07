@@ -101,6 +101,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.SummaryUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Facade;
 import ch.systemsx.cisd.common.concurrent.ParallelizedExecutor;
+import ch.systemsx.cisd.common.concurrent.ITaskExecutor;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.ConversionUtils;
@@ -737,10 +738,9 @@ public class EntitySynchronizer
 
             ParallelizedExecutionPreferences preferences = config.getParallelizedExecutionPrefs();
             List<List<AfsDataSynchronizer.AfsOwner>> ownerChunks = chunkAfsOwners(owners);
-            ParallelizedExecutor.process(ownerChunks,
-                    new AfsDataSynchronizer(sourceAfsClient, harvesterAfsClient, tempDirBase, syncSummary, config.isDryRun()),
-                    preferences.getMachineLoad(), preferences.getMaxThreads(), "process AFS data", preferences.getRetriesOnFail(),
-                    preferences.isStopOnFailure());
+            processAfsOwners(ownerChunks,
+                    new AfsDataSynchronizer(sourceAfsClient, harvesterAfsClient, tempDirBase, syncSummary, config.isDryRun(),
+                            config.isDeletionAllowed()), preferences);
         }
         SummaryUtils.printShortSummaryHeader(operationLog);
         SummaryUtils.printShortAddedSummary(operationLog, syncSummary.addedCount.intValue(), "AFS files");
@@ -748,6 +748,19 @@ public class EntitySynchronizer
         SummaryUtils.printShortRemovedSummary(operationLog, syncSummary.deletedCount.intValue(), "AFS files");
         SummaryUtils.printShortSummaryFooter(operationLog);
         monitor.log();
+    }
+
+    static void processAfsOwners(List<List<AfsDataSynchronizer.AfsOwner>> ownerChunks,
+            ITaskExecutor<List<AfsDataSynchronizer.AfsOwner>> executor,
+            ParallelizedExecutionPreferences preferences)
+    {
+        String failures = ParallelizedExecutor.tryFailuresToString(ParallelizedExecutor.process(ownerChunks, executor,
+                preferences.getMachineLoad(), preferences.getMaxThreads(), "process AFS data", preferences.getRetriesOnFail(),
+                preferences.isStopOnFailure()));
+        if (failures != null)
+        {
+            throw new IllegalStateException("AFS data synchronization failed: " + failures);
+        }
     }
 
     /**
