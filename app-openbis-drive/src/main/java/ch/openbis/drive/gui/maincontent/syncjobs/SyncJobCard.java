@@ -135,7 +135,7 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         SyncJobCardLabel serverDirectoryLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.server_directory"), syncJob.getRemoteDirectoryRoot(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
         SyncJobCardLabel localDirectoryLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.local_directory"), syncJob.getLocalDirectoryRoot(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
         SyncJobCardLabel openBisServerUrlLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.open_bis_url"), syncJob.getOpenBisUrl(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
-        sessionValidUntilLabel = new SyncJobCardLabel("Session valid until", "-", SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
+        sessionValidUntilLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.session_validity"), "-", SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
         syncJobCoordinates.getChildren().addAll(entityPermIdLabel, openBisServerUrlLabel, serverDirectoryLabel, localDirectoryLabel, sessionValidUntilLabel);
         labelPane.getChildren().add(syncJobCoordinates);
 
