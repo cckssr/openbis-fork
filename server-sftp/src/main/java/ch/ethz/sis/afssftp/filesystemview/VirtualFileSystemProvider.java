@@ -94,6 +94,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
             boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().entityBasicInfo().mutable();
 
             if ( entityId != null && afsPath != null ) {
+                invalidateReadCaches();
                 return sftpFileUtil.createAfsFileChannel(
                         entityId,
                         afsPath,
@@ -185,6 +186,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                 default -> throw new UnsupportedOperationException("Neither AFS-file nor supported entity type");
             }
         }
+        invalidateReadCaches();
     }
 
     @Override
@@ -232,6 +234,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                 default -> throw new UnsupportedOperationException("Neither AFS-file nor supported entity type");
             }
         }
+        invalidateReadCaches();
     }
 
     @Override
@@ -270,6 +273,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         } else {
             throw new UnsupportedOperationException("Not AFS-files");
         }
+        invalidateReadCaches();
     }
 
     @Override
@@ -331,6 +335,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                 throw new UnsupportedOperationException("Unsupported moving of entities (only renaming)");
             }
         }
+        invalidateReadCaches();
     }
 
     @Override
@@ -376,16 +381,53 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         return null;
     }
 
+    public class FileAttributesCache {
+        static final long VALIDITY_MILLIS = 1000;
+        private Map<SftpNodeChain, SftpFileAttributes> cachedFileAttributes
+                = Collections.emptyMap();
+        private long ts;
+
+        synchronized SftpFileAttributes getAttributes(@NonNull SftpNodeChain sftpNodeChain) throws IOException {
+            if (System.currentTimeMillis() < ts + VALIDITY_MILLIS) {
+                SftpFileAttributes cachedEntry = cachedFileAttributes.get(sftpNodeChain);
+                if (cachedEntry != null) {
+                    return cachedEntry;
+                } else {
+                    refreshCache(sftpNodeChain);
+                }
+            } else {
+                refreshCache(sftpNodeChain);
+            }
+            return cachedFileAttributes.get(sftpNodeChain);
+        }
+
+        synchronized void refreshCache(@NonNull SftpNodeChain sftpNodeChain) throws IOException {
+            cachedFileAttributes = ftpPathLister.readAttributes(sftpNodeChain, true, true);
+            this.ts = System.currentTimeMillis();
+        }
+
+        synchronized void invalidate() {
+            this.ts = 0L;
+            this.cachedFileAttributes = Collections.emptyMap();
+        }
+    }
+
+    final FileAttributesCache fileAttributesCache = new FileAttributesCache();
+
+    void invalidateReadCaches() {
+        fileAttributesCache.invalidate();
+    }
+
     @Override
     public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> aClass, LinkOption... linkOptions) throws IOException {
         SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
-        return aClass.cast(ftpPathLister.readAttributes(sftpNodeChain));
+        return aClass.cast(fileAttributesCache.getAttributes(sftpNodeChain));
     }
 
     @Override
     public Map<String, Object> readAttributes(Path path, String s, LinkOption... linkOptions) throws IOException {
         SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
-        SftpFileAttributes attributes = ftpPathLister.readAttributes(sftpNodeChain);
+        SftpFileAttributes attributes = fileAttributesCache.getAttributes(sftpNodeChain);
         if ( attributes != null ) {
             return Map.of(
                     "isRegularFile", attributes.isRegularFile(),

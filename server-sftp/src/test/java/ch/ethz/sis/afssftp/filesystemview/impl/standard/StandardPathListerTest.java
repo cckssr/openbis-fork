@@ -17,9 +17,7 @@ import org.mockito.Mockito;
 
 import java.nio.file.NoSuchFileException;
 import java.nio.file.attribute.FileTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class StandardPathListerTest extends TestCase {
     private static final SftpNodeChain exampleBaseChainUpToSpace= new SftpNodeChain(List.of(
@@ -733,111 +731,55 @@ public class StandardPathListerTest extends TestCase {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
-        // Abstract directory type ROOT
-            SftpNodeChain rootChain = SftpNodeChain.createRoot();
-            SftpFileAttributes readAttributesForRoot = standardPathLister.readAttributes(rootChain);
-            assertTrue(readAttributesForRoot.isDirectory());
-            assertFalse(readAttributesForRoot.isRegularFile());
-            assertFalse(readAttributesForRoot.isSymbolicLink());
-            assertFalse(readAttributesForRoot.isOther());
-            assertEquals(
-                    SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null).getPermissions(),
-                    readAttributesForRoot.getPermissions()
-            );
-
-        // Abstract directory type SUBLEVEL
-        for (boolean parentEntityExists : List.of(false, true)) {
-            Mockito.reset(listUtil);
-            Mockito.doReturn( new SftpListUtil.EntityBasicInfo(parentEntityExists, 4000L, 50000L, false) )
-                    .when(listUtil).checkExistence(Mockito.any(), Mockito.eq(Optional.of(
-                                new ProjectIdentifier(
-                                        exampleBaseChainUpToProject.lookUpSpaceCode(),
-                                        exampleBaseChainUpToProject.lookUpProjectCode()
-                                ).toString()
-                            )
-                        )
-                    );
-            SftpNodeChain sublevelTypeChain = SftpNodeChain.concat(
-                    exampleBaseChainUpToProject,
-                    SftpNode.builder()
-                            .type(SftpNode.Type.SUBLEVEL)
-                            .identifier(Optional.of("id-fake"))
-                            .build()
-            );
-
-            SftpFileAttributes readAttributes = null;
-            Exception exception = null;
-            try {
-                readAttributes = standardPathLister.readAttributes(sublevelTypeChain);
-            } catch (Exception e) {
-                exception = e;
-            }
-            if (parentEntityExists) {
-                assertNull(exception);
-                assertTrue(readAttributes.isDirectory());
-                assertFalse(readAttributes.isRegularFile());
-                assertFalse(readAttributes.isSymbolicLink());
-                assertFalse(readAttributes.isOther());
+        for (boolean tryPrefetchSiblings : List.of(false, true)) {
+            for (boolean tryPrefetchChildren : List.of(false, true)) {
+                // Abstract directory type ROOT
+                SftpNodeChain rootChain = SftpNodeChain.createRoot();
+                SftpFileAttributes readAttributesForRoot = standardPathLister.readAttributes(rootChain, tryPrefetchSiblings, tryPrefetchChildren).get(rootChain);
+                assertTrue(readAttributesForRoot.isDirectory());
+                assertFalse(readAttributesForRoot.isRegularFile());
+                assertFalse(readAttributesForRoot.isSymbolicLink());
+                assertFalse(readAttributesForRoot.isOther());
                 assertEquals(
-                        SftpListUtil.getDefaultAbstractDirectoryAttributes(true, null, null).getPermissions(),
-                        readAttributes.getPermissions()
+                        SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null).getPermissions(),
+                        readAttributesForRoot.getPermissions()
                 );
-                assertEquals(FileTime.fromMillis(4000), readAttributes.getCreationTime());
-                assertEquals(FileTime.fromMillis(50000), readAttributes.getModifiedTime());
-                assertEquals(FileTime.fromMillis(50000), readAttributes.getAccessTime());
-            } else {
-                assertNull(readAttributes);
-                assertEquals(NoSuchFileException.class, exception.getClass());
-            }
-        }
 
-        // Abstract directory types: entities
-        List<SftpNode.Type> abstractDirectoryTypesForEntities = List.of(
-                SftpNode.Type.SPACE,
-                SftpNode.Type.PROJECT,
-                SftpNode.Type.EXPERIMENT,
-                SftpNode.Type.FOLDER,
-                SftpNode.Type.SAMPLE,
-                SftpNode.Type.DATA_SET
-        );
-        for (SftpNode.Type type : abstractDirectoryTypesForEntities) {
-            for (boolean exists: List.of(false, true)) {
-                for (boolean mutable: List.of(false, true)) {
-                    SftpNodeChain chain = SftpNodeChain.concat(
-                            exampleBaseChainUpToProject,
-                            SftpNode.builder()
-                                    .type(type)
-                                    .identifier(
-                                            Optional.of(type == SftpNode.Type.SPACE || type == SftpNode.Type.PROJECT ?
-                                                "id-fake" : "(id-fake)")
-                                    )
-                                    .build()
-                    );
+                // Abstract directory type SUBLEVEL
+                for (boolean parentEntityExists : List.of(false, true)) {
                     Mockito.reset(listUtil);
-                    Mockito.doReturn(new SftpListUtil.EntityBasicInfo(exists, 4000L, 50000L, mutable))
-                            .when(listUtil).checkExistence(
-                                    Mockito.eq(type),
-                                    Mockito.argThat(
-                                            argument -> argument.isPresent() && argument.get().toLowerCase().endsWith("id-fake")
+                    Mockito.doReturn( new SftpListUtil.EntityBasicInfo(parentEntityExists, 4000L, 50000L, false) )
+                            .when(listUtil).checkExistence(Mockito.any(), Mockito.eq(Optional.of(
+                                                    new ProjectIdentifier(
+                                                            exampleBaseChainUpToProject.lookUpSpaceCode(),
+                                                            exampleBaseChainUpToProject.lookUpProjectCode()
+                                                    ).toString()
+                                            )
                                     )
                             );
+                    SftpNodeChain sublevelTypeChain = SftpNodeChain.concat(
+                            exampleBaseChainUpToProject,
+                            SftpNode.builder()
+                                    .type(SftpNode.Type.SUBLEVEL)
+                                    .identifier(Optional.of("id-fake"))
+                                    .build()
+                    );
 
                     SftpFileAttributes readAttributes = null;
                     Exception exception = null;
                     try {
-                        readAttributes = standardPathLister.readAttributes(chain);
+                        readAttributes = standardPathLister.readAttributes(sublevelTypeChain, tryPrefetchSiblings, tryPrefetchChildren).get(sublevelTypeChain);
                     } catch (Exception e) {
                         exception = e;
                     }
-
-                    if (exists) {
+                    if (parentEntityExists) {
                         assertNull(exception);
                         assertTrue(readAttributes.isDirectory());
                         assertFalse(readAttributes.isRegularFile());
                         assertFalse(readAttributes.isSymbolicLink());
                         assertFalse(readAttributes.isOther());
                         assertEquals(
-                                SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null).getPermissions(),
+                                SftpListUtil.getDefaultAbstractDirectoryAttributes(true, null, null).getPermissions(),
                                 readAttributes.getPermissions()
                         );
                         assertEquals(FileTime.fromMillis(4000), readAttributes.getCreationTime());
@@ -848,143 +790,205 @@ public class StandardPathListerTest extends TestCase {
                         assertEquals(NoSuchFileException.class, exception.getClass());
                     }
                 }
-            }
-        }
 
-        // AFS cases
-        // Non-root
-        SftpNodeChain chain1 = Mockito.spy(SftpNodeChain.concat(
-                exampleBaseChainUpToProject,
-                SftpNode.builder()
-                        .type(SftpNode.Type.AFS_FILE)
-                        .afsFilePath(List.of("dir-1", "dir-2", "file-3"))
-                        .build()
-        ));
-        for (boolean afsEntityExists: List.of(false, true)) {
-            for (boolean mutable : List.of(false, true)) {
-                String afsFilePath = "/dir-1/dir-2/file-3";
-                for (SftpFileAttributes sampleAttributes : new SftpFileAttributes[]{
-                        SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null)
-                        , null
-                }) {
-                    String permId = "12345-12345";
-                    FtpPathLister.EntityDescriptor entityDescriptor = new FtpPathLister.EntityDescriptor(
-                            SftpNode.Type.AFS_FILE,
-                            Optional.empty(),
-                            Optional.empty(),
-                            Optional.empty(),
-                            Optional.empty(),
-                            Optional.empty(),
-                            Optional.empty(),
-                            new FtpPathLister.EntityDescriptor(SftpNode.Type.SAMPLE,
-                                    Optional.of("space_1"),
-                                    Optional.empty(),
-                                    Optional.empty(),
-                                    Optional.empty(),
-                                    Optional.of(permId),
-                                    Optional.empty(),
-                                    null,
-                                    null,
-                                    new SftpListUtil.EntityBasicInfo(afsEntityExists, 4000L, 50000L, mutable)),
-                            afsFilePath,
-                            null
-                    );
-                    Mockito.doReturn(Optional.of(entityDescriptor)).when(standardPathLister).toEntityDescriptor(chain1);
-                    Mockito.reset(listUtil);
-                    Mockito.doReturn(Optional.ofNullable(sampleAttributes)).when(listUtil).getDefaultAfsFileAttributes(
-                            permId, afsFilePath, mutable
-                    );
+                // Abstract directory types: entities
+                List<SftpNode.Type> abstractDirectoryTypesForEntities = List.of(
+                        SftpNode.Type.SPACE,
+                        SftpNode.Type.PROJECT,
+                        SftpNode.Type.EXPERIMENT,
+                        SftpNode.Type.FOLDER,
+                        SftpNode.Type.SAMPLE,
+                        SftpNode.Type.DATA_SET
+                );
+                for (SftpNode.Type type : abstractDirectoryTypesForEntities) {
+                    for (boolean exists: List.of(false, true)) {
+                        for (boolean mutable: List.of(false, true)) {
+                            SftpNodeChain chain = SftpNodeChain.concat(
+                                    exampleBaseChainUpToProject,
+                                    SftpNode.builder()
+                                            .type(type)
+                                            .identifier(
+                                                    Optional.of(type == SftpNode.Type.SPACE || type == SftpNode.Type.PROJECT ?
+                                                            "id-fake" : "(id-fake)")
+                                            )
+                                            .build()
+                            );
+                            Mockito.reset(listUtil);
+                            Mockito.doReturn(new SftpListUtil.EntityBasicInfo(exists, 4000L, 50000L, mutable))
+                                    .when(listUtil).checkExistence(
+                                            Mockito.eq(type),
+                                            Mockito.argThat(
+                                                    argument -> argument.isPresent() && argument.get().toLowerCase().endsWith("id-fake")
+                                            )
+                                    );
 
-                    Exception exception = null;
-                    SftpFileAttributes readAttributes = null;
-                    try {
-                        readAttributes = standardPathLister.readAttributes(chain1);
-                    } catch (Exception e) {
-                        exception = e;
+                            SftpFileAttributes readAttributes = null;
+                            Exception exception = null;
+                            try {
+                                readAttributes = standardPathLister.readAttributes(chain, tryPrefetchSiblings, tryPrefetchChildren).get(chain);
+                            } catch (Exception e) {
+                                exception = e;
+                            }
+
+                            if (exists) {
+                                assertNull(exception);
+                                assertTrue(readAttributes.isDirectory());
+                                assertFalse(readAttributes.isRegularFile());
+                                assertFalse(readAttributes.isSymbolicLink());
+                                assertFalse(readAttributes.isOther());
+                                assertEquals(
+                                        SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null).getPermissions(),
+                                        readAttributes.getPermissions()
+                                );
+                                assertEquals(FileTime.fromMillis(4000), readAttributes.getCreationTime());
+                                assertEquals(FileTime.fromMillis(50000), readAttributes.getModifiedTime());
+                                assertEquals(FileTime.fromMillis(50000), readAttributes.getAccessTime());
+                            } else {
+                                assertNull(readAttributes);
+                                assertEquals(NoSuchFileException.class, exception.getClass());
+                            }
+                        }
                     }
+                }
 
-                    if (afsEntityExists && sampleAttributes != null) {
-                        assertEquals(sampleAttributes, readAttributes);
-                    } else {
-                        assertTrue(exception instanceof NoSuchFileException);
+                // AFS cases
+                // Non-root
+                SftpNodeChain chain1 = Mockito.spy(SftpNodeChain.concat(
+                        exampleBaseChainUpToProject,
+                        SftpNode.builder()
+                                .type(SftpNode.Type.AFS_FILE)
+                                .afsFilePath(List.of("dir-1", "dir-2", "file-3"))
+                                .build()
+                ));
+                for (boolean afsEntityExists: List.of(false, true)) {
+                    for (boolean mutable : List.of(false, true)) {
+                        String afsFilePath = "/dir-1/dir-2/file-3";
+                        for (SftpFileAttributes sampleAttributes : new SftpFileAttributes[]{
+                                SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null)
+                                , null
+                        }) {
+                            String permId = "12345-12345";
+                            FtpPathLister.EntityDescriptor entityDescriptor = new FtpPathLister.EntityDescriptor(
+                                    SftpNode.Type.AFS_FILE,
+                                    Optional.empty(),
+                                    Optional.empty(),
+                                    Optional.empty(),
+                                    Optional.empty(),
+                                    Optional.empty(),
+                                    Optional.empty(),
+                                    new FtpPathLister.EntityDescriptor(SftpNode.Type.SAMPLE,
+                                            Optional.of("space_1"),
+                                            Optional.empty(),
+                                            Optional.empty(),
+                                            Optional.empty(),
+                                            Optional.of(permId),
+                                            Optional.empty(),
+                                            null,
+                                            null,
+                                            new SftpListUtil.EntityBasicInfo(afsEntityExists, 4000L, 50000L, mutable)),
+                                    afsFilePath,
+                                    null
+                            );
+                            Mockito.doReturn(Optional.of(entityDescriptor)).when(standardPathLister).toEntityDescriptor(chain1);
+                            Mockito.reset(listUtil);
+                            Mockito.doReturn(
+                                    new HashMap<>(sampleAttributes != null ? Map.of(afsFilePath, sampleAttributes) : Collections.emptyMap())
+                            ).when(listUtil).getDefaultAfsFileAttributesBatch(
+                                    permId, afsFilePath, mutable, tryPrefetchSiblings, tryPrefetchChildren
+                            );
+
+                            Exception exception = null;
+                            SftpFileAttributes readAttributes = null;
+                            try {
+                                readAttributes = standardPathLister.readAttributes(chain1, tryPrefetchSiblings, tryPrefetchChildren).get(chain1);
+                            } catch (Exception e) {
+                                exception = e;
+                            }
+
+                            if (afsEntityExists && sampleAttributes != null) {
+                                assertEquals(sampleAttributes, readAttributes);
+                            } else {
+                                assertTrue(exception instanceof NoSuchFileException);
+                            }
+
+                            Mockito.verify(standardPathLister, Mockito.times(1)).toEntityDescriptor(chain1);
+                            Mockito.verify(listUtil, Mockito.times(afsEntityExists ? 1 : 0)).getDefaultAfsFileAttributesBatch(
+                                    permId, afsFilePath, mutable, tryPrefetchSiblings, tryPrefetchChildren
+                            );
+
+                            Mockito.clearInvocations(standardPathLister, listUtil);
+                        }
                     }
-
-                    Mockito.verify(standardPathLister, Mockito.times(1)).toEntityDescriptor(chain1);
-                    Mockito.verify(listUtil, Mockito.times(afsEntityExists ? 1 : 0)).getDefaultAfsFileAttributes(
-                            permId, afsFilePath, mutable
-                    );
-
-                    Mockito.clearInvocations(standardPathLister, listUtil);
-                }
-            }
-        }
-
-        // AFS cases
-        // Root
-        SftpNodeChain chain2 = Mockito.spy(SftpNodeChain.concat(
-                exampleBaseChainUpToProject,
-                SftpNode.builder()
-                        .type(SftpNode.Type.SUBLEVEL)
-                        .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
-                        .build()
-        ));
-        for (boolean afsEntityExists: List.of(false, true)) {
-            for (boolean mutable : List.of(false, true)) {
-                String afsFilePath = "/";
-                SftpListUtil.EntityBasicInfo entityBasicInfo = new SftpListUtil.EntityBasicInfo(afsEntityExists, null, null, mutable);
-                String permId = "12345-12345";
-                FtpPathLister.EntityDescriptor entityDescriptor = new FtpPathLister.EntityDescriptor(
-                        SftpNode.Type.AFS_FILE,
-                        Optional.empty(),
-                        Optional.empty(),
-                        Optional.empty(),
-                        Optional.empty(),
-                        Optional.empty(),
-                        Optional.empty(),
-                        new FtpPathLister.EntityDescriptor(SftpNode.Type.SAMPLE,
-                                Optional.of("space_1"),
-                                Optional.empty(),
-                                Optional.empty(),
-                                Optional.empty(),
-                                Optional.of(permId),
-                                Optional.empty(),
-                                null,
-                                null,
-                                entityBasicInfo
-                        ),
-                        afsFilePath,
-                        null
-                );
-                Mockito.doReturn(Optional.of(entityDescriptor)).when(standardPathLister).toEntityDescriptor(chain2);
-
-                Exception exception = null;
-                SftpFileAttributes readAttributes = null;
-                try {
-                    readAttributes = standardPathLister.readAttributes(chain2);
-                } catch (Exception e) {
-                    exception = e;
                 }
 
-                if (entityBasicInfo.exists()) {
-                    assertEquals(SftpListUtil.getDefaultAbstractDirectoryAttributes(
-                            mutable,
-                            entityBasicInfo.registrationMillis(),
-                            entityBasicInfo.lastModificationMillis()
-                    ), readAttributes);
-                } else {
-                    assertTrue(exception instanceof NoSuchFileException);
+                // AFS cases
+                // Root
+                SftpNodeChain chain2 = Mockito.spy(SftpNodeChain.concat(
+                        exampleBaseChainUpToProject,
+                        SftpNode.builder()
+                                .type(SftpNode.Type.SUBLEVEL)
+                                .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
+                                .build()
+                ));
+                for (boolean afsEntityExists: List.of(false, true)) {
+                    for (boolean mutable : List.of(false, true)) {
+                        String afsFilePath = "/";
+                        SftpListUtil.EntityBasicInfo entityBasicInfo = new SftpListUtil.EntityBasicInfo(afsEntityExists, null, null, mutable);
+                        String permId = "12345-12345";
+                        FtpPathLister.EntityDescriptor entityDescriptor = new FtpPathLister.EntityDescriptor(
+                                SftpNode.Type.AFS_FILE,
+                                Optional.empty(),
+                                Optional.empty(),
+                                Optional.empty(),
+                                Optional.empty(),
+                                Optional.empty(),
+                                Optional.empty(),
+                                new FtpPathLister.EntityDescriptor(SftpNode.Type.SAMPLE,
+                                        Optional.of("space_1"),
+                                        Optional.empty(),
+                                        Optional.empty(),
+                                        Optional.empty(),
+                                        Optional.of(permId),
+                                        Optional.empty(),
+                                        null,
+                                        null,
+                                        entityBasicInfo
+                                ),
+                                afsFilePath,
+                                null
+                        );
+                        Mockito.doReturn(Optional.of(entityDescriptor)).when(standardPathLister).toEntityDescriptor(chain2);
+
+                        Exception exception = null;
+                        SftpFileAttributes readAttributes = null;
+                        try {
+                            readAttributes = standardPathLister.readAttributes(chain2, tryPrefetchSiblings, tryPrefetchChildren).get(chain2);
+                        } catch (Exception e) {
+                            exception = e;
+                        }
+
+                        if (entityBasicInfo.exists()) {
+                            assertEquals(SftpListUtil.getDefaultAbstractDirectoryAttributes(
+                                    mutable,
+                                    entityBasicInfo.registrationMillis(),
+                                    entityBasicInfo.lastModificationMillis()
+                            ), readAttributes);
+                        } else {
+                            assertTrue(exception instanceof NoSuchFileException);
+                        }
+
+                        Mockito.verify(listUtil, Mockito.times(mutable ? 1 : 0)).tryToCreateAfsFileRootIfNecessary(
+                                permId
+                        );
+
+                        Mockito.verify(standardPathLister, Mockito.times(1)).toEntityDescriptor(chain2);
+                        Mockito.verify(listUtil, Mockito.times(0)).getDefaultAfsFileAttributesBatch(
+                                permId, afsFilePath, mutable, tryPrefetchSiblings, tryPrefetchChildren
+                        );
+
+                        Mockito.clearInvocations(standardPathLister, listUtil);
+                    }
                 }
-
-                Mockito.verify(listUtil, Mockito.times(mutable ? 1 : 0)).tryToCreateAfsFileRootIfNecessary(
-                        permId
-                );
-
-                Mockito.verify(standardPathLister, Mockito.times(1)).toEntityDescriptor(chain2);
-                Mockito.verify(listUtil, Mockito.times(0)).getDefaultAfsFileAttributes(
-                        permId, afsFilePath, mutable
-                );
-
-                Mockito.clearInvocations(standardPathLister, listUtil);
             }
         }
     }

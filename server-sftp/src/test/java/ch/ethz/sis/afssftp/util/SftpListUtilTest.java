@@ -398,31 +398,41 @@ public class SftpListUtilTest extends TestCase {
                 .build();
         String entityId = "afs-entity-id";
         String filePath = "/dir/path";
-        Mockito.doReturn(Optional.of(returnedFile)).when(sftpListUtil).getAfsFilePresence(entityId, filePath);
-        for (boolean mutable : List.of(false, true)) {
-            SftpFileAttributes attributes = sftpListUtil.getDefaultAfsFileAttributes(entityId, filePath, mutable).get();
-            Mockito.verify(sftpListUtil, Mockito.times(1)).getAfsFilePresence(entityId, filePath);
-            assertEquals(returnedFile.getLastModifiedTime().toInstant().toEpochMilli(), attributes.getModifiedTime().toInstant().toEpochMilli());
-            assertEquals((boolean) returnedFile.getDirectory(), attributes.isDirectory());
-            assertEquals((long) returnedFile.getSize(), attributes.getSize());
-            if (mutable) {
-                assertEquals(
-                    EnumSet.of(
-                            PosixFilePermission.OWNER_READ,
-                            PosixFilePermission.OWNER_EXECUTE,
-                            PosixFilePermission.OWNER_WRITE
-                    ), attributes.permissions()
-                );
-            } else {
-                assertEquals(
-                    EnumSet.of(
-                            PosixFilePermission.OWNER_READ,
-                            PosixFilePermission.OWNER_EXECUTE
-                    ), attributes.permissions()
-                );
-            }
+        Mockito.doReturn(Map.of(filePath, returnedFile)).when(sftpListUtil).getAfsFilePresenceBatch(
+                Mockito.eq(entityId), Mockito.eq(filePath), Mockito.anyBoolean(), Mockito.anyBoolean());
+        for (boolean tryPrefetchSiblings : List.of(false, true)) {
+            for (boolean tryPrefetchChildren : List.of(false, true)) {
+                for (boolean mutable : List.of(false, true)) {
+                    Map<String, SftpFileAttributes> attributesMap = sftpListUtil.getDefaultAfsFileAttributesBatch(
+                            entityId, filePath, mutable, tryPrefetchSiblings, tryPrefetchChildren);
+                    Mockito.verify(sftpListUtil, Mockito.times(1))
+                            .getAfsFilePresenceBatch(entityId, filePath, tryPrefetchSiblings, tryPrefetchChildren);
 
-            Mockito.clearInvocations(sftpListUtil);
+                    SftpFileAttributes attributes = attributesMap.get(filePath);
+
+                    assertEquals(returnedFile.getLastModifiedTime().toInstant().toEpochMilli(), attributes.getModifiedTime().toInstant().toEpochMilli());
+                    assertEquals((boolean) returnedFile.getDirectory(), attributes.isDirectory());
+                    assertEquals((long) returnedFile.getSize(), attributes.getSize());
+                    if (mutable) {
+                        assertEquals(
+                                EnumSet.of(
+                                        PosixFilePermission.OWNER_READ,
+                                        PosixFilePermission.OWNER_EXECUTE,
+                                        PosixFilePermission.OWNER_WRITE
+                                ), attributes.permissions()
+                        );
+                    } else {
+                        assertEquals(
+                                EnumSet.of(
+                                        PosixFilePermission.OWNER_READ,
+                                        PosixFilePermission.OWNER_EXECUTE
+                                ), attributes.permissions()
+                        );
+                    }
+
+                    Mockito.clearInvocations(sftpListUtil);
+                }
+            }
         }
     }
 

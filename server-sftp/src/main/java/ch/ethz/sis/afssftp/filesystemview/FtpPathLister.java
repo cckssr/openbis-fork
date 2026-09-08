@@ -5,11 +5,35 @@ import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface FtpPathLister {
     @NonNull List<@NonNull SftpNodeChain> list(@NonNull SftpNodeChain directory) throws IOException;
-    SftpFileAttributes readAttributes(@NonNull SftpNodeChain nodeChain) throws IOException;
+
+    /***
+     * @param nodeChain queried path
+     * @param tryPrefetchSiblings if attributes of siblings should be included as well
+     *                            when the underlying implementation is very efficient
+     *                            at reading them in batch
+     * @param tryPrefetchChildren if attributes of children should be included as well
+     *                            when the underlying implementation is very efficient
+     *                            at reading them in batch
+     *
+     * @return should return a map with at least an entry for the queried path
+     *          (throw java.nio.file.NoSuchFileException if that does not exist).
+     *          In cases when the underlying implementation is efficient at retrieving
+     *          child or sibling items, those should be included as well if
+     *          the try-fetch parameters are respectively set to true
+     *          (so that, for example, users of this method can cache them)
+     * @throws IOException
+     */
+    @NonNull Map<SftpNodeChain, SftpFileAttributes> readAttributes(
+            @NonNull SftpNodeChain nodeChain,
+            boolean tryPrefetchSiblings,
+            boolean tryPrefetchChildren
+    ) throws IOException;
+
     Optional<EntityDescriptor> toEntityDescriptor(@NonNull SftpNodeChain nodeChain) throws IOException;
 
     record EntityDescriptor(

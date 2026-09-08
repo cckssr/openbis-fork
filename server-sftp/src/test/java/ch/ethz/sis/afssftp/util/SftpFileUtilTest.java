@@ -13,6 +13,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -457,6 +458,148 @@ public class SftpFileUtilTest extends TestCase {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    public void testGetAfsFilePresence() {
+        User user = User.builder().username("user1").sessionToken("session-tkn-1").build();
+        OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
+        OpenBIS.AfsServerFacade afsClientMock = Mockito.mock(OpenBIS.AfsServerFacade.class);
+        Mockito.doReturn(afsClientMock).when(openBISClientUtil).getAfsClient(user);
+
+        SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
+
+        // Root: found
+        File fileInRoot = new File("entity-1", "/a.txt", "a.txt", false, 10L, Instant.now().atOffset(ZoneOffset.UTC));
+        Mockito.doReturn(new File[]{fileInRoot}).when(afsClientMock).list("entity-1", "/", false);
+        Optional<File> root = sftpListUtil.getAfsFilePresence("entity-1", "/");
+        assertTrue(root.isPresent());
+        assertEquals("/", root.get().getPath());
+        assertTrue(root.get().getDirectory());
+
+        // Root: not found
+        Mockito.doThrow(new RuntimeException("NoSuchFileException")).when(afsClientMock).list("entity-1", "/", false);
+        assertTrue(sftpListUtil.getAfsFilePresence("entity-1", "/").isEmpty());
+
+        // Root: exception
+        Mockito.doThrow(new RuntimeException("OtherException")).when(afsClientMock).list("entity-1", "/", false);
+        Exception exception = null;
+        try {
+            sftpListUtil.getAfsFilePresence("entity-1", "/");
+        } catch (Exception e) {
+            exception = e;
+        }
+        assertNotNull(exception);
+        assertEquals(RuntimeException.class, exception.getClass());
+        assertEquals("OtherException", exception.getMessage());
+
+        // Non-root: found
+        File fileInDir = new File("entity-1", "/dir/a.txt", "a.txt", false, 10L, Instant.now().atOffset(ZoneOffset.UTC));
+        File file2InDir = new File("entity-1", "/dir/b.txt", "b.txt", false, 10L, Instant.now().atOffset(ZoneOffset.UTC));
+        Mockito.doReturn(new File[]{fileInDir, file2InDir}).when(afsClientMock).list("entity-1", "/dir", false);
+        Optional<File> retrievedFile = sftpListUtil.getAfsFilePresence("entity-1", "/dir/a.txt");
+        assertTrue(retrievedFile.isPresent());
+        assertEquals(fileInDir, retrievedFile.get());
+
+        // Non-root: not found
+        Mockito.doThrow(new RuntimeException("NoSuchFileException")).when(afsClientMock).list("entity-1", "/dir", false);
+        assertTrue(sftpListUtil.getAfsFilePresence("entity-1", "/dir/a.txt").isEmpty());
+
+        // Non-root: exception
+        Mockito.doThrow(new RuntimeException("OtherException")).when(afsClientMock).list("entity-1", "/dir", false);
+        Exception exception2 = null;
+        try {
+            sftpListUtil.getAfsFilePresence("entity-1", "/dir/a.txt");
+        } catch (Exception e) {
+            exception2 = e;
+        }
+        assertNotNull(exception2);
+        assertEquals(RuntimeException.class, exception2.getClass());
+        assertEquals("OtherException", exception2.getMessage());
+    }
+
+
+    public void testGetAfsFilePresenceBatch() {
+        for (boolean tryFetchSiblings : List.of(false, true)) {
+            for (boolean tryFetchChildren : List.of(false, true)) {
+                User user = User.builder().username("user1").sessionToken("session-tkn-1").build();
+                OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
+                OpenBIS.AfsServerFacade afsClientMock = Mockito.mock(OpenBIS.AfsServerFacade.class);
+                Mockito.doReturn(afsClientMock).when(openBISClientUtil).getAfsClient(user);
+
+                SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
+
+                // Root: found
+                File fileInRoot = new File("entity-1", "/a.txt", "a.txt", false, 10L, Instant.now().atOffset(ZoneOffset.UTC));
+                File file2InRoot = new File("entity-1", "/b.txt", "b.txt", false, 10L, Instant.now().atOffset(ZoneOffset.UTC));
+                Mockito.doReturn(new File[]{fileInRoot, file2InRoot}).when(afsClientMock).list("entity-1", "/", false);
+                Map<String, File> rootFiles = sftpListUtil.getAfsFilePresenceBatch("entity-1", "/", tryFetchSiblings, tryFetchChildren);
+                assertEquals("/", rootFiles.get("/").getPath());
+                assertTrue(rootFiles.get("/").getDirectory());
+                assertEquals(tryFetchChildren, rootFiles.values().containsAll(List.of(fileInRoot, file2InRoot)));
+
+                // Root: not found
+                Mockito.doThrow(new RuntimeException("NoSuchFileException")).when(afsClientMock).list("entity-1", "/", false);
+                assertTrue(sftpListUtil.getAfsFilePresence("entity-1", "/").isEmpty());
+
+                // Root: exception
+                Mockito.doThrow(new RuntimeException("OtherException")).when(afsClientMock).list("entity-1", "/", false);
+                Exception exception = null;
+                try {
+                    sftpListUtil.getAfsFilePresenceBatch("entity-1", "/", tryFetchSiblings, tryFetchChildren);
+                } catch (Exception e) {
+                    exception = e;
+                }
+                assertNotNull(exception);
+                assertEquals(RuntimeException.class, exception.getClass());
+                assertEquals("OtherException", exception.getMessage());
+
+                // Non-root: regular file found
+                File fileInDir = new File("entity-1", "/dir/a.txt", "a.txt", false, 10L, Instant.now().atOffset(ZoneOffset.UTC));
+                File file2InDir = new File("entity-1", "/dir/b.txt", "b.txt", false, 10L, Instant.now().atOffset(ZoneOffset.UTC));
+                Mockito.doReturn(new File[]{fileInDir, file2InDir}).when(afsClientMock).list("entity-1", "/dir", false);
+                Mockito.doReturn(new File[]{fileInDir}).when(afsClientMock).list("entity-1", "/dir/a.txt", false);
+                Map<String, File> retrievedFiles = sftpListUtil.getAfsFilePresenceBatch("entity-1", "/dir/a.txt", tryFetchSiblings, tryFetchChildren);
+                assertEquals(fileInDir, retrievedFiles.get("/dir/a.txt"));
+                if (tryFetchSiblings) {
+                    assertTrue(retrievedFiles.values().containsAll(List.of(fileInDir, file2InDir)));
+                } else {
+                    assertEquals(1, retrievedFiles.size());
+                }
+
+                // Non-root: regular file not found
+                Mockito.doThrow(new RuntimeException("NoSuchFileException")).when(afsClientMock).list("entity-1", "/dir/a.txt", false);
+                assertTrue(sftpListUtil.getAfsFilePresenceBatch("entity-1", "/dir/a.txt", tryFetchSiblings, tryFetchChildren).isEmpty());
+
+                // Non-root: directory found
+                File dirInDir = new File("entity-1", "/dir/subdir", "subdir", true, null, Instant.now().atOffset(ZoneOffset.UTC));
+                Mockito.doReturn(new File[]{fileInDir, dirInDir}).when(afsClientMock).list("entity-1", "/dir", false);
+                Mockito.doReturn(new File[]{file2InDir}).when(afsClientMock).list("entity-1", "/dir/subdir", false);
+                Map<String, File> retrievedFiles2 = sftpListUtil.getAfsFilePresenceBatch("entity-1", "/dir/subdir", tryFetchSiblings, tryFetchChildren);
+                assertEquals(dirInDir, retrievedFiles2.get("/dir/subdir"));
+                if (tryFetchSiblings || tryFetchChildren) {
+                    assertEquals(tryFetchSiblings, retrievedFiles2.values().containsAll(List.of(fileInDir, dirInDir)));
+                    assertEquals(tryFetchChildren, retrievedFiles2.values().contains(file2InDir));
+                } else {
+                    assertEquals(1, retrievedFiles2.size());
+                }
+
+                // Non-root: directory not found
+                Mockito.doThrow(new RuntimeException("NoSuchFileException")).when(afsClientMock).list("entity-1", "/dir/subdir", false);
+                assertTrue(sftpListUtil.getAfsFilePresenceBatch("entity-1", "/dir/subdir", tryFetchSiblings, tryFetchChildren).isEmpty());
+
+                // Non-root: exception
+                Mockito.doThrow(new RuntimeException("OtherException")).when(afsClientMock).list("entity-1", "/dir/a.txt", false);
+                Exception exception2 = null;
+                try {
+                    sftpListUtil.getAfsFilePresenceBatch("entity-1", "/dir/a.txt", tryFetchSiblings, tryFetchChildren);
+                } catch (Exception e) {
+                    exception2 = e;
+                }
+                assertNotNull(exception2);
+                assertEquals(RuntimeException.class, exception2.getClass());
+                assertEquals("OtherException", exception2.getMessage());
             }
         }
     }

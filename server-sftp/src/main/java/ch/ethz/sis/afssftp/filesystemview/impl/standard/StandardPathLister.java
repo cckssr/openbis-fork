@@ -60,8 +60,11 @@ public class StandardPathLister implements FtpPathLister {
     }
 
     @Override
-    public SftpFileAttributes readAttributes(@NonNull SftpNodeChain nodeChain)
-            throws NoSuchFileException {
+    public @NonNull Map<SftpNodeChain, SftpFileAttributes> readAttributes(
+            @NonNull SftpNodeChain nodeChain,
+            boolean tryPrefetchSiblings,
+            boolean tryPrefetchChildren
+    ) throws NoSuchFileException {
         if ( pointsToAfsFile(nodeChain) ) {
             Optional<EntityDescriptor> entityDescriptorOpt = toEntityDescriptor(nodeChain);
             if (entityDescriptorOpt.isPresent() && entityDescriptorOpt.get().type() == SftpNode.Type.AFS_FILE) {
@@ -81,10 +84,13 @@ public class StandardPathLister implements FtpPathLister {
                     }
 
                     if (afsEntityBasicInfo.exists()) {
-                        return SftpListUtil.getDefaultAbstractDirectoryAttributes(
-                                isAfsEntityDataMutable,
-                                afsEntityBasicInfo.registrationMillis(),
-                                afsEntityBasicInfo.lastModificationMillis()
+                        return Map.of(
+                                nodeChain,
+                                SftpListUtil.getDefaultAbstractDirectoryAttributes(
+                                    isAfsEntityDataMutable,
+                                    afsEntityBasicInfo.registrationMillis(),
+                                    afsEntityBasicInfo.lastModificationMillis()
+                                )
                         );
                     } else {
                         throw new NoSuchFileException(
@@ -96,12 +102,42 @@ public class StandardPathLister implements FtpPathLister {
                     }
                 } else {
                     if (afsEntityBasicInfo.exists()) {
-                        Optional<SftpFileAttributes> attributes =  listUtil.getDefaultAfsFileAttributes(
-                                afsEntityPermId, afsFilePath, isAfsEntityDataMutable
+                        Map<String, SftpFileAttributes> attributesBatch =  listUtil.getDefaultAfsFileAttributesBatch(
+                                afsEntityPermId, afsFilePath, isAfsEntityDataMutable,
+                                tryPrefetchSiblings, tryPrefetchChildren
                         );
 
-                        if (attributes.isPresent()) {
-                            return attributes.get();
+                        if (attributesBatch.containsKey(afsFilePath)) {
+                            Map<SftpNodeChain, SftpFileAttributes> attributesMap = new HashMap<>();
+                            attributesMap.put(nodeChain, attributesBatch.remove(afsFilePath));
+
+                            boolean isLastNodeOfTypeAfsFile =
+                                    nodeChain.getLast().isPresent() &&
+                                    nodeChain.getLast().get().getType() == SftpNode.Type.AFS_FILE;
+
+                            attributesBatch.entrySet().forEach(
+                                    entry -> {
+                                        List<String> afsPathSegments = Arrays.stream(entry.getKey().split("/")).filter(
+                                                segment -> !segment.isEmpty()
+                                        ).toList();
+                                        SftpNodeChain pathAsNodeChain;
+                                        if (isLastNodeOfTypeAfsFile) {
+                                            pathAsNodeChain = SftpNodeChain.concat(
+                                                    nodeChain.toParent(),
+                                                    nodeChain.getLast().get().toBuilder().afsFilePath(afsPathSegments).build()
+                                            );
+                                        } else {
+                                            pathAsNodeChain = SftpNodeChain.concat(
+                                                    nodeChain,
+                                                    SftpNode.builder().type(SftpNode.Type.AFS_FILE).identifier(Optional.empty())
+                                                            .afsFilePath(afsPathSegments).build()
+                                            );
+                                        }
+                                        attributesMap.put(pathAsNodeChain, entry.getValue());
+                                    }
+                            );
+
+                            return attributesMap;
                         } else {
                             throw new NoSuchFileException("AFS entity perm-id : " + afsEntityPermId + " AFS file-path : " + afsFilePath);
                         }
@@ -117,17 +153,23 @@ public class StandardPathLister implements FtpPathLister {
 
             if (lastNode != null) {
                 return switch (lastNode.getType()) {
-                    case ROOT -> SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null);
+                    case ROOT -> Map.of(
+                            nodeChain,
+                            SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null)
+                    );
                     case SUBLEVEL -> {
                         Optional<EntityDescriptor> parentEntityDescriptorOpt = toEntityDescriptor(nodeChain.toParent());
                         if (parentEntityDescriptorOpt.isPresent()) {
                             EntityDescriptor parentEntityDescriptor = parentEntityDescriptorOpt.get();
                             SftpListUtil.EntityBasicInfo entityBasicInfo = parentEntityDescriptor.entityBasicInfo();
                             if (entityBasicInfo.exists()) {
-                                yield  SftpListUtil.getDefaultAbstractDirectoryAttributes(
-                                        true,
-                                        entityBasicInfo.registrationMillis(),
-                                        entityBasicInfo.lastModificationMillis()
+                                yield  Map.of(
+                                        nodeChain,
+                                        SftpListUtil.getDefaultAbstractDirectoryAttributes(
+                                            true,
+                                            entityBasicInfo.registrationMillis(),
+                                            entityBasicInfo.lastModificationMillis()
+                                        )
                                 );
                             } else {
                                 throw new NoSuchFileException(
@@ -138,7 +180,10 @@ public class StandardPathLister implements FtpPathLister {
                                 );
                             }
                         } else {
-                            yield SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null);
+                            yield Map.of(
+                                    nodeChain,
+                                    SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null)
+                            );
                         }
                     }
                     default -> {
@@ -147,10 +192,13 @@ public class StandardPathLister implements FtpPathLister {
                             EntityDescriptor entityDescriptor = entityDescriptorOpt.get();
                             SftpListUtil.EntityBasicInfo entityBasicInfo = entityDescriptor.entityBasicInfo();
                             if (entityBasicInfo.exists()) {
-                                yield  SftpListUtil.getDefaultAbstractDirectoryAttributes(
-                                        false,
-                                        entityBasicInfo.registrationMillis(),
-                                        entityBasicInfo.lastModificationMillis()
+                                yield  Map.of(
+                                        nodeChain,
+                                        SftpListUtil.getDefaultAbstractDirectoryAttributes(
+                                            false,
+                                            entityBasicInfo.registrationMillis(),
+                                            entityBasicInfo.lastModificationMillis()
+                                        )
                                 );
                             } else {
                                 throw new NoSuchFileException(
@@ -166,7 +214,10 @@ public class StandardPathLister implements FtpPathLister {
                     }
                 };
             } else {
-                return SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null);
+                return Map.of(
+                        nodeChain,
+                        SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null)
+                );
             }
         }
     }

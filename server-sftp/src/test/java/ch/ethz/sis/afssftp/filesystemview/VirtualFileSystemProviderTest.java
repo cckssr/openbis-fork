@@ -31,13 +31,13 @@ public class VirtualFileSystemProviderTest extends TestCase {
         FtpPathLister ftpPathLister = Mockito.mock(FtpPathLister.class);
         SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user));
         SftpFileUtil sftpFileUtil = Mockito.spy(new SftpFileUtil(user));
-        VirtualFileSystemProvider virtualFileSystemProvider = new VirtualFileSystemProvider(
+        VirtualFileSystemProvider virtualFileSystemProvider = Mockito.spy(new VirtualFileSystemProvider(
                 user,
                 ftpPathTranslator,
                 ftpPathLister,
                 sftpListUtil,
                 sftpFileUtil
-        );
+        ));
         VirtualFileSystem virtualFileSystem = new VirtualFileSystem(user, virtualFileSystemProvider);
         virtualFileSystemProvider.acceptCreatedFileSystem(virtualFileSystem);
 
@@ -91,7 +91,7 @@ public class VirtualFileSystemProviderTest extends TestCase {
                 Set.of(StandardOpenOption.READ),
                 false
         );
-
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
 
         Mockito.doReturn(Optional.of(new FtpPathLister.EntityDescriptor(
                 SftpNode.Type.AFS_FILE,
@@ -269,13 +269,13 @@ public class VirtualFileSystemProviderTest extends TestCase {
         FtpPathLister ftpPathLister = Mockito.mock(FtpPathLister.class);
         SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user));
         SftpFileUtil sftpFileUtil = Mockito.spy(new SftpFileUtil(user));
-        VirtualFileSystemProvider virtualFileSystemProvider = new VirtualFileSystemProvider(
+        VirtualFileSystemProvider virtualFileSystemProvider = Mockito.spy(new VirtualFileSystemProvider(
                 user,
                 ftpPathTranslator,
                 ftpPathLister,
                 sftpListUtil,
                 sftpFileUtil
-        );
+        ));
         VirtualFileSystem virtualFileSystem = new VirtualFileSystem(user, virtualFileSystemProvider);
         virtualFileSystemProvider.acceptCreatedFileSystem(virtualFileSystem);
 
@@ -331,6 +331,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpFileUtil, Mockito.times(1))
                 .createAfsDirectory("EXPERIMENT_3", "/dir/subdir", user);
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //AFS path root "/" with data-mutable entity
         FtpPathLister.EntityDescriptor entityDescriptor2 = new FtpPathLister.EntityDescriptor(
@@ -365,6 +367,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpFileUtil, Mockito.times(0))
                 .createAfsDirectory("EXPERIMENT_3", "/dir/subdir", user);
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //AFS path with non-data-mutable entity
         FtpPathLister.EntityDescriptor entityDescriptor3 = new FtpPathLister.EntityDescriptor(
@@ -426,6 +430,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpListUtil, Mockito.times(1))
                 .createSpace("space_id_1");
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //PROJECT
         FtpPathLister.EntityDescriptor entityDescriptor5 = new FtpPathLister.EntityDescriptor(
@@ -447,6 +453,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpListUtil, Mockito.times(1))
                 .createProject("space_1", "project_1");
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //EXPERIMENT
         FtpPathLister.EntityDescriptor entityDescriptor6 = new FtpPathLister.EntityDescriptor(
@@ -468,6 +476,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpListUtil, Mockito.times(1))
                 .createExperiment("space_1", "project_1", "experiment name!!!");
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //SAMPLE, FOLDER
         for (boolean folder : List.of(false, true)) {
@@ -503,6 +513,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                         folder
                                 );
                         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+                        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+                        Mockito.clearInvocations(virtualFileSystemProvider);
                     }
                 }
             }
@@ -541,13 +553,13 @@ public class VirtualFileSystemProviderTest extends TestCase {
         FtpPathLister ftpPathLister = Mockito.mock(FtpPathLister.class);
         SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user));
         SftpFileUtil sftpFileUtil = Mockito.spy(new SftpFileUtil(user));
-        VirtualFileSystemProvider virtualFileSystemProvider = new VirtualFileSystemProvider(
+        VirtualFileSystemProvider virtualFileSystemProvider = Mockito.spy(new VirtualFileSystemProvider(
                 user,
                 ftpPathTranslator,
                 ftpPathLister,
                 sftpListUtil,
                 sftpFileUtil
-        );
+        ));
         VirtualFileSystem virtualFileSystem = new VirtualFileSystem(user, virtualFileSystemProvider);
         virtualFileSystemProvider.acceptCreatedFileSystem(virtualFileSystem);
 
@@ -600,6 +612,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpFileUtil, Mockito.times(1))
                 .deleteAfsFile("EXPERIMENT_3", "/dir/subdir", user);
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //AFS path root "/" with data-mutable entity
         FtpPathLister.EntityDescriptor entityDescriptor2 = new FtpPathLister.EntityDescriptor(
@@ -632,6 +646,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpFileUtil, Mockito.times(1))
                 .deleteAfsFile("EXPERIMENT_3", "/", user);
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //AFS path with non-data-mutable entity
         FtpPathLister.EntityDescriptor entityDescriptor3 = new FtpPathLister.EntityDescriptor(
@@ -691,6 +707,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpListUtil, Mockito.times(1))
                 .deleteSpace("space_id_1");
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //PROJECT
         FtpPathLister.EntityDescriptor entityDescriptor5 = new FtpPathLister.EntityDescriptor(
@@ -712,6 +730,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpListUtil, Mockito.times(1))
                 .deleteProject("/SPACE_1/PROJECT_1");
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //EXPERIMENT
         FtpPathLister.EntityDescriptor entityDescriptor6 = new FtpPathLister.EntityDescriptor(
@@ -733,6 +753,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpListUtil, Mockito.times(1))
                 .deleteExperiment("experiment_1");
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //SAMPLE
         FtpPathLister.EntityDescriptor entityDescriptor7 = new FtpPathLister.EntityDescriptor(
@@ -754,6 +776,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpListUtil, Mockito.times(1))
                 .deleteSample("sample_1");
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //FOLDER
         FtpPathLister.EntityDescriptor entityDescriptor8 = new FtpPathLister.EntityDescriptor(
@@ -775,6 +799,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpListUtil, Mockito.times(1))
                 .deleteSample("folder_1");
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //DATASET
         FtpPathLister.EntityDescriptor entityDescriptor9 = new FtpPathLister.EntityDescriptor(
@@ -796,6 +822,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
         Mockito.verify(sftpListUtil, Mockito.times(1))
                 .deleteDataSet("dataset_1");
         Mockito.clearInvocations(sftpListUtil, sftpFileUtil);
+        Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+        Mockito.clearInvocations(virtualFileSystemProvider);
 
         //other
         for (SftpNode.Type type : List.of(SftpNode.Type.SUBLEVEL, SftpNode.Type.ROOT)) {
@@ -830,13 +858,13 @@ public class VirtualFileSystemProviderTest extends TestCase {
         FtpPathLister ftpPathLister = Mockito.mock(FtpPathLister.class);
         SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user));
         SftpFileUtil sftpFileUtil = Mockito.spy(new SftpFileUtil(user));
-        VirtualFileSystemProvider virtualFileSystemProvider = new VirtualFileSystemProvider(
+        VirtualFileSystemProvider virtualFileSystemProvider = Mockito.spy(new VirtualFileSystemProvider(
                 user,
                 ftpPathTranslator,
                 ftpPathLister,
                 sftpListUtil,
                 sftpFileUtil
-        );
+        ));
         VirtualFileSystem virtualFileSystem = new VirtualFileSystem(user, virtualFileSystemProvider);
         virtualFileSystemProvider.acceptCreatedFileSystem(virtualFileSystem);
 
@@ -972,6 +1000,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                         user,
                                         copyOptions.contains(StandardCopyOption.REPLACE_EXISTING)
                                 );
+                                Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+                                Mockito.clearInvocations(virtualFileSystemProvider);
                             } else {
                                 assertEquals(UnsupportedOperationException.class, exception.getClass());
                                 Mockito.verify(sftpFileUtil, Mockito.times(0)).copyAfsFile(
@@ -994,13 +1024,13 @@ public class VirtualFileSystemProviderTest extends TestCase {
         FtpPathLister ftpPathLister = Mockito.mock(FtpPathLister.class);
         SftpListUtil sftpListUtil = Mockito.spy(new SftpListUtil(user));
         SftpFileUtil sftpFileUtil = Mockito.spy(new SftpFileUtil(user));
-        VirtualFileSystemProvider virtualFileSystemProvider = new VirtualFileSystemProvider(
+        VirtualFileSystemProvider virtualFileSystemProvider = Mockito.spy(new VirtualFileSystemProvider(
                 user,
                 ftpPathTranslator,
                 ftpPathLister,
                 sftpListUtil,
                 sftpFileUtil
-        );
+        ));
         VirtualFileSystem virtualFileSystem = new VirtualFileSystem(user, virtualFileSystemProvider);
         virtualFileSystemProvider.acceptCreatedFileSystem(virtualFileSystem);
 
@@ -1136,6 +1166,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                         user,
                                         copyOptions.contains(StandardCopyOption.REPLACE_EXISTING)
                                 );
+                                Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+                                Mockito.clearInvocations(virtualFileSystemProvider);
                             } else {
                                 assertEquals(UnsupportedOperationException.class, exception.getClass());
                                 Mockito.verify(sftpFileUtil, Mockito.times(0)).moveAfsFile(
@@ -1199,12 +1231,16 @@ public class VirtualFileSystemProviderTest extends TestCase {
                                             virtualFileSystemProvider.move(examplePath1, examplePath2, copyOption);
                                             Mockito.verify(sftpListUtil, Mockito.times(1))
                                                     .renameSample(identifier1.get(), "New name@@@ #");
+                                            Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+                                            Mockito.clearInvocations(virtualFileSystemProvider);
                                         }
                                         case EXPERIMENT -> {
                                             Mockito.doNothing().when(sftpListUtil).renameExperiment(Mockito.anyString(), Mockito.anyString());
                                             virtualFileSystemProvider.move(examplePath1, examplePath2, copyOption);
                                             Mockito.verify(sftpListUtil, Mockito.times(1))
                                                     .renameExperiment(identifier1.get(), "New name@@@ #");
+                                            Mockito.verify(virtualFileSystemProvider, Mockito.times(1)).invalidateReadCaches();
+                                            Mockito.clearInvocations(virtualFileSystemProvider);
                                         }
                                         default -> {
                                             Exception exception = null;
@@ -1517,8 +1553,8 @@ public class VirtualFileSystemProviderTest extends TestCase {
 
         SftpNodeChain sftpNodeChain = ftpPathTranslator.fromPathSegments(examplePath.getPathSegments());
         SftpFileAttributes sampleAttributes = SftpListUtil.getDefaultAbstractDirectoryAttributes(false, null, null);
-        Mockito.doReturn(sampleAttributes)
-                        .when(ftpPathLister).readAttributes(sftpNodeChain);
+        Mockito.doReturn(Map.of(sftpNodeChain, sampleAttributes))
+                        .when(ftpPathLister).readAttributes(sftpNodeChain, true, true);
         assertEquals(sampleAttributes, virtualFileSystemProvider.readAttributes(examplePath, BasicFileAttributes.class));
         assertEquals(sampleAttributes, virtualFileSystemProvider.readAttributes(examplePath, PosixFileAttributes.class));
         assertEquals(Map.of(

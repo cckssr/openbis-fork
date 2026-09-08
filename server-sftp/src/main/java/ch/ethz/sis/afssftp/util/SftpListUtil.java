@@ -1,11 +1,9 @@
 package ch.ethz.sis.afssftp.util;
 
 import ch.ethz.sis.afsapi.dto.File;
-import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
 import ch.ethz.sis.afssftp.authentication.User;
 import ch.ethz.sis.afssftp.conf.Parameters;
-import ch.ethz.sis.afssftp.filesystemview.FtpPathLister;
 import ch.ethz.sis.afssftp.filesystemview.SftpFileAttributes;
 import ch.ethz.sis.afssftp.filesystemview.SftpNode;
 import ch.ethz.sis.openbis.generic.OpenBIS;
@@ -49,6 +47,7 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.isPathNotInStoreError;
@@ -304,35 +303,108 @@ public class SftpListUtil {
     }
 
     @SneakyThrows
-    public Optional<SftpFileAttributes> getDefaultAfsFileAttributes(
+    public Map<@NonNull String, @NonNull File> getAfsFilePresenceBatch(
             @NonNull String afsEntityId,
             @NonNull String absoluteAfsFilePath,
-            boolean mutable) {
-        return getAfsFilePresence(afsEntityId, absoluteAfsFilePath).map(
-                file -> {
-                    FileTime lastModified = file.getLastModifiedTime() != null ?
-                            FileTime.from(file.getLastModifiedTime().toInstant()) :
-                            FileTime.from(Instant.now());
+            boolean tryPrefetchSiblings,
+            boolean tryPrefetchChildren
+    ) {
+        HashMap<String, File> ret = new HashMap<>();
 
-                    return SftpFileAttributes.builder()
-                            .creationTime(lastModified)
-                            .modifiedTime(lastModified)
-                            .accessTime(lastModified)
-                            .directory(Boolean.TRUE.equals(file.getDirectory()))
-                            .regularFile(!Boolean.TRUE.equals(file.getDirectory()))
-                            .size(file.getSize() != null ? file.getSize() : 0)
-                            .permissions( mutable ?
-                                EnumSet.of(
-                                    PosixFilePermission.OWNER_READ,
-                                    PosixFilePermission.OWNER_WRITE,
-                                    PosixFilePermission.OWNER_EXECUTE
-                                ) : EnumSet.of(
-                                    PosixFilePermission.OWNER_READ,
-                                    PosixFilePermission.OWNER_EXECUTE
-                                )
-                            ).build();
+        try {
+            Path parentPath = Path.of(absoluteAfsFilePath).getParent();
+            File[] fileDescriptors = openBISClientUtil.getAfsClient(user).list(afsEntityId, absoluteAfsFilePath, false);
+
+            Optional<File> regularFileCase = Arrays.stream(fileDescriptors).filter(file -> absoluteAfsFilePath.equals(file.getPath())).findAny();
+            if ( regularFileCase.isPresent() ) {
+                ret.put(absoluteAfsFilePath, regularFileCase.get());
+
+                if (parentPath != null && tryPrefetchSiblings) {
+                    File[] siblings = openBISClientUtil.getAfsClient(user).list(afsEntityId, parentPath.toString(), false);
+                    for (File sibling : siblings) {
+                        ret.put(sibling.getPath(), sibling);
+                    }
+                }
+
+                return ret;
+            } else {
+                if (tryPrefetchChildren) {
+                    for (File child : fileDescriptors) {
+                        ret.put(child.getPath(), child);
+                    }
+                }
+
+                if (parentPath != null) {
+                    File[] siblings = openBISClientUtil.getAfsClient(user).list(afsEntityId, parentPath.toString(), false);
+                    for (File sibling : siblings) {
+                        if (tryPrefetchSiblings || absoluteAfsFilePath.equals(sibling.getPath())) {
+                            ret.put(sibling.getPath(), sibling);
+                        }
+                    }
+                } else {
+                    AfsClientUploadHelper.getServerFilePresence(
+                            openBISClientUtil.getAfsClient(user),
+                            afsEntityId,
+                            absoluteAfsFilePath
+                    ).ifPresent( directoryDescriptor -> ret.put(absoluteAfsFilePath, directoryDescriptor));
+                }
+
+                return ret;
+            }
+        } catch (Exception e) {
+            if (AfsClientUploadHelper.isPathNotInStoreError(e)) {
+                return Collections.emptyMap();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @SneakyThrows
+    public HashMap<@NonNull String, @NonNull SftpFileAttributes> getDefaultAfsFileAttributesBatch(
+            @NonNull String afsEntityId,
+            @NonNull String absoluteAfsFilePath,
+            boolean mutable,
+            boolean tryPrefetchSiblings,
+            boolean tryPrefetchChildren
+    ) {
+        Map<String, File> fileMap = getAfsFilePresenceBatch(
+                afsEntityId, absoluteAfsFilePath,
+                tryPrefetchSiblings, tryPrefetchChildren);
+        HashMap<String, SftpFileAttributes> attributesMap = new HashMap<>();
+        fileMap.entrySet().forEach(
+                fileEntry -> {
+                    attributesMap.put(
+                            fileEntry.getKey(),
+                            Optional.of(fileEntry.getValue()).map(
+                                    file -> {
+                                        FileTime lastModified = file.getLastModifiedTime() != null ?
+                                                FileTime.from(file.getLastModifiedTime().toInstant()) :
+                                                FileTime.from(Instant.now());
+
+                                        return SftpFileAttributes.builder()
+                                                .creationTime(lastModified)
+                                                .modifiedTime(lastModified)
+                                                .accessTime(lastModified)
+                                                .directory(Boolean.TRUE.equals(file.getDirectory()))
+                                                .regularFile(!Boolean.TRUE.equals(file.getDirectory()))
+                                                .size(file.getSize() != null ? file.getSize() : 0)
+                                                .permissions( mutable ?
+                                                                EnumSet.of(
+                                                                        PosixFilePermission.OWNER_READ,
+                                                                        PosixFilePermission.OWNER_WRITE,
+                                                                        PosixFilePermission.OWNER_EXECUTE
+                                                                ) : EnumSet.of(
+                                                                PosixFilePermission.OWNER_READ,
+                                                                PosixFilePermission.OWNER_EXECUTE
+                                                        )
+                                                ).build();
+                                    }
+                            ).get()
+                    );
                 }
         );
+        return attributesMap;
     }
 
     public void createAfsFileRootIfNecessary(@NonNull String afsEntityId) {
