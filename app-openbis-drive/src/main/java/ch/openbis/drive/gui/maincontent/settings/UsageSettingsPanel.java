@@ -79,7 +79,7 @@ public class UsageSettingsPanel extends ResizablePanel {
         List<PieChart.Data> pieChartData = new ArrayList<>();
         pieChartData.add(new PieChart.Data(i18n.get("main_panel.settings.usage.available_space"), data.getAvailableSpacePercentage()));
         pieChartData.add(new PieChart.Data(
-                UsageUtil.getFileSizeWithUnitOfMeasurement(data.getAvailableSpace() - data.getTotalLocalDirSpace()) + "  " + i18n.get("main_panel.settings.usage.other_files"),
+                UsageUtil.getFileSizeWithUnitOfMeasurement(data.getTotalSize() - data.getAvailableSpace() - data.getTotalLocalDirSpace()) + "  " + i18n.get("main_panel.settings.usage.other_files"),
                 100 - data.getAvailableSpacePercentage() - data.getTotalLocalDirSpacePercentage()));
         data.getLocalDirUsedPercentageMap().forEach( (locDir, usedSpacePercentage) -> {
             pieChartData.add(new PieChart.Data(UsageUtil.getFileSizeWithUnitOfMeasurement(data.getLocalDirUsedSpaceMap().get(locDir)) + "  " + locDir, usedSpacePercentage));
