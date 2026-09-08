@@ -271,17 +271,10 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
             if ( !this.progressBarWithFraction.getStyleClass().contains(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS) ) {
                 this.progressBarWithFraction.getStyleClass().add(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS);
             }
-            if (!isWarningExpiringSessionState()) {
-                removeLabelErrorStyle(liveStatus);
-                if (syncJob.isEnabled()) {
-                    this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.live_state.not_running"));
-                } else {
-                    this.liveStatus.setText("");
-                }
+            if (syncJob.isEnabled()) {
+                this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.live_state.not_running"));
             } else {
-                addLabelErrorStyle(liveStatus);
-                this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.warning_state.session_expires_in") + " " + Optional.ofNullable(patCheckResult).map(OpenBISQueryUtil.PATCheckResult::validUntil)
-                        .map(SyncJobCard::formatExpiresInText).orElse("-"));
+                this.liveStatus.setText("");
             }
         });
     }
@@ -292,8 +285,15 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         if (isWarningExpiringSessionState()) {
             this.getStyleClass().removeIf(DisplaySettings.SYNC_JOB_CARD_CLASS::equals);
             this.getStyleClass().add(DisplaySettings.SYNC_JOB_CARD_WARNING_CLASS);
+
+            this.sessionValidUntilLabel.setWarning(i18n.get("main_panel.sync_tasks.sync_job_card.warning_state.session_expires_in") + " "
+                    + sessionValidityEndDate.map(
+                            date -> SyncJobCard.formatExpiresInText(date.toInstant().toEpochMilli()) +
+                                    " (" + DATE_TIME_FORMATTER.format(date) + ")").orElse("-")
+            );
+        } else {
+            sessionValidUntilLabel.setValue(sessionValidityEndDate.map(DATE_TIME_FORMATTER::format).orElse("-"));
         }
-        sessionValidUntilLabel.setValue(sessionValidityEndDate.map(DATE_TIME_FORMATTER::format).orElse("-"));
     }
 
     boolean isErrorState() {
@@ -312,11 +312,16 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
             if ( !this.progressBarWithFraction.getStyleClass().contains(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS) ) {
                 this.progressBarWithFraction.getStyleClass().add(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS);
             }
-            addLabelErrorStyle(liveStatus);
             switch (patCheckResult.result()) {
-                case INVALID_SESSION -> this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.invalid_session"));
-                case ERROR_REACHING_SERVER -> this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.server_unreachable"));
-                default -> this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.unknown_error_checking_server_session"));
+                case INVALID_SESSION -> this.sessionValidUntilLabel.setWarning(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.invalid_session"));
+                case ERROR_REACHING_SERVER -> {
+                    addLabelErrorStyle(liveStatus);
+                    this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.server_unreachable"));
+                }
+                default -> {
+                    addLabelErrorStyle(liveStatus);
+                    this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.unknown_error_checking_server_session"));
+                }
             }
         });
     }
@@ -398,7 +403,11 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
     }
 
     public static String formatExpiresInText(@NonNull Date date) {
-        long numberOfHours = Long.max(date.getTime() - System.currentTimeMillis(), 0L) / 3_600_000L;
+        return formatExpiresInText(date.getTime());
+    }
+
+    public static String formatExpiresInText(long millisFromEpoch) {
+        long numberOfHours = Long.max(millisFromEpoch - System.currentTimeMillis(), 0L) / 3_600_000L;
         long numberOfDays = numberOfHours / 24;
         if (numberOfDays > 0) {
             return numberOfDays + " " + SharedContext.getContext().getI18n().get("generic_messages.time_durations.expires_in.days");

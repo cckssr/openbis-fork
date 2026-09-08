@@ -23,6 +23,8 @@ public class SyncJobCardLabel extends HBox implements AutoCloseable {
     private final @NonNull ObservableValue<Double> desiredWidth;
 
     private final TextField valueNode;
+    private final Color textColor;
+    int fontSize;
 
     public SyncJobCardLabel(@NonNull String tag,
                             @NonNull String value,
@@ -46,6 +48,8 @@ public class SyncJobCardLabel extends HBox implements AutoCloseable {
         this.minWidthProperty().bind(desiredWidth);
         this.maxWidthProperty().bind(desiredWidth);
         this.setSpacing(15);
+        this.fontSize = fontSize;
+        this.textColor = color;
         Label labelNode = new Label(tag);
         labelNode.setMinWidth(tagMinWidth);
         labelNode.setStyle(String.format("-fx-font-weight: bold; -fx-font-size: %spt", fontSize - 1));
@@ -72,7 +76,17 @@ public class SyncJobCardLabel extends HBox implements AutoCloseable {
 
     public void setValue(@NonNull String value) {
         Platform.runLater( () -> {
+            valueNode.setStyle(String.format("-fx-font-size: %spt; -fx-background-color: transparent; -fx-text-fill: %s",
+                    fontSize, Style.toCssValue(Optional.ofNullable(textColor).orElse(Color.BLACK))));
             valueNode.setText(value);
+        });
+    }
+
+    public void setWarning(@NonNull String warning) {
+        Platform.runLater( () -> {
+            valueNode.setStyle(String.format("-fx-font-size: %spt; -fx-background-color: transparent; -fx-font-weight: bold; -fx-text-fill: %s",
+                    fontSize, Style.toCssValue(Color.RED)));
+            valueNode.setText(warning);
         });
     }
 
