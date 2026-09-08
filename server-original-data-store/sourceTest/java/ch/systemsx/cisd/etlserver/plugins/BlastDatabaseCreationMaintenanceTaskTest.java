@@ -38,6 +38,7 @@ import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
+import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
@@ -241,7 +242,7 @@ public class BlastDatabaseCreationMaintenanceTaskTest extends AbstractFileSystem
 
         maintenanceTask.setUp("", properties);
 
-        assertEquals("ERROR OPERATION.BlastUtils - Property '" + BlastUtils.BLAST_TOOLS_DIRECTORY_PROPERTY
+        AssertionUtil.assertContainsLines("ERROR OPERATION.BlastUtils - Property '" + BlastUtils.BLAST_TOOLS_DIRECTORY_PROPERTY
                 + "' is not specified and BLAST isn't found in default location.\n"
                 + INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
                 + INFO_PREFIX + "BLAST databases folder: " + blastDatabaseFolder + "\n"
@@ -259,7 +260,7 @@ public class BlastDatabaseCreationMaintenanceTaskTest extends AbstractFileSystem
 
         maintenanceTask.setUp("", properties);
 
-        assertEquals(
+        AssertionUtil.assertContainsLines(
                 "ERROR OPERATION.BlastUtils - BLAST isn't installed in location '/no/such/blast' specified by the property 'blast-tools-directory.\n"
                         + INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
                         + INFO_PREFIX + "BLAST databases folder: " + blastDatabaseFolder + "\n"
@@ -275,7 +276,7 @@ public class BlastDatabaseCreationMaintenanceTaskTest extends AbstractFileSystem
 
         maintenanceTask.setUp("BLAST databases creation", properties);
 
-        assertEquals(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
+        AssertionUtil.assertContainsLines(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
                 + INFO_PREFIX + "BLAST databases folder: " + blastDatabaseFolder + "\n"
                 + INFO_PREFIX + "Temp folder '" + blastDatabaseFolder + "/tmp' created.",
                 logRecorder.getLogContent());
@@ -315,7 +316,7 @@ public class BlastDatabaseCreationMaintenanceTaskTest extends AbstractFileSystem
 
         maintenanceTask.execute();
 
-        assertEquals(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
+        AssertionUtil.assertContainsLines(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
                 + INFO_PREFIX + "BLAST databases folder: " + blastDatabaseFolder + "\n"
                 + INFO_PREFIX + "Temp folder '" + blastDatabaseFolder + "/tmp' created.\n"
                 + INFO_PREFIX + "Scan 4 data sets for creating BLAST databases.", logRecorder.getLogContent());
@@ -365,7 +366,7 @@ public class BlastDatabaseCreationMaintenanceTaskTest extends AbstractFileSystem
 
         maintenanceTask.execute();
 
-        assertEquals(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
+        AssertionUtil.assertContainsLines(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
                 + INFO_PREFIX + "BLAST databases folder: " + blastDatabaseFolder + "\n"
                 + INFO_PREFIX + "Temp folder '" + blastDatabaseFolder + "/tmp' created.\n"
                 + INFO_PREFIX + "Scan 3 data sets for creating BLAST databases.", logRecorder.getLogContent());
@@ -409,7 +410,7 @@ public class BlastDatabaseCreationMaintenanceTaskTest extends AbstractFileSystem
 
         maintenanceTask.execute();
 
-        assertEquals(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
+        AssertionUtil.assertContainsLines(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
                 + INFO_PREFIX + "BLAST databases folder: " + blastDatabaseFolder + "\n"
                 + INFO_PREFIX + "Temp folder '" + blastDatabaseFolder + "/tmp' created.", logRecorder.getLogContent());
         assertEquals("blastn -version\n"
@@ -462,7 +463,7 @@ public class BlastDatabaseCreationMaintenanceTaskTest extends AbstractFileSystem
 
         maintenanceTask.execute();
 
-        assertEquals(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
+        AssertionUtil.assertContainsLines(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
                 + INFO_PREFIX + "BLAST databases folder: " + blastDatabaseFolder + "\n"
                 + INFO_PREFIX + "Temp folder '" + blastDatabaseFolder + "/tmp' created.\n"
                 + INFO_PREFIX + "BLAST database SAMPLE+T+O+19700112112010-nucl successfully deleted.",
@@ -504,7 +505,7 @@ public class BlastDatabaseCreationMaintenanceTaskTest extends AbstractFileSystem
 
         maintenanceTask.execute();
 
-        assertEquals(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
+        AssertionUtil.assertContainsLines(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
                 + INFO_PREFIX + "BLAST databases folder: " + blastDatabaseFolder + "\n"
                 + INFO_PREFIX + "Temp folder '" + blastDatabaseFolder + "/tmp' created.",
                 logRecorder.getLogContent());
@@ -535,7 +536,7 @@ public class BlastDatabaseCreationMaintenanceTaskTest extends AbstractFileSystem
 
         maintenanceTask.execute();
 
-        assertEquals(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
+        AssertionUtil.assertContainsLines(INFO_PREFIX + "File types: [.fasta, .fa, .fsa, .fastq]\n"
                 + INFO_PREFIX + "BLAST databases folder: " + blastDatabaseFolder + "\n"
                 + INFO_PREFIX + "Temp folder '" + blastDatabaseFolder + "/tmp' created.\n"
                 + INFO_PREFIX + "Scan 1 data sets for creating BLAST databases.\n"
@@ -585,7 +586,7 @@ public class BlastDatabaseCreationMaintenanceTaskTest extends AbstractFileSystem
 
         maintenanceTask.execute();
 
-        assertEquals(INFO_PREFIX + "File types: [.txt, .f]\n"
+        AssertionUtil.assertContainsLines(INFO_PREFIX + "File types: [.txt, .f]\n"
                 + INFO_PREFIX + "BLAST databases folder: " + blastDatabasesFolder + "\n"
                 + INFO_PREFIX + "Temp folder '" + tempFolder + "' created.\n"
                 + INFO_PREFIX + "Scan 1 data sets for creating BLAST databases.\n"
