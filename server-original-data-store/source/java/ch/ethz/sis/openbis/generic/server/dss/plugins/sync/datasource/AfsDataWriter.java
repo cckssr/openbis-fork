@@ -50,7 +50,7 @@ class AfsDataWriter
 
     AfsDataWriter(DeliveryContext context)
     {
-        String afsUrl = context.getAfsUrl();
+        String afsUrl = context.getAfsLocalUrl();
         afsServerUri = (afsUrl == null || afsUrl.isBlank()) ? null : URI.create(afsUrl);
     }
 

@@ -41,6 +41,8 @@ class DeliveryContext
 
     private String afsUrl;
 
+    private String afsLocalUrl;
+
     public String getServerUrl()
     {
         return serverUrl;
@@ -119,6 +121,16 @@ class DeliveryContext
     public void setAfsUrl(String afsUrl)
     {
         this.afsUrl = afsUrl;
+    }
+
+    public String getAfsLocalUrl()
+    {
+        return afsLocalUrl;
+    }
+
+    public void setAfsLocalUrl(String afsLocalUrl)
+    {
+        this.afsLocalUrl = afsLocalUrl;
     }
 
 }

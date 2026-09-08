@@ -357,7 +357,12 @@ public class DataSourceRequestHandler implements IRequestHandler
         deliveryContext.setV3api(ServiceProvider.getV3ApplicationService());
         deliveryContext.setContentProvider(ServiceProvider.getHierarchicalContentProvider());
         deliveryContext.setOpenBisDataSourceName(properties.getProperty("openbis-data-source-name", "openbis-db"));
-        deliveryContext.setAfsUrl(properties.getProperty("afs-url"));
+        String afsUrl = properties.getProperty("afs-url");
+        deliveryContext.setAfsUrl(afsUrl);
+        // afs-local-url lets the DSS reach its paired AFS server on a different address (e.g. localhost)
+        // than the one advertised to the harvester in the resource-list XML; falls back to afs-url when unset.
+        String afsLocalUrl = properties.getProperty("afs-local-url");
+        deliveryContext.setAfsLocalUrl((afsLocalUrl != null && afsLocalUrl.isBlank() == false) ? afsLocalUrl : afsUrl);
         Deliverers deliverers = new Deliverers();
         deliverers.addDeliverer(new MasterDataDeliverer(deliveryContext));
         deliverers.addDeliverer(new SpaceDeliverer(deliveryContext));
