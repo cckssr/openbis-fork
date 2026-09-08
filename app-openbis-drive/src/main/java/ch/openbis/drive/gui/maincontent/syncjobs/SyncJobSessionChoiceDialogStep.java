@@ -27,6 +27,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -151,6 +152,15 @@ public class SyncJobSessionChoiceDialogStep implements DialogStep<SyncJobDialogC
                                         availableSessionMap.put(sessionChoice, availableSession);
                                         sessionChoice.setToggleGroup(sessionChoices);
                                         vBox.getChildren().add(sessionChoiceBox);
+                                        if (
+                                                context.toBeModified() != null &&
+                                                        Objects.equals(
+                                                                context.toBeModified().getOpenBisPersonalAccessToken(),
+                                                                availableSession.personalAccessToken()
+                                                        )
+                                        ) {
+                                            sessionChoices.selectToggle(sessionChoice);
+                                        }
                                     }
                                     scrollPane.setContent(vBox);
                                 }
