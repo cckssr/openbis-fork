@@ -27,7 +27,7 @@ export default class PersonalAccessTokenFormControllerLoad {
   async _loadPats() {
     await this.context.setState({
       loading: true,
-      mode: PageMode.VIEW,
+      mode: PageMode.EDIT,
       validate: FormValidator.MODE_BASIC
     })
 

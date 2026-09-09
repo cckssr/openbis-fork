@@ -46,7 +46,7 @@ export default class PersonalAccessTokenFormController {
   }
 
   handleCancel() {
-    return new PageControllerCancel(this).execute()
+    return this.load()
   }
 
   handleAdd() {

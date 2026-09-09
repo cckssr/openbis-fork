@@ -3,6 +3,7 @@ import autoBind from 'auto-bind'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
+import PageMode from '@src/js/components/common/page/PageMode.js'
 import PersonalAccessTokenFormController from '@src/js/components/tools/form/pat/PersonalAccessTokenFormController.js'
 import PersonalAccessTokenFormFacade from '@src/js/components/tools/form/pat/PersonalAccessTokenFormFacade.js'
 import PersonalAccessTokensGrid from '@src/js/components/tools/common/PersonalAccessTokensGrid.jsx'
@@ -55,7 +56,7 @@ class PersonalAccessTokenForm extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'PersonalAccessTokenForm.render')
 
-    const { loadId, loading, loaded } = this.state
+    const { loadId, loading, loaded, selection } = this.state
 
     return (
       <PageWithTwoPanels
@@ -65,7 +66,7 @@ class PersonalAccessTokenForm extends React.PureComponent {
         loaded={loaded}
         object={{}}
         renderMainPanel={() => this.renderMainPanel()}
-        renderAdditionalPanel={() => this.renderAdditionalPanel()}
+        renderAdditionalPanel={selection ? () => this.renderAdditionalPanel() : null}
         renderButtons={() => this.renderButtons()}
       />
     )
@@ -88,7 +89,13 @@ class PersonalAccessTokenForm extends React.PureComponent {
 
   renderAdditionalPanel() {
     const { controller } = this
-    const { pats, selection, selectedRow, mode } = this.state
+    const { pats, selection, selectedRow } = this.state
+
+    let mode = PageMode.VIEW
+
+    if (selectedRow && selectedRow.data && !selectedRow.data.original) {
+      mode = PageMode.EDIT
+    }
 
     return (
       <PersonalAccessTokenFormParameters
