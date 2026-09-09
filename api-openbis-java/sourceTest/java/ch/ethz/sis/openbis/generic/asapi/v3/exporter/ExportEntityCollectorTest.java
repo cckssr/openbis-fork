@@ -9,6 +9,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
@@ -17,11 +18,13 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.testng.Assert.assertEquals;
@@ -46,6 +49,70 @@ public class ExportEntityCollectorTest
     public void afterMethod()
     {
         mockery.assertIsSatisfied();
+    }
+
+    @DataProvider
+    public Object[][] crossSpaceParentSelection()
+    {
+        return new Object[][] { { true, true, true }, { true, false, false }, { false, true, false } };
+    }
+
+    @Test(dataProvider = "crossSpaceParentSelection")
+    public void testCrossSpaceParentSelection(boolean withParents, boolean withOtherSpaces, boolean parentExpected)
+    {
+        Space childSpace = new Space();
+        childSpace.setPermId(new SpacePermId("SPACE1"));
+        Space parentSpace = new Space();
+        parentSpace.setPermId(new SpacePermId("SPACE2"));
+        Sample parent = sample("PARENT", parentSpace);
+        Sample child = sample("CHILD", childSpace);
+        child.setParents(List.of(parent));
+
+        mockery.checking(new Expectations()
+        {
+            {
+                one(api).getSamples(with(SESSION_TOKEN), with(List.of(child.getPermId())), with(any(SampleFetchOptions.class)));
+                will(returnValue(Map.of(child.getPermId(), child)));
+                if (parentExpected)
+                {
+                    one(api).getSamples(with(SESSION_TOKEN), with(List.of(parent.getPermId())), with(any(SampleFetchOptions.class)));
+                    will(returnValue(Map.of(parent.getPermId(), parent)));
+                    one(api).getSpaces(with(SESSION_TOKEN), with(List.of(parentSpace.getPermId())), with(any(SpaceFetchOptions.class)));
+                    will(returnValue(Map.of(parentSpace.getPermId(), parentSpace)));
+                }
+                one(api).getSpaces(with(SESSION_TOKEN), with(List.of(childSpace.getPermId())), with(any(SpaceFetchOptions.class)));
+                will(returnValue(Map.of(childSpace.getPermId(), childSpace)));
+            }
+        });
+
+        Set<ExportablePermId> collection = new HashSet<>();
+        ExportEntityCollector.collectEntities(api, SESSION_TOKEN, collection,
+                new ExportablePermId(ExportableKind.SAMPLE, "CHILD"), true, false, withParents, false, withOtherSpaces);
+
+        Set<ExportablePermId> expected = new HashSet<>(Set.of(
+                new ExportablePermId(ExportableKind.SAMPLE, "CHILD"), new ExportablePermId(ExportableKind.SPACE, "SPACE1")));
+        if (parentExpected)
+        {
+            expected.add(new ExportablePermId(ExportableKind.SAMPLE, "PARENT"));
+            expected.add(new ExportablePermId(ExportableKind.SPACE, "SPACE2"));
+        }
+        assertEquals(collection, expected);
+    }
+
+    private static Sample sample(String permId, Space space)
+    {
+        SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withSpace();
+        fo.withSampleProperties();
+        fo.withExperiment();
+        fo.withProject();
+        fo.withParents();
+        Sample sample = new Sample();
+        sample.setFetchOptions(fo);
+        sample.setPermId(new SamplePermId(permId));
+        sample.setSpace(space);
+        sample.setParents(List.of());
+        return sample;
     }
 
     /**

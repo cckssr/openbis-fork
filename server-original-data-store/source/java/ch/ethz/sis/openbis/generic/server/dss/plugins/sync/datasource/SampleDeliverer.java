@@ -16,7 +16,9 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
@@ -52,6 +54,8 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
         IApplicationServerApi v3api = getV3Api();
         List<SamplePermId> permIds = samplePermIds.stream().map(SamplePermId::new).collect(Collectors.toList());
         Collection<Sample> fullSamples = v3api.getSamples(sessionToken, permIds, createFullFetchOptions()).values();
+        // Connections must point into the complete selection, including samples delivered in other batches.
+        Set<String> selectedSamplePermIds = new HashSet<>(context.getPermIds(ExportableKind.SAMPLE));
         int count = 0;
         for (Sample sample : fullSamples)
         {
@@ -75,8 +79,8 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
             addProperties(writer, sample.getProperties(), context);
             ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
             connectionsBuilder.addConnections(sample.getDataSets());
-            connectionsBuilder.addChildren(sample.getChildren());
-            connectionsBuilder.addComponents(sample.getComponents());
+            connectionsBuilder.addChildren(selectedSamples(sample.getChildren(), selectedSamplePermIds));
+            connectionsBuilder.addComponents(selectedSamples(sample.getComponents(), selectedSamplePermIds));
             connectionsBuilder.writeTo(writer);
             addAttachments(writer, sample.getAttachments());
             afsDataWriter.write(writer, permId, sessionToken);
@@ -85,6 +89,11 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
             count++;
         }
         operationLog.info(count + " of " + samplePermIds.size() + " samples have been delivered.");
+    }
+
+    private static List<Sample> selectedSamples(List<Sample> samples, Set<String> selectedPermIds)
+    {
+        return samples.stream().filter(sample -> selectedPermIds.contains(sample.getPermId().getPermId())).collect(Collectors.toList());
     }
 
     private SampleFetchOptions createFullFetchOptions()
