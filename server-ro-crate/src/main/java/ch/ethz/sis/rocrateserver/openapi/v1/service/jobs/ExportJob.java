@@ -50,10 +50,7 @@ import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -306,10 +303,14 @@ public final class ExportJob implements IAsyncJob
                     java.nio.file.Path downloadPath =
                             downloadOpenBISExport(openBIS, exportParams, downloadURL);
                     pathsForDeletion.add(downloadPath);
-
-                    final String downloadedFileName = downloadPath.toFile().getName();
                     LOG.info(String.format("Downloaded OpenBIS export file: %s", downloadPath));
 
+                    File file = downloadPath.toFile();
+                    if(!file.exists()) {
+                        LOG.error(String.format("File was not found here: %s", file));
+                        throw new IllegalStateException("Failed to download OpenBIS file. Please contact administrator.");
+                    }
+                    final String downloadedFileName = downloadPath.toFile().getName();
                     OpenBisModel openBisModel =
                             ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, downloadPath,
                                     ExcelReader.FileMode.DUMMY);
@@ -414,14 +415,22 @@ public final class ExportJob implements IAsyncJob
             Log.error("Exception during export", e);
             if(this.email != null && !this.email.isBlank()) {
                 LOG.info("Export failed, preparing to send email");
-                sendMailFailure(e.getMessage());
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                String message = e.getMessage() + "\n" + sw.toString();
+                sendMailFailure(message);
             }
             this.exception = e;
         } catch (Error e) {
             Log.error("Error during export", e);
             if(this.email != null && !this.email.isBlank()) {
                 LOG.info("Export failed, preparing to send email");
-                sendMailFailure(e.getMessage());
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                String message = e.getMessage() + "\n" + sw.toString();
+                sendMailFailure(message);
             }
             throw e;
         }
@@ -551,6 +560,7 @@ public final class ExportJob implements IAsyncJob
         final String filePathSubstring = "filePath=";
         final String fileName = downloadUrl.substring(downloadUrl.indexOf(filePathSubstring) +  filePathSubstring.length());
         java.nio.file.Path pathToExcel = java.nio.file.Path.of(fileName);
+        LOG.info(String.format("pathToExcel: %s", pathToExcel));
         SessionWorkSpaceManager.write(headers.getApiKey(), pathToExcel, listener.getInputStream());
         java.nio.file.Path realPathToExcel =
                 SessionWorkSpaceManager.getRealPath(headers.getApiKey(), pathToExcel);
