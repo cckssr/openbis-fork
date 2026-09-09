@@ -13,15 +13,14 @@ class PersonalAccessTokenFormButtons extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'PersonalAccessTokenFormButtons.render')
 
-    const { mode, onEdit, onSave, onCancel, changed } = this.props
+    const { mode, onSave, onCancel, changed } = this.props
 
     return (
       <PageButtons
         mode={mode}
         changed={changed}
-        onEdit={onEdit}
-        onSave={onSave}
-        onCancel={onCancel}
+        onSave={changed ? onSave : null}
+        onCancel={changed ? onCancel : null}
         renderAdditionalButtons={params => this.renderAdditionalButtons(params)}
       />
     )
