@@ -48,6 +48,46 @@
 ### Removed Apps
 - Data Set Uploader: Superseded by openBIS Drive
 
+## Version 20.10.13 (11 Sep 2026)
+
+### Core
+- Bugfix: OOM issue caused by dynamic property script (BIS-1657)
+- Bugfix: Wrong list of export entities (BIS-2255)
+- Bugfix: Instance admin rights not assigned by user management maintenance task (BIS-2473)
+- Bugfix: Shutdown script  doesn't work on all systems (BIS-2689)
+- Bugfix: Personal access token validation fails when additional '-' character appears (BIS-2926)
+- Bugfix: OOM caused by export (BIS-2948)
+- Improvement: Improve deleteRoleAssignment Log (BIS-2922)
+- Improvement: Introduction of ExportEntityCollector (BIS-2559)
+
+### Admin
+- Bugfix: "... cannot be empty" validation messages for valid timestamps in PAT (BIS-2798)
+- Bugfix: cannot set date in PAT (BIS-2610)
+
+### ELN-LIMS
+- Bugfix: Menu tree disappears in export forms (BIS-2568)
+- Bugfix: Link to object code does not work in the dataset path (BIS-2066)
+- Bugfix: DataSet Viewer shows empty folder even when data is available on SFTP (BIS-2341)
+- Bugfix: Content in edit mode is lost when switching between multiple tabs (BIS-2418)
+- Bugfix: Barcodes being sized incorrectly on Barcode/QR Code Generator and PDF (BIS-2471)
+- Bugfix: Cannot create projects in Safari browser (BIS-2535)
+- Bugfix: Toolbar height is not calculated correctly on the Layout Manager (BIS-2550)
+- Bugfix: New Tab layout not working well on mobile phones (BIS-2567)
+- Bugfix: Filter on codes using upper case does not work in parents and children tables (BIS-2569)
+- Bugfix: Cannot Log Out (BIS-2581)
+- Bugfix: Side menu duplicates nodes when custom sorting is enabled (BIS-2634)
+- Bugfix: Project nodes in side menu are not sorted correctly (BIS-2645)
+- Bugfix: Data in eln-lims-marker-dropbox is duplicated (BIS-2694)
+- Bugfix: Links to parents and children in Object tables in Collections do not work (BIS-2730)
+- Bugfix: Cannot see option to add Children in Entry on creation (BIS-2747)
+- Bugfix: Reversal of deletion of storage position is not working correctly (BIS-2764)
+- Bugfix: Root node in side menu appears in all tabs (BIS-2799)
+- Bugfix: Cannot delete a storage (BIS-2814)
+- Bugfix: Incorrect behaviour when opening templates and storages from Settings (BIS-2817)
+- Improvement: Change limit for rows exports in ELN Profile.js (BIS-2661)
+- Improvement: Objects table load speedup (BIS-2547)
+- Improvement: Side menu load speedup (BIS-2549)
+
 ## Version 20.10.12.5 (13 Feb 2026)
 
 ### ELN-LIMS
