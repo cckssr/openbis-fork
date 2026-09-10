@@ -313,7 +313,10 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
                 this.progressBarWithFraction.getStyleClass().add(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS);
             }
             switch (patCheckResult.result()) {
-                case INVALID_SESSION -> this.sessionValidUntilLabel.setWarning(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.invalid_session"));
+                case INVALID_SESSION -> {
+                    this.liveStatus.setText("");
+                    this.sessionValidUntilLabel.setWarning(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.invalid_session"));
+                }
                 case ERROR_REACHING_SERVER -> {
                     addLabelErrorStyle(liveStatus);
                     this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.error_state.server_unreachable"));
