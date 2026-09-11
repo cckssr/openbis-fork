@@ -48,24 +48,24 @@ system.property.prefix=afs.logging.
 .global.level=INFO
 
 # List of handlers to configure
-.global.handlerAliases = myFileHandler, resolvedPropertiesHandler
+.global.handlerAliases = DefaultFileHandler, ResolvedPropertiesHandler
 
 # Custom File Handler using your custom class
-myFileHandler.class = ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler
-myFileHandler.logFileName = log/afs.log
-myFileHandler.maxLogFileSize = 10485760
-myFileHandler.append = true
-myFileHandler.level = INFO
-myFileHandler.messagePattern = %d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
+DefaultFileHandler.class = ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler
+DefaultFileHandler.logFileName = log/afs.log
+DefaultFileHandler.maxLogFileSize = 10485760
+DefaultFileHandler.append = true
+DefaultFileHandler.level = INFO
+DefaultFileHandler.messagePattern = %d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
 
 # Resolved Properties Handler
-resolvedPropertiesHandler.class = ch.ethz.sis.shared.log.standard.handlers.SingleFileHandler
-resolvedPropertiesHandler.level = INFO
-resolvedPropertiesHandler.append = false
-resolvedPropertiesHandler.maxLogFileSize = 10048576
-resolvedPropertiesHandler.filter = OPERATION.ExposablePropertyPlaceholderConfigurer
-resolvedPropertiesHandler.logFileName = log/startup_properties.log
-resolvedPropertiesHandler.messagePattern = %d %-5p [%t] %c - %m%n
+ResolvedPropertiesHandler.class = ch.ethz.sis.shared.log.standard.handlers.SingleFileHandler
+ResolvedPropertiesHandler.level = INFO
+ResolvedPropertiesHandler.append = false
+ResolvedPropertiesHandler.maxLogFileSize = 10048576
+ResolvedPropertiesHandler.filter = OPERATION.ExposablePropertyPlaceholderConfigurer
+ResolvedPropertiesHandler.logFileName = log/startup_properties.log
+ResolvedPropertiesHandler.messagePattern = %d %-5p [%t] %c - %m%n
 ```
 
 #### service.properties (Mandatory)

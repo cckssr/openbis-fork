@@ -19,46 +19,46 @@ import java.util.logging.Level;
 public class Logging {
     public static final String GUI_LOGGER_CONF = "system.property.prefix=openbis-drive-gui.logging.\n" +
             ".global.level=INFO\n" +
-            ".global.handlerAliases = myFileHandler, myConsoleHandler\n" +
-            "myFileHandler.class = ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler\n" +
-            "myFileHandler.maxLogFileSize=1048576\n" +
-            "myFileHandler.maxLogRotations=10\n" +
-            "myFileHandler.append = true\n" +
-            "myFileHandler.level = INFO\n" +
-            "myFileHandler.messagePattern = %d %-5p [%t] %c - %m%n\n" +
-            "myConsoleHandler.class = ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler\n" +
-            "myConsoleHandler.level = INFO\n" +
-            "myConsoleHandler.messagePattern = [DRIVE-GUI] %d %-5p [%t] %c - %m%n";
+            ".global.handlerAliases = DefaultFileHandler, ConsoleHandler\n" +
+            "DefaultFileHandler.class = ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler\n" +
+            "DefaultFileHandler.maxLogFileSize=1048576\n" +
+            "DefaultFileHandler.maxLogRotations=10\n" +
+            "DefaultFileHandler.append = true\n" +
+            "DefaultFileHandler.level = INFO\n" +
+            "DefaultFileHandler.messagePattern = %d %-5p [%t] %c - %m%n\n" +
+            "ConsoleHandler.class = ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler\n" +
+            "ConsoleHandler.level = INFO\n" +
+            "ConsoleHandler.messagePattern = [DRIVE-GUI] %d %-5p [%t] %c - %m%n";
 
     public static final String CMD_LINE_LOGGER_CONF = "system.property.prefix=openbis-drive-cmd-line.logging.\n" +
             ".global.level=INFO\n" +
-            ".global.handlerAliases = myFileHandler\n" +
-            "myFileHandler.class = ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler\n" +
-            "myFileHandler.maxLogFileSize=1048576\n" +
-            "myFileHandler.maxLogRotations=10\n" +
-            "myFileHandler.append = true\n" +
-            "myFileHandler.level = INFO\n" +
-            "myFileHandler.messagePattern = %d %-5p [%t] %c - %m%n";
+            ".global.handlerAliases = DefaultFileHandler\n" +
+            "DefaultFileHandler.class = ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler\n" +
+            "DefaultFileHandler.maxLogFileSize=1048576\n" +
+            "DefaultFileHandler.maxLogRotations=10\n" +
+            "DefaultFileHandler.append = true\n" +
+            "DefaultFileHandler.level = INFO\n" +
+            "DefaultFileHandler.messagePattern = %d %-5p [%t] %c - %m%n";
 
     public static final String SERVICE_LOGGER_CONF = "system.property.prefix=openbis-drive-service.logging.\n" +
             ".global.level=INFO\n" +
-            ".global.handlerAliases = myFileHandler, myConsoleHandler\n" +
-            "myFileHandler.class = ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler\n" +
-            "myFileHandler.maxLogFileSize=1048576\n" +
-            "myFileHandler.maxLogRotations=10\n" +
-            "myFileHandler.append = true\n" +
-            "myFileHandler.level = INFO\n" +
-            "myFileHandler.messagePattern = %d %-5p [%t] %c - %m%n\n" +
-            "myConsoleHandler.class = ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler\n" +
-            "myConsoleHandler.level = INFO\n" +
-            "myConsoleHandler.messagePattern = [DRIVE-SERVICE] %d %-5p [%t] %c - %m%n";
+            ".global.handlerAliases = DefaultFileHandler, ConsoleHandler\n" +
+            "DefaultFileHandler.class = ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler\n" +
+            "DefaultFileHandler.maxLogFileSize=1048576\n" +
+            "DefaultFileHandler.maxLogRotations=10\n" +
+            "DefaultFileHandler.append = true\n" +
+            "DefaultFileHandler.level = INFO\n" +
+            "DefaultFileHandler.messagePattern = %d %-5p [%t] %c - %m%n\n" +
+            "ConsoleHandler.class = ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler\n" +
+            "ConsoleHandler.level = INFO\n" +
+            "ConsoleHandler.messagePattern = [DRIVE-SERVICE] %d %-5p [%t] %c - %m%n";
 
     public static final String TEST_LOGGER_CONF = "system.property.prefix=openbis-drive-test.logging.\n" +
             ".global.level=INFO\n" +
-            ".global.handlerAliases = myConsoleHandler\n" +
-            "myConsoleHandler.class = ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler\n" +
-            "myConsoleHandler.level = INFO\n" +
-            "myConsoleHandler.messagePattern = [DRIVE-GUI] %d %-5p [%t] %c - %m%n";
+            ".global.handlerAliases = ConsoleHandler\n" +
+            "ConsoleHandler.class = ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler\n" +
+            "ConsoleHandler.level = INFO\n" +
+            "ConsoleHandler.messagePattern = [DRIVE-GUI] %d %-5p [%t] %c - %m%n";
 
     static void initializeLogging(
             @NonNull String prefix,
@@ -70,11 +70,11 @@ public class Logging {
 
         Properties properties = new Properties();
         properties.load(new ByteArrayInputStream(confContent.getBytes(StandardCharsets.UTF_8)));
-        properties.put("myFileHandler.logFileName", localAppStateDirectory.resolve(prefix + ".log").toAbsolutePath().toString());
+        properties.put("DefaultFileHandler.logFileName", localAppStateDirectory.resolve(prefix + ".log").toAbsolutePath().toString());
         if (propertiesDefinedLevel.isPresent()) {
             properties.put(".global.level", propertiesDefinedLevel.get().getName());
-            properties.put("myFileHandler.level", propertiesDefinedLevel.get().getName());
-            properties.put("myConsoleHandler.level", propertiesDefinedLevel.get().getName());
+            properties.put("DefaultFileHandler.level", propertiesDefinedLevel.get().getName());
+            properties.put("ConsoleHandler.level", propertiesDefinedLevel.get().getName());
         }
 
         Path logConfFile = Files.createTempFile(prefix + "-logging", ".properties");
