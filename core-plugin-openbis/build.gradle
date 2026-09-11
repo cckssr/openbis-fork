@@ -410,7 +410,7 @@ task zipAfsServer(type: Zip, dependsOn: project(':server-data-store').tasks.AFSS
     from zipTree('../server-data-store/build/distributions/afs-server.zip')
 }
 
-task zipAfsSftpServer(type: Zip, dependsOn: project(':server-sftp').tasks.AfsSftpServerZip) {
+task zipSftpServer(type: Zip, dependsOn: project(':server-sftp').tasks.SftpServerZip) {
     archiveBaseName = 'sftp_server'
     from zipTree('../server-sftp/build/distributions/server-sftp.zip')
 }

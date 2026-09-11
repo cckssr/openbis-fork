@@ -65,7 +65,7 @@ task copyResources(type: Copy, dependsOn: [
        ':core-plugin-openbis:zipRoCrateServer',
        ':core-plugin-openbis:zipBdlServer',
        ':core-plugin-openbis:zipAfsServer',
-       ':core-plugin-openbis:zipAfsSftpServer'
+       ':core-plugin-openbis:zipSftpServer'
 ]) {
     duplicatesStrategy 'include'
     from "${project.projectDir}/resource/installer"
@@ -78,7 +78,7 @@ task copyResources(type: Copy, dependsOn: [
     into installerDistDir
     from zipTree(project(':core-plugin-openbis').zipAfsServer.archivePath)
     into installerDistDir
-    from zipTree(project(':core-plugin-openbis').zipAfsSftpServer.archivePath)
+    from zipTree(project(':core-plugin-openbis').zipSftpServer.archivePath)
     into installerDistDir
     from("${installerDistDir}/../BUILD-app-openbis-installer.INFO") {
         into 'bin'

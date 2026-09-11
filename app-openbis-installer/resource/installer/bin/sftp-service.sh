@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Name of the script/service (optional, good for logging)
-SERVICE_NAME="AFS-SFTP Service"
+SERVICE_NAME="SFTP Service"
 
 # Function to display usage instructions
 usage() {
@@ -22,34 +22,34 @@ case "$1" in
     start)
         echo "Starting $SERVICE_NAME..."
         # Add your start command logic here
-        export AFS_SFTP_HOME="$BASE/../servers/server-sftp"
-        $AFS_SFTP_HOME/bin/afs_sftp.sh start
+        export SFTP_HOME="$BASE/../servers/server-sftp"
+        $SFTP_HOME/bin/sftp.sh start
         ;;
 
     stop)
         echo "Stopping $SERVICE_NAME..."
         # Add your stop command logic here
-        export AFS_SFTP_HOME="$BASE/../servers/server-sftp"
-        $AFS_SFTP_HOME/bin/afs_sftp.sh stop
+        export SFTP_HOME="$BASE/../servers/server-sftp"
+        $SFTP_HOME/bin/sftp.sh stop
         ;;
 
     restart)
         echo "Stopping $SERVICE_NAME..."
         # Add your stop command logic here
-        export AFS_SFTP_HOME="$BASE/../servers/server-sftp"
-        $AFS_SFTP_HOME/bin/afs_sftp.sh stop
+        export SFTP_HOME="$BASE/../servers/server-sftp"
+        $SFTP_HOME/bin/sftp.sh stop
         sleep 2
         echo "Starting $SERVICE_NAME..."
         # Add your start command logic here
-        export AFS_SFTP_HOME="$BASE/../servers/server-sftp"
-        $AFS_SFTP_HOME/bin/afs_sftp.sh start
+        export SFTP_HOME="$BASE/../servers/server-sftp"
+        $SFTP_HOME/bin/sftp.sh start
       ;;
 
     status)
         echo "Checking status of $SERVICE_NAME..."
         # Add your status checking logic here
         # Example: check if a process is running
-        PID_FILE="$BASE/../servers/server-sftp/afs_sftp.pid"
+        PID_FILE="$BASE/../servers/server-sftp/sftp.pid"
         # 1. Check if the PID file exists
         if [ -f "$PID_FILE" ]; then
             # Read the PID from the file
@@ -80,7 +80,7 @@ case "$1" in
         echo "Displaying logs for $SERVICE_NAME..."
         # Add your log viewing logic here
         # Example: tail -f /var/log/myservice.log
-        less $BASE/../servers/server-sftp/log/afssftp.log
+        less $BASE/../servers/server-sftp/log/sftp.log
         ;;
 
     *)

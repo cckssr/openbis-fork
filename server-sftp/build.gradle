@@ -38,8 +38,8 @@ dependencies {
             libs.org.hamcrest.hamcrest.library
 }
 
-task openBISDevelopmentEnvironmentAfsSftpStart(type: JavaExec) {
-    mainClass = 'ch.ethz.sis.afssftp.startup.Main'
+task openBISDevelopmentEnvironmentSftpStart(type: JavaExec) {
+    mainClass = 'ch.ethz.sis.sftp.startup.Main'
     classpath = sourceSets.main.runtimeClasspath
     args(['../server-sftp/src/main/resources/service.properties'])
     jvmArgs(['--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
@@ -49,7 +49,7 @@ task openBISDevelopmentEnvironmentAfsSftpStart(type: JavaExec) {
              '-Xmx512M', '-ea'])
 }
 
-task AfsSftpServerZip(type: Zip, dependsOn: compileJava) {
+task SftpServerZip(type: Zip, dependsOn: compileJava) {
     archiveBaseName = 'server-sftp'
     from(jar) {
         into('server-sftp/lib/')

@@ -57,7 +57,7 @@ public class IntegrationTestEnvironment
 
     private RoCrateServer roCrateServer;
 
-    private AfsSftpServer afsSftpServer;
+    private SftpServer sftpServer;
 
     private FakeHttpServer fakeHttpServer;
 
@@ -167,12 +167,12 @@ public class IntegrationTestEnvironment
         return roCrateServer;
     }
 
-    public AfsSftpServer createAfsSftpServer()
+    public SftpServer createSftpServer()
     {
-        return createAfsSftpServer(loadProperties(Path.of("etc/default/afs-sftp/service.properties")));
+        return createSftpServer(loadProperties(Path.of("etc/default/sftp/service.properties")));
     }
 
-    public AfsSftpServer createAfsSftpServer(Properties serviceProperties)
+    public SftpServer createSftpServer(Properties serviceProperties)
     {
         if (serviceProperties != null)
         {
@@ -180,9 +180,9 @@ public class IntegrationTestEnvironment
             serviceProperties.setProperty("afsUrl", TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
         }
 
-        afsSftpServer = new AfsSftpServer();
-        afsSftpServer.configure(serviceProperties);
-        return afsSftpServer;
+        sftpServer = new SftpServer();
+        sftpServer.configure(serviceProperties);
+        return sftpServer;
     }
 
     public void createShares(Map<Integer, Properties> shares)
@@ -226,9 +226,9 @@ public class IntegrationTestEnvironment
         {
             roCrateServer.start();
         }
-        if (afsSftpServer != null)
+        if (sftpServer != null)
         {
-            afsSftpServer.start();
+            sftpServer.start();
         }
 
         configureSystemUser();
@@ -238,10 +238,10 @@ public class IntegrationTestEnvironment
     public void stop()
     {
         RuntimeException failure = null;
-        if (afsSftpServer != null)
+        if (sftpServer != null)
         {
-            failure = stopSafely("AFS SFTP server", () -> afsSftpServer.stop(), failure);
-            afsSftpServer = null;
+            failure = stopSafely("SFTP server", () -> sftpServer.stop(), failure);
+            sftpServer = null;
         }
         if (roCrateServer != null)
         {
@@ -662,7 +662,7 @@ public class IntegrationTestEnvironment
         return roCrateServer;
     }
 
-    public AfsSftpServer getAfsSftpServer() {
-        return afsSftpServer;
+    public SftpServer getSftpServer() {
+        return sftpServer;
     }
 }
