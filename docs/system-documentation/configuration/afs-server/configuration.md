@@ -64,7 +64,7 @@ ResolvedPropertiesHandler.level = INFO
 ResolvedPropertiesHandler.append = false
 ResolvedPropertiesHandler.maxLogFileSize = 10048576
 ResolvedPropertiesHandler.filter = OPERATION.ExposablePropertyPlaceholderConfigurer
-ResolvedPropertiesHandler.logFileName = log/startup_properties.log
+ResolvedPropertiesHandler.logFileName = log/afs_startup_properties.log
 ResolvedPropertiesHandler.messagePattern = %d %-5p [%t] %c - %m%n
 ```
 
