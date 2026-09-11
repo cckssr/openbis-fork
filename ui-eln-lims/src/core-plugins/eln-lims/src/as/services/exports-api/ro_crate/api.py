@@ -41,6 +41,7 @@ def exportRoCrate(context, params, withEmail=True):
         ro_crate_url = CommonServiceProvider.tryToGetProperty(RO_CRATE_URL_PROPERTY_KEY)
 
         ro_crate_export = ro_crate_url + "/export"
+        OPERATION_LOG.info("configured RO-Crate server url: %s" % ro_crate_export)
 
         exportData = params.get("exportData")
 
@@ -160,7 +161,7 @@ def downloadRoCrate(context, params):
         zip_name = RO_CRATE_EXPORT_ZIP_NAME
     else:
         zip_name = "ro_crate." + dateStr + ".zip"
-    print("Detected zip name:", zip_name)
+    OPERATION_LOG.info("Detected zip name:%s" % zip_name)
 
     conn = None
     try:
@@ -182,6 +183,7 @@ def downloadRoCrate(context, params):
 
         # --- Get HTTP response code ---
         code = conn.getResponseCode()
+        OPERATION_LOG.info("Download RO-Crate response code: %s" % code)
         print("Response Code:", code)
 
         if code < 300:
@@ -202,15 +204,16 @@ def downloadRoCrate(context, params):
             }
 
     except SocketTimeoutException as e:
+        OPERATION_LOG.error("Request timed out: %s" % e)
         print("Request timed out:", e)
     except Exception as e:
+        OPERATION_LOG.error("Error during request: %s" % e)
         print("Error during request:", e)
         return {
             "result": None,
             "error": e
         }
     finally:
-
         try:
             if conn:
                 conn.disconnect()
@@ -227,9 +230,9 @@ def https_post(url_str, data, headers=None):
         conn.setDoOutput(True)
 
         # --- Timeouts ---
-        timeout = 30 * 1000
-        conn.setConnectTimeout(timeout)
-        conn.setReadTimeout(timeout)
+        # timeout = 30 * 1000
+        # conn.setConnectTimeout(timeout)
+        # conn.setReadTimeout(timeout)
 
         # Add any extra headers
         if headers:

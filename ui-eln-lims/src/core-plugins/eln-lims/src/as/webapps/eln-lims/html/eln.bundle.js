@@ -7558,7 +7558,8 @@ function ServerFacade(openbisServer) {
 		this.customASService({
 		"method" : "ask" ,
 		"query" : message,
-		"session_id" : sessionId
+		"session_id" : sessionId,
+        "sessionToken" : mainController.serverFacade.getSession()
 		}, callbackFunction, "chat-bot-api", null, true);
 	}
 
@@ -55935,10 +55936,19 @@ function SciCatExportController(parentController) {
         this.getSettingValue("personal-sci-cat-api-token", (function(accessToken) {
             mainController.serverFacade.getSampleType("PUBLICATION", function(sampleType) {
                 if (accessToken && accessToken !== '') {
-                    _this.exportModel = new SciCatExportModel(accessToken);
-                    _this.exportModel.type = sampleType;
-                    _this.exportView = new SciCatExportView(this, _this.exportModel);
-                    _this.exportView.repaint(views);
+                    try {
+                        const { header, payload } = Util.parseJwt(accessToken);
+                        if(Date.now() < new Date(payload.exp * 1000)) {
+                            _this.exportModel = new SciCatExportModel(accessToken);
+                            _this.exportModel.type = sampleType;
+                            _this.exportView = new SciCatExportView(this, _this.exportModel);
+                            _this.exportView.repaint(views);
+                        } else {
+                            Util.showError('Personal Sci Cat API Token is expired.');
+                        }
+                    } catch(error) {
+                        Util.showError('Personal Sci Cat API Token is invalid:\n'+error);
+                    }
                 } else {
                     Util.showError('Personal Sci Cat API Token missing, please set it in your user profile.');
                 }
@@ -56024,7 +56034,7 @@ function SciCatExportController(parentController) {
                     }
                 } else {
                     Util.showSuccess("Export is being processed, you will receive an email when it is finished. If you logout the process will stop. ", function () { Util.unblockUI(); });
-                    mainController.refreshView();
+                    // mainController.refreshView();
                 }
             });
         }

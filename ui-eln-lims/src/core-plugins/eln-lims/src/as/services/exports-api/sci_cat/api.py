@@ -25,6 +25,13 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update import SampleUpdate
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id import SamplePermId
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id import SpacePermId
 
+from ch.ethz.sis.openbis.generic.asapi.v3.exporter import ExportEntityCollector
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportData
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportableKind
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportablePermId
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import AllFields
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options import ExportOptions
+
 import traceback
 import json
 import datetime
@@ -78,6 +85,9 @@ def exportSciCat(context, params):
         except Throwable as e:
             print("SciCat export thread failed: %s" % e)
             OPERATION_LOG.error("SciCat export thread failed %s" % e)
+        except BaseException as e:
+            print("SciCat export thread failed: %s" % e)
+            OPERATION_LOG.error("SciCat export thread failed %s" % e)
         finally:
             print("SciCat export thread done. Starting time: " + dateStr + " token: "+sessionToken)
             OPERATION_LOG.info("SciCat export thread done. Starting time: " + date + " token: "+sessionToken)
@@ -87,12 +97,21 @@ def exportSciCat(context, params):
 
     return resultDict("STARTED")
 
+def getGroups(sessionToken, v3):
 
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search import SampleSearchCriteria
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions import SampleFetchOptions
 
-def createNewPublication(sessionToken, v3, properties, collectorIds):
-    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportableKind
-    groupPrefix = ''
-    # groupPrefix = 'ERROR_'
+    criteria = SampleSearchCriteria()
+    criteria.withType().withCode().thatEquals("GENERAL_ELN_SETTINGS")
+    fetchOptions = SampleFetchOptions()
+    fetchOptions.withProperties()
+    settingSamples = v3.searchSamples(sessionToken, criteria, fetchOptions).getObjects()
+
+    groups = [group.getCode()[:-len("_ELN_SETTINGS")] for group in settingSamples]
+    return groups
+
+def createNewPublication(sessionToken, v3, properties, collectorIds, groupPrefix):
     sampleCreation = SampleCreation()
     sampleCreation.setTypeId(EntityTypePermId('PUBLICATION'))
     sampleCreation.setExperimentId(ExperimentIdentifier('/' + groupPrefix + 'PUBLICATIONS/' + groupPrefix
@@ -151,13 +170,22 @@ def exportSciCat_withEmail(context, params, date):
     v3 = context.getApplicationService()
     userEmail = v3.getSessionInformation(sessionToken).getPerson().getEmail()
     mailClient = CommonServiceProvider.createEMailClient()
-
+    groups = getGroups(sessionToken, v3)
+    groupPrefix = ""
     collectorIds = collectExportIds(v3, sessionToken, params.get('exportData'))
+    if len(groups) > 1:
+        spaceNode = filter(lambda x: x.exportableKind == ExportableKind.SPACE, collectorIds.getPermIds())[0]
+        for group in groups:
+            if spaceNode.getPermId().startswith(group + "_"):
+                groupPrefix = group + "_"
+                print("Detected entities from group: '%s'" % group)
+                OPERATION_LOG.info("Detected entities from group: '%s'" % group)
+                break
 
     publicationProps = params.get('exportData')["publicationProps"]
     print("Received publication properties:", publicationProps)
     OPERATION_LOG.info("Received publication properties:" + str(publicationProps))
-    publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds)
+    publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds, groupPrefix)
     OPERATION_LOG.info("Publication creation result: " + str(publicationResult))
     if publicationResult["error"] is not None:
         errorStr = str(publicationResult["error"])
@@ -213,7 +241,6 @@ def exportSciCat_withEmail(context, params, date):
             if key.startswith("/"):
                 publishedDatasetLink = sciCatDetailUrl + URLEncoder.encode(value, "UTF-8")
                 links += "\t" + key + " -> " + publishedDatasetLink + "\n"
-                groupPrefix = ''
                 publicationPrefix = '/' + groupPrefix + 'PUBLICATIONS/' + groupPrefix + 'PUBLIC_REPOSITORIES/'
                 if key.startswith(publicationPrefix):
                     OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermId))
@@ -239,12 +266,6 @@ def exportSciCat_withEmail(context, params, date):
 
 
 def collectExportIds(v3, sessionToken, exportData):
-    from ch.ethz.sis.openbis.generic.asapi.v3.exporter import ExportEntityCollector
-    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportData
-    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportableKind
-    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import ExportablePermId
-    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data import AllFields
-    from ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options import ExportOptions
 
     nodeExportList = exportData['nodeExportList']
     exportIds = []
@@ -287,9 +308,11 @@ def getRoCrateExportToWorkspace(context, params):
 
     flag = False
     count  = int(CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.timeout.count'))
+    count_const = count
     sleep  = int(CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.timeout.sleep'))
     while flag == False:
         if count < 0:
+            OPERATION_LOG.error("Timeout after waiting for %s seconds" % (count_const * sleep))
             return {
                 "error": "timeout waiting for response"
             }
@@ -515,9 +538,9 @@ def https_get(base_url, headers, message=None, proxy_host=None, proxy_port=None)
         conn.setRequestMethod("GET")
 
         # --- Timeouts ---
-        timeout = 30 * 1000
-        conn.setConnectTimeout(timeout)
-        conn.setReadTimeout(timeout)
+        # timeout = 30 * 1000
+        # conn.setConnectTimeout(timeout)
+        # conn.setReadTimeout(timeout)
 
         # Add any extra headers
         if headers:
