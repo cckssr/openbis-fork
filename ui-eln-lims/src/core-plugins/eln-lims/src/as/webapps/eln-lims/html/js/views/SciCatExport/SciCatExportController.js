@@ -128,7 +128,7 @@ function SciCatExportController(parentController) {
                     }
                 } else {
                     Util.showSuccess("Export is being processed, you will receive an email when it is finished. If you logout the process will stop. ", function () { Util.unblockUI(); });
-                    // mainController.refreshView();
+                    mainController.refreshView();
                 }
             });
         }
