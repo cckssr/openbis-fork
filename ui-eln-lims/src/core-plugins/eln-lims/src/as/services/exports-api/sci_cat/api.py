@@ -174,6 +174,8 @@ def exportSciCat_withEmail(context, params, date):
     groupPrefix = ""
     collectorIds = collectExportIds(v3, sessionToken, params.get('exportData'))
     if len(groups) > 1:
+        print("Multi-group instance detected.")
+        OPERATION_LOG.info("Multi-group instance detected.")
         spaceNode = filter(lambda x: x.exportableKind == ExportableKind.SPACE, collectorIds.getPermIds())[0]
         for group in groups:
             if spaceNode.getPermId().startswith(group + "_"):
@@ -181,6 +183,11 @@ def exportSciCat_withEmail(context, params, date):
                 print("Detected entities from group: '%s'" % group)
                 OPERATION_LOG.info("Detected entities from group: '%s'" % group)
                 break
+        print("Group detected: ", groupPrefix)
+        OPERATION_LOG.info("Group detected: " + str(groupPrefix))
+    else:
+        print("Single group instance detected.")
+        OPERATION_LOG.info("Single group instance detected.")
 
     publicationProps = params.get('exportData')["publicationProps"]
     print("Received publication properties:", publicationProps)
