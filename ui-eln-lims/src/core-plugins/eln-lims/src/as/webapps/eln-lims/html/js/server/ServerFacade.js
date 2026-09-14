@@ -230,7 +230,7 @@ function ServerFacade(openbisServer) {
         });
 	}
 
-	this.setSetting = function(key, value) {
+	this.setSetting = function(key, value, callback) {
         var _this = this;
         this.getSettingsCacheEmpty(function() {
             settingsCache[key] = value;
@@ -239,7 +239,11 @@ function ServerFacade(openbisServer) {
                 "webAppId" : "ELN-LIMS",
                 "settings" : settingsCache
             }
-            _this.openbisServer.setWebAppSettings(webAppSettings, function(result) {});
+            _this.openbisServer.setWebAppSettings(webAppSettings, function(result) {
+                if(callback) {
+                    callback(result);
+                }
+            });
         });
 	}
 
@@ -1299,7 +1303,8 @@ function ServerFacade(openbisServer) {
 		this.customASService({
 		"method" : "ask" ,
 		"query" : message,
-		"session_id" : sessionId
+		"session_id" : sessionId,
+        "sessionToken" : mainController.serverFacade.getSession()
 		}, callbackFunction, "chat-bot-api", null, true);
 	}
 

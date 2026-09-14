@@ -51,22 +51,28 @@ function UserProfileController(mainController, mode) {
 			return;
 		}
 		var userId = this._mainController.serverFacade.getUserId();
+		var _this = this;
 
-		this.setSettingValue(this._zenodoApiTokenKey, userInformation.zenodoToken);
-		this.setSettingValue(this._sciCatApiTokenKey, userInformation.sciCatToken);
-		this._mainController.serverFacade.updateUserInformation(userId, userInformation, (function(ok) {
-			if (ok) {
-				if(this.isFileAuthentication()) {
-					Util.showInfo("Profile saved. You will be logged out automatically in order to reload the profile data upon login.", 
-							(function() {
-								this._mainController.serverFacade.logout();
-							}).bind(this),
-							false, "OK");
-				} else {
-				    mainController.changeView("showUserProfilePage");
-				}
-			}
-		}).bind(this));
+		this.setSettingValue(this._zenodoApiTokenKey, userInformation.zenodoToken, function(rz) {
+			_this.setSettingValue(_this._sciCatApiTokenKey, userInformation.sciCatToken, function(rs) {
+				_this._mainController.serverFacade.updateUserInformation(userId, userInformation, (function(ok) {
+					if (ok) {
+						if(_this.isFileAuthentication()) {
+							Util.showInfo("Profile saved. You will be logged out automatically in order to reload the profile data upon login.",
+								(function() {
+									_this._mainController.serverFacade.logout();
+								}).bind(_this),
+								false, "OK");
+						} else {
+							mainController.changeView("showUserProfilePage");
+						}
+					}
+				}).bind(_this));
+			});
+
+		});
+
+
 	}
 
 	this._validate = function(userInformation) {
@@ -89,8 +95,8 @@ function UserProfileController(mainController, mode) {
 		this._mainController.serverFacade.getSetting(key, callback);
 	};
 
-	this.setSettingValue = function (key, value) {
-		this._mainController.serverFacade.setSetting(key, value);
+	this.setSettingValue = function (key, value, callback) {
+		this._mainController.serverFacade.setSetting(key, value, callback);
 	};
 
 }
