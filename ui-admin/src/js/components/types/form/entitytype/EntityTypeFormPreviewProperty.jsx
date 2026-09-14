@@ -408,6 +408,7 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
             label: '(' + messages.get(messages.PREVIEW) + ')',
             selectable: false
           }}
+          sort={false}
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}

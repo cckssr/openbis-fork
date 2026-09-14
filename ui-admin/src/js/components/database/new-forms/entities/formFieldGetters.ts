@@ -680,7 +680,7 @@ function mapAssignmentToFormField(
     : !(assignment.showInEditView ?? true);
   const value = fieldOverrides.value !== undefined ? fieldOverrides.value : propertyValue;
   
-  const options = propertyType.vocabulary && propertyType.vocabulary.terms ? propertyType.vocabulary.terms.map((term: any) => ({ label: term.label, value: term.code })) : [];
+  const options = propertyType.vocabulary && propertyType.vocabulary.terms ? propertyType.vocabulary.terms.sort((t1:any, t2:any) => t1.ordinal - t2.ordinal).map((term: any) => ({ label: term.label, value: term.code })) : [];
 
   const field: FormField = {
     id: fieldId,

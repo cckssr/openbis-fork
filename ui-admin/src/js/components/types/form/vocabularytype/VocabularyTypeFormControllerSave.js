@@ -2,6 +2,7 @@ import _ from 'lodash'
 import AppController from '@src/js/components/AppController.js'
 import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
+import messages from '@src/js/common/messages.js'
 import openbis from '@src/js/services/openbis.js'
 
 export default class VocabularyTypeFormControllerSave extends PageControllerSave {
@@ -32,7 +33,7 @@ export default class VocabularyTypeFormControllerSave extends PageControllerSave
           operations.push(this._updateTermOperation(vocabulary, term))
         }
       } else {
-        operations.push(this._createTermOperation(vocabulary, term))
+        operations.push(...this._createTermOperation(vocabulary, term))
       }
     })
 
@@ -79,6 +80,7 @@ export default class VocabularyTypeFormControllerSave extends PageControllerSave
       'code',
       'label',
       'description',
+      'insertAfterTerm',
       'official',
       'internal'
     ])
@@ -99,7 +101,7 @@ export default class VocabularyTypeFormControllerSave extends PageControllerSave
     update.setVocabularyId(new openbis.VocabularyPermId(vocabulary.code.value))
     update.setDescription(vocabulary.description.value)
     update.setUrlTemplate(vocabulary.urlTemplate.value)
-    if(AppController.getInstance().isSystemUser()) {
+    if (AppController.getInstance().isSystemUser()) {
       update.setManagedInternally(vocabulary.internal.value)
     }
     return new openbis.UpdateVocabulariesOperation([update])
@@ -107,14 +109,36 @@ export default class VocabularyTypeFormControllerSave extends PageControllerSave
 
   _createTermOperation(vocabulary, term) {
     const creation = new openbis.VocabularyTermCreation()
+
+    const operations = []
+    operations.push(new openbis.CreateVocabularyTermsOperation([creation]))
+
     creation.setVocabularyId(
       new openbis.VocabularyPermId(vocabulary.code.value)
     )
     creation.setCode(term.code.value)
     creation.setLabel(term.label.value)
     creation.setDescription(term.description.value)
+
+    const insertAfterTerm = term.insertAfterTerm.value
+    if (!_.isEmpty(insertAfterTerm)) {
+      if (insertAfterTerm === messages.get(messages.INSERT_TERM_AT_THE_BEGINNING)) {
+        // 
+        // There is no way to tell during a term creation that it should become the first term of a vocabulary.
+        // Setting the previous term id to null sends the term to the end of the list.
+        // Until this problem is fixed, right after the creation we issue an update to correct the position.
+        //
+        // creation.setPreviousTermId(null) <- this would send the term to the end of the list (same if we didn't call the setter at all)
+        //
+        operations.push(this._updateTermOperation(vocabulary, term))
+      } else {
+        creation.setPreviousTermId(new openbis.VocabularyTermPermId(insertAfterTerm, vocabulary.code.value))
+      }
+    }
+
     creation.setOfficial(term.official.value)
-    return new openbis.CreateVocabularyTermsOperation([creation])
+
+    return operations
   }
 
   _updateTermOperation(vocabulary, term) {
@@ -124,8 +148,18 @@ export default class VocabularyTypeFormControllerSave extends PageControllerSave
     )
     update.setLabel(term.label.value)
     update.setDescription(term.description.value)
+
+    const insertAfterTerm = term.insertAfterTerm.value
+    if (!_.isEmpty(insertAfterTerm)) {
+      if (insertAfterTerm === messages.get(messages.INSERT_TERM_AT_THE_BEGINNING)) {
+        update.setPreviousTermId(null)
+      } else {
+        update.setPreviousTermId(new openbis.VocabularyTermPermId(insertAfterTerm, vocabulary.code.value))
+      }
+    }
+
     update.setOfficial(term.official.value)
-    if(AppController.getInstance().isSystemUser()) {
+    if (AppController.getInstance().isSystemUser()) {
       update.setManagedInternally(term.internal.value)
     }
     return new openbis.UpdateVocabularyTermsOperation([update])

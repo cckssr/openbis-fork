@@ -101,6 +101,14 @@ export default class VocabularyTypeFormControllerLoad extends PageControllerLoad
         value: _.get(loadedTerm, 'description', null),
         enabled: !internalTerm || AppController.getInstance().isSystemUser()
       }),
+      ordinal: FormUtil.createField({
+        value: _.get(loadedTerm, 'ordinal', null),
+        enabled: !internalTerm || AppController.getInstance().isSystemUser()
+      }),
+      insertAfterTerm: FormUtil.createField({
+        value: null,
+        enabled: !internalTerm || AppController.getInstance().isSystemUser()
+      }),
       official: FormUtil.createField({
         value: official,
         enabled:

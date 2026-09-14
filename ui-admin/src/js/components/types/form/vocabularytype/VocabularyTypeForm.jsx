@@ -29,8 +29,8 @@ const columns = [
       return row.internal.value;
     },
     renderValue: ({ value }) => {
-      if(value) {
-          return <LockLabel fontSize='small' color='disabled' />
+      if (value) {
+        return <LockLabel fontSize='small' color='disabled' />
       }
       return null;
     }
@@ -49,6 +49,27 @@ const columns = [
     name: 'official',
     label: messages.get(messages.OFFICIAL),
     getValue: ({ row }) => row.official.value
+  },
+  {
+    name: 'ordinal',
+    label: messages.get(messages.ORDINAL),
+    getValue: ({ row }) => row.insertAfterTerm.value ? messages.get(messages.INSERT_AFTER_TERM) + " " + row.insertAfterTerm.value : row.ordinal.value,
+    compareValue: ({ row1, row2, defaultCompare }) => {
+      const insertAfterTerm1 = row1.insertAfterTerm.value
+      const insertAfterTerm2 = row2.insertAfterTerm.value
+      const ordinal1 = row1.ordinal.value
+      const ordinal2 = row2.ordinal.value
+
+      if (!_.isEmpty(insertAfterTerm1) && !_.isEmpty(insertAfterTerm2)) {
+        return defaultCompare(insertAfterTerm1, insertAfterTerm2)
+      } else if (!_.isEmpty(insertAfterTerm1)) {
+        return -1
+      } else if (!_.isEmpty(insertAfterTerm2)) {
+        return 1
+      } else {
+        return defaultCompare(ordinal1, ordinal2)
+      }
+    }
   },
   GridUtil.registratorColumn({ path: 'registrator.value' }),
   GridUtil.registrationDateColumn({ path: 'registrationDate.value' })

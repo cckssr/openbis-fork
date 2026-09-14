@@ -17,6 +17,8 @@ export default class VocabularyTypeFormControllerAdd {
       code: FormUtil.createField({}),
       label: FormUtil.createField({}),
       description: FormUtil.createField({}),
+      ordinal: FormUtil.createField({}),
+      insertAfterTerm: FormUtil.createField({}),
       official: FormUtil.createField({
         value: true
       }),

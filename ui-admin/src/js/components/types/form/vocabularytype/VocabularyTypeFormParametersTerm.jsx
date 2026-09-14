@@ -1,13 +1,14 @@
+import _ from 'lodash'
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
 import AppController from '@src/js/components/AppController.js'
+import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import VocabularyTypeFormSelectionType from '@src/js/components/types/form/vocabularytype/VocabularyTypeFormSelectionType.js'
-import users from '@src/js/common/consts/users.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
@@ -23,7 +24,8 @@ class VocabularyTypeFormParametersTerm extends React.PureComponent {
     this.state = {}
     this.references = {
       code: React.createRef(),
-      description: React.createRef()
+      description: React.createRef(),
+      insertAfterTerm: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -93,6 +95,7 @@ class VocabularyTypeFormParametersTerm extends React.PureComponent {
         {this.renderCode(term)}
         {this.renderLabel(term)}
         {this.renderDescription(term)}
+        {this.renderInsertAfterTerm(term)}
         {this.renderOfficial(term)}
         {this.renderInternal(term)}
       </Container>
@@ -223,6 +226,42 @@ class VocabularyTypeFormParametersTerm extends React.PureComponent {
     )
   }
 
+  renderInsertAfterTerm(term) {
+    const { visible, enabled, error, value } = { ...term.insertAfterTerm }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, terms, classes } = this.props
+
+    const options = terms.filter(t => !_.isEmpty(t.code.value) && t.code.value !== term.code.value).map(t => {
+      return t.code.value
+    })
+
+    options.unshift(messages.get(messages.INSERT_TERM_AT_THE_BEGINNING))
+
+    return (
+      <div className={classes.field}>
+        <AutocompleterField
+          reference={this.references.insertAfterTerm}
+          label={messages.get(messages.INSERT_AFTER_TERM)}
+          name='insertAfterTerm'
+          options={options}
+          mandatory={false}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          freeSolo={true}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>)
+  }
+
+
   renderOfficial(term) {
     const { visible, enabled, error, value } = { ...term.official }
 
@@ -259,20 +298,20 @@ class VocabularyTypeFormParametersTerm extends React.PureComponent {
 
     const { mode, classes } = this.props
     return (
-        <div className={classes.field}>
-          <CheckboxField
-              reference={this.references.internal}
-              label={messages.get(messages.INTERNAL)}
-              name='internal'
-              error={error}
-              disabled={!enabled}
-              value={value}
-              mode={mode}
-              onChange={this.handleChange}
-              onFocus={this.handleFocus}
-              onBlur={this.handleBlur}
-          />
-        </div>
+      <div className={classes.field}>
+        <CheckboxField
+          reference={this.references.internal}
+          label={messages.get(messages.INTERNAL)}
+          name='internal'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
     )
   }
 

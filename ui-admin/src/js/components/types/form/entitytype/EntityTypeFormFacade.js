@@ -167,7 +167,7 @@ export default class EntityTypeFormFacade {
     criteria.withVocabulary().withCode().thatEquals(vocabulary)
 
     const fo = new openbis.VocabularyTermFetchOptions()
-    fo.sortBy().code().asc()
+    fo.sortBy().ordinal().asc()
     fo.from(0).count(10)
 
     return openbis

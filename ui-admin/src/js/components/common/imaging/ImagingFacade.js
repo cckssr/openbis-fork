@@ -36,7 +36,7 @@ export default class ImagingFacade {
         criteria.withVocabulary().withCode().thatContains(code);
 
         const fo = new this.openbis.VocabularyTermFetchOptions();
-        fo.sortBy().code().asc();
+        fo.sortBy().ordinal().asc();
 
         const result = await this.openbis.searchVocabularyTerms(criteria, fo);
 
