@@ -92,12 +92,37 @@ public abstract class AbstractXLSEntityExportHelper<ENTITY extends IPermIdHolder
                         .toArray(Attribute[]::new);
                 final Attribute[] attributes = compatibleWithImport ? importableAttributes : defaultPossibleAttributes;
 
-                final String[] fieldHeaders = Stream.concat(
-                        Arrays.stream(attributes).map(Attribute::getName),
-                        propertyTypes.stream().map(PropertyType::getLabel)
-                ).toArray(String[]::new);
+                if(compatibleWithImport)
+                {
+                    List<String> fieldHeadersList =
+                            new ArrayList<>(
+                                    Arrays.stream(attributes).map(Attribute::getName).toList());
 
-                addRow(rowNumber++, true, typeExportableKind, typePermId, warnings, valueFiles, fieldHeaders);
+                    Set<String> headersSet = new HashSet<>(fieldHeadersList);
+                    for (PropertyType propertyType : propertyTypes)
+                    {
+                        String label = propertyType.getLabel();
+                        if (headersSet.contains(label))
+                        {
+                            fieldHeadersList.add(propertyType.getCode());
+                        } else
+                        {
+                            fieldHeadersList.add(label);
+                        }
+                        headersSet.add(label);
+                    }
+                    final String[] fieldHeaders = fieldHeadersList.toArray(String[]::new);
+
+                    addRow(rowNumber++, true, typeExportableKind, typePermId, warnings, valueFiles,
+                            fieldHeaders);
+                } else {
+                    final String[] fieldHeaders = Stream.concat(
+                            Arrays.stream(attributes).map(Attribute::getName),
+                            propertyTypes.stream().map(PropertyType::getLabel)
+                    ).toArray(String[]::new);
+                    addRow(rowNumber++, true, typeExportableKind, typePermId, warnings, valueFiles,
+                            fieldHeaders);
+                }
 
                 // Values
                 for (final ENTITY entity : entry.getValue())
@@ -137,11 +162,31 @@ public abstract class AbstractXLSEntityExportHelper<ENTITY extends IPermIdHolder
                                 }
                                 case PROPERTY:
                                 {
-                                    return propertyTypes.stream()
-                                            .filter(propertyType -> Objects.equals(propertyType.getCode(), fieldId))
-                                            .findFirst()
-                                            .stream()
-                                            .map(PropertyType::getLabel);
+                                    if(compatibleWithImport)
+                                    {
+                                        final PropertyType pt = propertyTypes.stream()
+                                                .filter(propertyType -> Objects.equals(
+                                                        propertyType.getCode(), fieldId))
+                                                .findFirst().get();
+                                        final boolean isSingle = propertyTypes.stream()
+                                                .filter(propertyType -> propertyType.getLabel()
+                                                        .equals(pt.getLabel()))
+                                                .count() == 1;
+                                        return propertyTypes.stream()
+                                                .filter(propertyType -> Objects.equals(
+                                                        propertyType.getCode(), fieldId))
+                                                .findFirst()
+                                                .stream()
+                                                .map(propertyType -> isSingle ?
+                                                        propertyType.getLabel() :
+                                                        propertyType.getCode());
+                                    } else {
+                                        return propertyTypes.stream()
+                                                .filter(propertyType -> Objects.equals(propertyType.getCode(), fieldId))
+                                                .findFirst()
+                                                .stream()
+                                                .map(PropertyType::getLabel);
+                                    }
                                 }
                                 default:
                                 {
