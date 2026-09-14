@@ -1,4 +1,5 @@
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore::urllib3.exceptions.InsecureRequestWarning",
+    "ignore::SyntaxWarning:.*test_.*:"
 ]

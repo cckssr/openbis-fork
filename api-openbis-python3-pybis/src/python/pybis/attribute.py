@@ -591,7 +591,8 @@ class AttrHolder:
                 )
 
         if name in ["parents", "children", "components"]:
-
+            if value is None:
+                return
             if not isinstance(value, list):
                 value = [value]
             objs = []

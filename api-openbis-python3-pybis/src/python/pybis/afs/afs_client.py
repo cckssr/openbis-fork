@@ -14,6 +14,7 @@
 #
 import os
 import json
+import time
 
 from queue import Queue, Empty
 import threading
@@ -23,12 +24,13 @@ import requests
 from requests.adapters import HTTPAdapter, Retry
 from pathlib import Path
 
+from pybis.utils import log_debug
 from .chunk import encode_chunks_as_bytes
 from .chunk import decode_chunks
 
 REQUEST_RETRIES_COUNT = 5
-CONNECT_TIMEOUT=5
-READ_TIMEOUT=10
+CONNECT_TIMEOUT=120
+READ_TIMEOUT=300
 DEFAULT_CHUNK_LIMIT = 1024 * 1024 * 10  # 10MB
 
 FILE_ARRAY_SEPARATOR = '\n'
@@ -43,7 +45,7 @@ class TimeoutAdapter(HTTPAdapter):
         self.connect_timeout = connect_timeout
 
     def send(self, *args, **kwargs):
-        kwargs['timeout'] = (self.read_timeout, self.connect_timeout)
+        kwargs['timeout'] = (self.connect_timeout, self.read_timeout)
         return super().send(*args, **kwargs)
 
 def _create_session(url, connect_timeout=CONNECT_TIMEOUT, read_timeout=READ_TIMEOUT):
@@ -392,6 +394,8 @@ class AfsClient:
             return content
 
     def upload_files(self, owner, source_path, files, wait_until_finished=True):
+        if isinstance(files, str):
+            files = [files]
         file_list = self.list(owner, "/", True)
         existing_files = set()
         for file in file_list:
@@ -497,6 +501,7 @@ class AfsFileUploadQueue:
         # ensure clean shutdown
         for t in self.threads:
             t.join()
+        self.session.close()
 
     def put(self, item):
         """expects a list [afs_path, local_file_path] which is put into the upload queue"""
@@ -557,6 +562,8 @@ class AfsFileUploadQueue:
                         # "transactionManagerKey": None,
                         "method": "write",
                     }
+                    start = time.perf_counter()
+                    start_total = start
                     with open(file_path, "rb") as f:
                         for i in range(0, file_size, self.max_chunk_size):
                             range_to_get = file_size - i if i + self.max_chunk_size > file_size else self.max_chunk_size
@@ -568,7 +575,6 @@ class AfsFileUploadQueue:
                                 "limit": range_to_get,
                                 "data": data
                             }]
-
                             chunks_encoded = encode_chunks_as_bytes(chunks)
 
                             with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as response:
@@ -580,6 +586,11 @@ class AfsFileUploadQueue:
                                                     f"Error {message['error'][1]['exceptionCode']} during upload: {message['error'][1]['message']}"
                                                 )
                                 response.raise_for_status()
+                            end = time.perf_counter()
+                            elapsed = end - start
+                            start = end
+                            log_debug(f'{i + range_to_get} / {file_size} [elapsed: {elapsed:6.2f}s] [progress: {((i+range_to_get)/file_size)*100:6.2f}% ]')
+                        log_debug(f'Total time: {(end-start_total):6.2f}s')
 
             except BaseException as e:
                 # make sure only the *first* failing worker drains the queue
@@ -640,6 +651,7 @@ class AfsFileDownloadQueue:
         # ensure clean shutdown
         for t in self.threads:
             t.join()
+        self.session.close()
 
     def put(self, item):
         """expects a tuple (file, session_token, destination) which is put into the download queue"""

@@ -1,4 +1,4 @@
-## Changes with pybis-7.0.0.0
+## Changes with pybis-7.0.0
 
 - Changed versioning scheme
 - Added Imaging technology functionalities
@@ -7,6 +7,7 @@
 - Added basic functionalities for RO-Crate server communication
 - Added handling of Type Groups
 - Refactored logging
+- Added new search capabilities
 
 ## Changes with pybis-1.37.5
 

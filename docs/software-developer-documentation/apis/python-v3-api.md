@@ -1086,10 +1086,10 @@ samples = o.get_samples(
 
 sample = samples[9]                   # get the 10th sample
                                       # of the search results
-                                      
+
 sample = samples['/SPACE/AABC']       # same, fetched by identifier
 for sample in samples:                # iterate over the search results
-   print(sample.code)                 
+   print(sample.code)
 
 
 samples.df                            # returns a Pandas DataFrame object
@@ -1098,6 +1098,7 @@ samples = o.get_samples(props="*")    # retrieve all properties of all samples
 ```
 
 Parameters that can be specified in get_samples/get_objects:
+
 ```
 Filters
 -------
@@ -1107,7 +1108,7 @@ project      -- project code or object
 experiment   -- experiment code or object (can be a list, too)
 collection   -- same as above
 tags         -- only return samples with the specified tags
-where        -- key-value pairs of property values to search for (see below for details)
+where        -- search criteria for properties and some attributes (see below for details)
 withParents  -- text string or a list of parent's ids in a column 'parents'
 withChildren -- text string or a list of children's ids in a column 'children'
 
@@ -1127,11 +1128,10 @@ attrs        -- list of all desired attributes. Examples:
 props        -- list of all desired properties. Returns an empty string if
                 a) property is not present
                 b) property is not defined for this sampleType
-
-
 ```
 
 Filtering parameters allow usage of wildcards for more general searches:
+
 ```python
 samples = o.get_samples(
     space      ='MY_*',               # search in spaces with code starts with 'MY_' prefix
@@ -1139,28 +1139,43 @@ samples = o.get_samples(
     tags       =['*'],                # with any existing tags
     withChildren=[                    # with a child with identifier that starts with '/MY_SPACE/SAMPLE' or '/DIFF/'
         '/MY_SPACE/SAMPLE*',
-        '/DIFF/*'],  
+        '/DIFF/*'],
     withParents='*',                  # with any parent
     container = '*',                  # sample lives in a container
     where = {
         "SOME.PRTY": "*ello world*"   # only receive samples where value of property 'SOME.PRTY' contains 'ello world'
     })
-
 ```
 
+##### the `where` parameter
 
-`where` parameter allows to specify a dictionary with search criteria for properties and some attributes of searched samples. 
-It allows wildcards and comparison signs in case of dates.
+`where` takes a dictionary. Each **key** names what to search on, each **value** describes the
+constraint that must hold. All entries are combined with **AND**.
+
+Keys may be:
+
+- a **property** code, e.g. `"SOME.PRTY"`
+- one of the **attributes** `registrationDate` and `modificationDate`
+- a **property of a linked object**, in the form `<relation>_<property_name>`, where `<relation>`
+  is `parent` or `child`
+
+Values may be a plain value, a comparison string, a list, a dictionary of operators, or one of the
+search helpers described further below.
+
+###### a single value
+
+The value must match exactly. `*` acts as a wildcard.
+
 ```python
 samples = o.get_samples(
     where = {
       # Attributes
       "registrationDate": "2020-01-01",  # date format: YYYY-MM-DD
       "modificationDate": "<2020-12-31", # use > or < to search for specified date and later / earlier
-      
+
       # Properties
-      "SOME.PRTY": "*ello world*",       # only receive samples where value of property 'SOME.PRTY' contains 'ello world'
-      
+      "SOME.PRTY": "*ello world*",       # value of property 'SOME.PRTY' contains 'ello world'
+
       # Properties of linked objects, format: <linked_object>_<property_name>
       "parent_name": 'parent_value',     # search in a parent's property 'name' for value 'parent_value'
       "child_some.prty": '*_value',      # search in a child's property 'some.prty' for values containing '_value' suffix
@@ -1168,6 +1183,194 @@ samples = o.get_samples(
     })
 ```
 
+A value may be prefixed with `=`, `>`, `>=`, `<` or `<=` to compare rather than match. This works
+for dates, numbers and strings.
+
+```python
+samples = o.get_samples(
+    where = {
+      "modificationDate": ">= 2021-01-01",
+      "CONCENTRATION": "> 1.5",
+    })
+```
+
+###### a list of values
+
+A list matches **any** of the given values, i.e. the entries are combined with OR. This is the
+equivalent of an `IN (...)` clause.
+
+```python
+samples = o.get_samples(
+    where = {
+      "STATUS": ['DONE', 'FAILED', 'ABORTED'],   # STATUS is DONE or FAILED or ABORTED
+      "BATCH": [1, 4, 8],                        # works for numbers too
+    })
+```
+
+Tuples and sets are accepted as well.
+
+```{warning}
+An **empty** list raises a `ValueError` rather than matching nothing. openBIS reads a search
+criteria with no sub-criteria as *no constraint at all*, so an empty list would silently return
+every sample instead of none. Handle the empty case in your own code:
+
+    samples = o.get_samples(where={"STATUS": statuses}) if statuses else []
+```
+
+###### a range
+
+To constrain the same property twice, pass a dictionary of operator to value. The entries are
+combined with AND.
+
+```python
+samples = o.get_samples(
+    where = {
+      # modified in January 2021
+      "modificationDate": {">=": "2021-01-01", "<": "2021-02-01"},
+
+      # concentration between 1.5 and 9, both included
+      "CONCENTRATION": {">=": 1.5, "<=": 9},
+    })
+```
+
+This is what a plain dictionary cannot express, because `{"modificationDate": ">= 2021-01-01",
+"modificationDate": "< 2021-02-01"}` is not a valid Python literal — the second entry silently
+replaces the first.
+
+###### search helpers
+
+For anything beyond the shapes above, import the helpers:
+
+```python
+from pybis import All, Any, Between, Contains, Eq, Ge, Gt, In, Le, Lt
+```
+
+| helper            | meaning                                            |
+|-------------------|----------------------------------------------------|
+| `Eq(v)`           | equal to `v` — the default for a plain value       |
+| `Ne(v)`           | not equal to `v`                                   |
+| `Gt(v)`, `Ge(v)`  | greater than, greater than or equal to             |
+| `Lt(v)`, `Le(v)`  | less than, less than or equal to                   |
+| `Contains(v)`     | value contains the substring `v`                   |
+| `In([...])`       | matches any of the values — same as passing a list |
+| `Between(lo, hi)` | between `lo` and `hi`, both bounds included        |
+| `Any(a, b, ...)`  | at least one of the constraints holds (OR)         |
+| `All(a, b, ...)`  | all of the constraints hold (AND)                  |
+| `Not(a)`          | the constraint `a` does not hold                   |
+
+`Between` takes an `inclusive` argument to open either end of the interval. Half-open intervals are
+usually what you want for month or year boundaries:
+
+```python
+samples = o.get_samples(
+    where = {
+      # 2021-01-01 included, 2021-02-01 excluded
+      "modificationDate": Between("2021-01-01", "2021-02-01", inclusive=(True, False)),
+    })
+```
+
+`Any` and `All` nest, so disjoint ranges are expressible:
+
+```python
+samples = o.get_samples(
+    where = {
+      "CONCENTRATION": Any(Between(0, 1), Between(10, 11)),
+    })
+```
+
+`datetime` objects are accepted wherever a date or timestamp is expected, so there is no need to
+format them by hand:
+
+```python
+import datetime
+
+samples = o.get_samples(
+    where = {
+      "HARVEST_DATE": Between(
+          datetime.datetime(2021, 1, 1, 8, 30),
+          datetime.datetime(2021, 1, 1, 17, 0),
+      ),
+    })
+```
+
+```{note}
+A bound given as a bare date, e.g. `Le("2021-01-31")`, is interpreted by openBIS at day
+granularity. If a `TIMESTAMP` property must be compared to a precise instant, give the full
+timestamp — `Le("2021-01-31 17:00:00")` — or a `datetime` object.
+```
+
+###### negation
+ 
+`Ne` excludes a single value, `Not` inverts any constraint — including a composite one:
+ 
+```python
+samples = o.get_samples(
+    where = {
+      "STATUS": Ne('ABORTED'),                    # anything but ABORTED
+    })
+ 
+samples = o.get_samples(
+    where = {
+      "CONCENTRATION": Not(Between(1.5, 9)),      # outside the interval
+      "STATUS": Not(In(['FAILED', 'ABORTED'])),   # neither of the two
+    })
+```
+ 
+`Ne(v)` is shorthand for `Not(Eq(v))`, so the two forms behave identically.
+ 
+```{note}
+Negation says nothing about samples where the property is **not set at all**. Whether those are
+returned by `Ne('ABORTED')` depends on the openBIS instance, so add an explicit constraint if it
+matters to the result.
+
+###### repeating the same key
+
+`where` also accepts a **list of `(key, value)` pairs** instead of a dictionary. Repeating a key is
+allowed there, and the constraints are combined with AND:
+
+```python
+samples = o.get_samples(
+    where = [
+      ("CONCENTRATION", Ge(1.5)),
+      ("CONCENTRATION", Lt(9)),
+    ])
+```
+
+This is equivalent to `{"CONCENTRATION": {">=": 1.5, "<": 9}}`; use whichever reads better.
+
+###### properties of linked objects
+
+All of the above works for `parent_`, `child_` and `container_` keys.
+
+```python
+samples = o.get_samples(
+    where = {
+      "parent_STRAIN": ['K12', 'BL21'],                       # a parent whose STRAIN is K12 or BL21
+      "child_HARVEST_DATE": Between("2020-06-01", "2020-06-30"),
+    })
+```
+
+```{note}
+All constraints under one `parent_<property>` key apply to **the same** parent. In the example
+above, a sample matches only if it has a single child harvested inside June — not one child
+harvested before the end of June and a different child harvested after its start. Constraints
+under *different* keys are independent, so `{"parent_STRAIN": "K12", "parent_STATUS": "DONE"}` may
+be satisfied by two different parents.
+```
+
+###### precedence over `**properties`
+
+Properties whose code cannot be written as a Python identifier are passed as keyword arguments
+instead. When a key is given both in a `where` **dictionary** and as a keyword argument, the
+keyword argument wins:
+
+```python
+# searches for STATUS == 'ABORTED'
+samples = o.get_samples(where={"STATUS": "DONE"}, STATUS="ABORTED")
+```
+
+When `where` is given as a **list of pairs**, a key present in both raises a `ValueError`, because
+there is no way to tell an override from an additional constraint. Use one form or the other.
 
 
 ***Note: Attributes download***

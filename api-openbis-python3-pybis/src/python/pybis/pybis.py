@@ -98,6 +98,7 @@ from .spreadsheet import Spreadsheet
 from .type_group import TypeGroup
 from .imaging import *
 from .afs.afs_client import AfsClient
+from .search.search_criteria import normalize_where, build_property_criteria
 
 # import the various openBIS entities
 
@@ -2463,17 +2464,9 @@ class Openbis:
         if withChildren:
             sub_criteria.append(_subcriteria_for(withChildren, "sample", "Children"))
 
-        if where:
-            if properties is None:
-                properties = where
-            else:
-                properties = {**where, **properties}
+        for prop, value in normalize_where(where, properties):
+            sub_criteria += build_property_criteria(prop, value, entity="sample")
 
-        if properties is not None:
-            for prop in properties:
-                sub_criteria.append(
-                    _subcriteria_for_properties(prop, properties[prop], entity="sample")
-                )
         if type:
             sub_criteria.append(_subcriteria_for_code(type, "sampleType"))
         if tags:
@@ -2652,22 +2645,8 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if is_finished is not None:
             sub_criteria.append(_subcriteria_for_is_finished(is_finished))
-        if where:
-            if properties is None:
-                properties = where
-            else:
-                properties = {**where, **properties}
-        if properties is not None:
-            sub_criteria.extend(
-                list(
-                    map(
-                        lambda prop: _subcriteria_for_properties(
-                            prop, properties[prop], entity="experiment"
-                        ),
-                        properties,
-                    )
-                )
-            )
+        for prop, value in normalize_where(where, properties):
+            sub_criteria.append(build_property_criteria(prop, value, entity="experiment"))
 
         search_criteria = get_search_type_for_entity("experiment")
         search_criteria["criteria"] = sub_criteria
@@ -2890,23 +2869,8 @@ class Openbis:
         if status:
             sub_criteria.append(_subcriteria_for_status(status))
 
-        if where:
-            if properties is None:
-                properties = where
-            else:
-                properties = {**where, **properties}
-
-        if properties is not None:
-            sub_criteria.extend(
-                list(
-                    map(
-                        lambda prop: _subcriteria_for_properties(
-                            prop, properties[prop], entity="dataset"
-                        ),
-                        properties,
-                    )
-                )
-            )
+        for prop, value in normalize_where(where, properties):
+            sub_criteria.append(build_property_criteria(prop, value, entity="dataset"))
 
         search_criteria = get_search_type_for_entity("dataset")
         search_criteria["criteria"] = sub_criteria
