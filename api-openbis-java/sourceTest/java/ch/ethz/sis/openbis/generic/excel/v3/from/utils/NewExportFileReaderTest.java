@@ -14,4 +14,25 @@ public class NewExportFileReaderTest
         assertEquals(objectCode, "ENTRY1");
     }
 
+    @Test
+    public void testSpaceSampleIdentifier()
+    {
+        String result = NewExportFileReader.getIdentifierFromParts(new String[] { "hierarchy", "SPACE", "SAMPLE", "data", "test.zip" });
+        assertEquals(result, "/SPACE/SAMPLE");
+    }
+
+    @Test
+    public void testProjectSampleIdentifier()
+    {
+        String result = NewExportFileReader.getIdentifierFromParts(new String[] { "hierarchy", "SPACE", "PROJECT", "SAMPLE", "data", "test.zip" });
+        assertEquals(result, "/SPACE/PROJECT/SAMPLE");
+    }
+
+    @Test
+    public void testExperimentSampleIdentifier()
+    {
+        String result = NewExportFileReader.getIdentifierFromParts(new String[] { "hierarchy", "SPACE", "PROJECT", "EXP", "SAMPLE", "data", "test.zip" });
+        assertEquals(result, "/SPACE/PROJECT/SAMPLE");
+    }
+
 }

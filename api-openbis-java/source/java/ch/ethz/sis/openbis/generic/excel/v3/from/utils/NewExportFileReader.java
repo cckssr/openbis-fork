@@ -21,18 +21,8 @@ public class NewExportFileReader
         String[] parts = zipEntry.getName().split("/");
         String fileName = parts[parts.length - 1];
 
-        List<String> identifierParts = new ArrayList<>();
-        for (int i = 1; i < parts.length - 2; i++)
-        {
-            identifierParts.add(getObjectCode(parts[i]));
+       String identifier = getIdentifierFromParts(parts);
 
-        }
-        if (identifierParts.size() == 4)
-        {
-            identifierParts.remove(2); // These would be the collection code
-        }
-
-        String identifier = "/" + identifierParts.stream().collect(Collectors.joining("/"));
         byte[] content = fileMode != ExcelReader.FileMode.DUMMY ?
                 zipInputStream.readAllBytes() :
                 new byte[] { 0x00 };
@@ -41,6 +31,24 @@ public class NewExportFileReader
         return new OpenBisModel.FileInfoContents(identifier, fileIdentifier, content,
                 zipEntry.getName());
 
+    }
+
+    static String getIdentifierFromParts(String[] parts) {
+        List<String> identifierParts = new ArrayList<>();
+        for (int i = 1; i < parts.length - 2; i++)
+        {
+            if(parts[i].equals("data")) {
+                break;
+            }
+            identifierParts.add(getObjectCode(parts[i]));
+
+        }
+        if (identifierParts.size() == 4)
+        {
+            identifierParts.remove(2); // These would be the collection code
+        }
+        String identifier = "/" + identifierParts.stream().collect(Collectors.joining("/"));
+        return identifier;
     }
 
     static String makeFileIdentifierRoCrateCompatible(String a)
