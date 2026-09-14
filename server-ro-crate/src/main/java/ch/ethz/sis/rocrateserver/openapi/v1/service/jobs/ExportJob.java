@@ -339,6 +339,7 @@ public final class ExportJob implements IAsyncJob
                     if (exportParams.getExportMimeType().equalsIgnoreCase(RoCrateService.APPLICATION_LD_JSON))
                     {
                         this.result = roCrateJsonPath;
+                        deleteDownloadedFile(downloadPath);
                     } else if (exportParams.getExportMimeType().equalsIgnoreCase(RoCrateService.APPLICATION_ZIP))
                     {
                         byte[] buffer = new byte[8192];
@@ -392,6 +393,7 @@ public final class ExportJob implements IAsyncJob
                                 // add the new file (this will be compressed normally)
                                 addFileToZip(zos, roCrateFile, buffer);
                             }
+                            deleteDownloadedFile(downloadPath);
                         }
                         LOG.info(String.format("Export successful for export job: %s", jobId.toString()));
                         this.result = resultZipPath;
@@ -435,6 +437,19 @@ public final class ExportJob implements IAsyncJob
             throw e;
         }
 
+    }
+
+    private void deleteDownloadedFile(Path downloadPath) {
+        try {
+            File downloadedFile = downloadPath.toFile();
+            downloadedFile.delete();
+            if(!downloadedFile.exists() && pathsForDeletion.contains(downloadPath)) {
+                pathsForDeletion.remove(downloadPath);
+            }
+        } catch (Exception e)
+        {
+            LOG.error(String.format("Removal of file failed: %s due to: %s", downloadPath, e));
+        }
     }
 
     private MailClient createMailClient() {
