@@ -19,12 +19,14 @@ import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
@@ -78,14 +80,14 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTest
         creation.setOfficial(termOfficial);
 
         assertExceptionMessage(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    List<VocabularyTermPermId> ids = v3api.createVocabularyTerms(sessionToken, Arrays.asList(creation));
-                    assertEquals(ids.size(), 1);
-                }
-            }, expectedError);
+                List<VocabularyTermPermId> ids = v3api.createVocabularyTerms(sessionToken, Arrays.asList(creation));
+                assertEquals(ids.size(), 1);
+            }
+        }, expectedError);
     }
 
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*Vocabulary term vocabulary id cannot be null.*")
@@ -159,13 +161,13 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTest
         newTermCreation.setVocabularyId(new VocabularyPermId(vocabularyCode));
 
         assertExceptionMessage(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    v3api.createVocabularyTerms(newTermRegistratorSessionToken, Arrays.asList(existingTermCreation));
-                }
-            }, expectedError);
+                v3api.createVocabularyTerms(newTermRegistratorSessionToken, Arrays.asList(existingTermCreation));
+            }
+        }, expectedError);
     }
 
     @Test
@@ -216,7 +218,6 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTest
         }, "Internal vocabulary terms can be part of internal vocabularies only.");
 
     }
-
 
     @Test
     public void testCreateInternalTerms_asSystemUser()
@@ -323,6 +324,43 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTest
 
         List<VocabularyTerm> termsAfter = listTerms(creation1.getVocabularyId());
         assertTerms(termsAfter, "RAT", "DOG", "HUMAN", "NEW1", "GORILLA", "NEW2", "NEW3", "FLY", "NEW4");
+    }
+
+    @Test
+    public void testCreateMultipleTermsWithoutOrdinal()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("TEST_VOCABULARY_" + UUID.randomUUID());
+
+        v3api.createVocabularies(sessionToken, List.of(vocabularyCreation));
+
+        VocabularyTermCreation creation1 = new VocabularyTermCreation();
+        creation1.setVocabularyId(new VocabularyPermId(vocabularyCreation.getCode()));
+        creation1.setCode("TERM_1_" + UUID.randomUUID());
+
+        VocabularyTermCreation creation2 = new VocabularyTermCreation();
+        creation2.setVocabularyId(new VocabularyPermId(vocabularyCreation.getCode()));
+        creation2.setCode("TERM_2_" + UUID.randomUUID());
+
+        VocabularyTermCreation creation3 = new VocabularyTermCreation();
+        creation3.setVocabularyId(new VocabularyPermId(vocabularyCreation.getCode()));
+        creation3.setCode("TERM_3_" + UUID.randomUUID());
+
+        v3api.createVocabularyTerms(sessionToken, List.of(creation1, creation2, creation3));
+
+        List<VocabularyTerm> terms = listTerms(creation1.getVocabularyId());
+
+        assertEquals(terms.size(), 3);
+
+        assertEquals(terms.get(0).getCode(), creation1.getCode().toUpperCase());
+        assertEquals(terms.get(1).getCode(), creation2.getCode().toUpperCase());
+        assertEquals(terms.get(2).getCode(), creation3.getCode().toUpperCase());
+
+        assertEquals((long) terms.get(0).getOrdinal(), 1);
+        assertEquals((long) terms.get(1).getOrdinal(), 2);
+        assertEquals((long) terms.get(2).getOrdinal(), 3);
     }
 
     @Test

@@ -284,8 +284,9 @@ public class CreateVocabularyTermExecutor implements ICreateVocabularyTermExecut
                 return previousTerm.getOrdinal();
             }
         } else
-
         {
+            Session session = daoFactory.getSessionFactory().getCurrentSession();
+            session.flush();
             return null;
         }
     }
