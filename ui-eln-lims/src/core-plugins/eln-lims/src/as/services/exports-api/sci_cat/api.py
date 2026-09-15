@@ -205,7 +205,7 @@ def exportSciCat_withEmail(context, params, date):
     print("Received publication properties:", publicationProps)
     OPERATION_LOG.info("Received publication properties:" + str(publicationProps))
 
-    publicationPermIds = []
+    publicationPermIds = dict()
     for group in group_params:
         groupPrefix = ""
         if not group == "GENERAL":
@@ -219,13 +219,15 @@ def exportSciCat_withEmail(context, params, date):
 
         publicationPermId = publicationResult["result"]
         OPERATION_LOG.info("PUBLICATION_PERMID: %s" % publicationPermId)
-        publicationPermIds.append(publicationPermId)
+        publicationPermIds[group] = publicationPermId
 
     exportData = params.get("exportData")
     nodeExportList = exportData['nodeExportList']
-    # nodeExportList.append({'kind': "SAMPLE", 'permId': publicationPermId})
-    for pubId in publicationPermIds:
-        nodeExportList.append({'kind': "SAMPLE", 'permId': pubId})
+
+    OPERATION_LOG.info("Publication objects created: %s" % str(publicationPermIds))
+
+    for group in publicationPermIds.keys():
+        nodeExportList.append({'kind': "SAMPLE", 'permId': publicationPermIds[group]})
 
     for creatorId in publicationProps['PUBLICATION.CREATOR']:
         nodeExportList.append({'kind': "SAMPLE", 'permId': creatorId})
@@ -273,16 +275,22 @@ def exportSciCat_withEmail(context, params, date):
         links = ""
         for key in body.keys():
             value = str(body[key])
-            # if key.startswith("/"):
-            #     publishedDatasetLink = sciCatDetailUrl + URLEncoder.encode(value, "UTF-8")
-            #     links += "\t" + key + " -> " + publishedDatasetLink + "\n"
-            #     publicationPrefix = '/' + groupPrefix + 'PUBLICATIONS/' + groupPrefix + 'PUBLIC_REPOSITORIES/'
-            #     if key.startswith(publicationPrefix):
-            #         OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermId))
-            #         updateDOI(sessionToken, v3, publicationPermId, value, publishedDatasetLink)
-            # else:
-            #     links += "\t" + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
-            links += "\t" + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
+            if key.startswith("/"):
+                pass
+                publishedDatasetLink = sciCatDetailUrl + URLEncoder.encode(value, "UTF-8")
+                links += "\t" + key + " -> " + publishedDatasetLink + "\n"
+                if key.startswith('/PUBLICATIONS/PUBLIC_REPOSITORIES'):
+                    OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermIds["GENERAL"]))
+                    updateDOI(sessionToken, v3, publicationPermIds["GENERAL"], value, publishedDatasetLink)
+                else:
+                    space_prefix = key.split("_")[0][1:]
+                    publicationPermId = publicationPermIds[space_prefix]
+                    publicationPrefix = '/' + space_prefix + '_PUBLICATIONS/' + space_prefix + '_PUBLIC_REPOSITORIES/'
+                    if key.startswith(publicationPrefix):
+                        OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermId))
+                        updateDOI(sessionToken, v3, publicationPermId, value, publishedDatasetLink)
+            else:
+                links += "\t" + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
         sendMail(mailClient, userEmail, links, "Your export has been received by SciCat:\n")
     elif status == 202:
 
@@ -535,10 +543,10 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
             body = json.loads(response.body())
             if 'message' in body:
                 error_message = body['message']
-            else:
+            elif 'errors' in body:
                 error_message = body['errors'][0]['message']
-                # error_message = body['errors']
-            print(error_message)
+            else:
+                error_message = str(body)
         return {
             "error": error_message
         }
