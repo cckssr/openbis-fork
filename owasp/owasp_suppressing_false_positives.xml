@@ -78,16 +78,6 @@
 		<packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-hibernate\-validator\-spi@.*$</packageUrl>
 		<cve>CVE-2023-1932</cve>
 	</suppress>
-	<!-- [2026-09-01] sqlite-jdbc 3.53.1.0 embeds SQLite before 3.53.2
-	     (CVE-2026-11822 / CVE-2026-11824 in FTS5). The patched
-	     org.xerial:sqlite-jdbc:3.53.2.0 is not present in openbis-ivy yet, and
-	     the current code has no FTS5 MATCH queries. Add 3.53.2.0 to the mirror,
-	     bump the catalog, and remove this suppression. -->
-	<suppress until="2026-09-01Z">
-		<packageUrl>pkg:maven/org.xerial/sqlite-jdbc@3.53.1.0</packageUrl>
-		<cve>CVE-2026-11822</cve>
-		<cve>CVE-2026-11824</cve>
-	</suppress>
 	<!-- [2026-09-01] CVE-2026-33929 affects the Apache PDFBox
 	     ExtractEmbeddedFiles example. The configured openbis-ivy mirror does not
 	     carry PDFBox 2.0.37 yet, the repo has no ExtractEmbeddedFiles copy/usage,
@@ -96,6 +86,37 @@
 	<suppress until="2026-09-01Z">
 		<packageUrl regex="true">^pkg:maven/org\.apache\.pdfbox/(pdfbox|xmpbox)@2\.0\.36$</packageUrl>
 		<cve>CVE-2026-33929</cve>
+	</suppress>
+	<!-- [2026-10-15] NOT a false positive - an accepted-risk hold, re-checked
+	     every 30 days rather than the usual tiers. spring-framework 6.2.19 is
+	     the current catalog version (org-springframework-spring, a direct
+	     dependency across most server modules) and is genuinely in the
+	     affected range for this CVE batch, several of them CVSS 9.8 CRITICAL
+	     (unauthenticated RCE/SSRF via XsltView, MVC/WebFlux SSE stream
+	     corruption, WebFlux functional-endpoint DispatcherServlet issue).
+	     Confirmed via spring.io/security/cve-2026-47884/ and
+	     https://spring.io/blog/2026/06/08/spring-framework-7-0-8-and-6-2-19-available-now/
+	     that the 5.2.x/5.3.x/6.0.x/6.1.x/6.2.x lines are EOL for free/OSS
+	     patches - the only fix is Spring Framework 7.0.9+ (major upgrade:
+	     Jakarta EE 11 / Java 17+ baseline) or commercial support, neither of
+	     which is being done as part of this pass. Re-check in 30 days for a
+	     6.2.20 backport (unlikely given EOL status), a decision to take the
+	     7.x upgrade, or a commercial-support arrangement. -->
+	<suppress until="2026-10-15Z">
+		<notes><![CDATA[ spring-framework 6.2.19 EOL for the affected CVE batch - accepted risk pending 7.x major upgrade or commercial support; not a false positive, 30-day forced re-review ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@6\.2\.19$</packageUrl>
+		<cve>CVE-2026-47884</cve>
+		<cve>CVE-2026-47885</cve>
+		<cve>CVE-2026-47886</cve>
+		<cve>CVE-2026-47888</cve>
+		<cve>CVE-2026-47889</cve>
+		<cve>CVE-2026-47890</cve>
+		<cve>CVE-2026-47891</cve>
+		<cve>CVE-2026-47892</cve>
+		<cve>CVE-2026-47893</cve>
+		<cve>CVE-2026-59282</cve>
+		<cve>CVE-2026-59283</cve>
+		<cve>CVE-2026-59313</cve>
 	</suppress>
 	<!-- [2027-06-01] CVE-2026-6860 is a Vert.x TLS hostname/SNI issue. The
 	     reported vertx-uri-template 4.5.26 jar contains only URI template code,
@@ -184,20 +205,6 @@
 		<cve>CVE-2021-42392</cve>
 		<cve>CVE-2022-23221</cve>
 		<cve>CVE-2022-45868</cve>
-	</suppress>
-	<!-- [2026-09-01] libthrift 0.22.0 is transitive via the RO-Crate / RDF stack
-	     (jena-arq 5.6.0 -> lib-ro-crate -> server-ro-crate). The Java-relevant
-	     fixes ship in Apache Thrift 0.23.0, but the build resolves only from the
-	     curated openbis-ivy mirror (mavenCentral is disabled) and that mirror
-	     currently carries only 0.19.0 / 0.22.0. Most of these CVEs are in the
-	     c_glib (C) and Go bindings and match the Java jar only through the shared
-	     cpe:apache:thrift. Suppress until 2026-09-01, by which point 0.23.0 should
-	     be added to the mirror and force-pinned in build/common-resolutions.gradle;
-	     if it lapses the findings re-surface so we revisit. -->
-	<suppress until="2026-09-01Z">
-		<notes><![CDATA[ libthrift 0.22.0 -- pending 0.23.0 in openbis-ivy mirror; mostly c_glib/Go CPE over-matches ]]></notes>
-		<packageUrl regex="true">^pkg:maven/org\.apache\.thrift/libthrift@0\.22\.0$</packageUrl>
-		<vulnerabilityName regex="true">.*</vulnerabilityName>
 	</suppress>
 	<!-- [2027-06-01] CVE-2025-7962 is a Jakarta Mail SMTP-injection issue (CR/LF in
 	     message headers). OWASP's CPE matcher wrongly pins it to
