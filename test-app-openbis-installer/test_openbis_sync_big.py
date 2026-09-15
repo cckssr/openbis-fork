@@ -51,8 +51,20 @@ ssl.wrap_socket = sslwrap(ssl.wrap_socket)
 ALL_TECHNOLOGIES = ['eln-lims', 'illumina-ngs', 'eln-lims-types-templates']
 DATA_SOURCE_AS_PORT = '9000'
 DATA_SOURCE_DSS_PORT = '9001'
+DATA_SOURCE_AFS_PORT = '9004'
+DATA_SOURCE_JETTY_STOP_PORT = '9006'
+# public.data_stores.uuid for the 'DSS1' row in openbis_test_openbis_sync_big_data_source.sql -
+# also the directory name the data_source store fixture (templates/test_openbis_sync_big/stores/
+# data_source/1/<uuid>/...) is copied under by OpenbisController._setUpStore().
+DATA_SOURCE_STORAGE_UUID = '5CAACD17-1024-4446-87B8-9202D483B5EB'
 HARVESTER_AS_PORT = '9002'
 HARVESTER_DSS_PORT = '9003'
+HARVESTER_AFS_PORT = '9005'
+HARVESTER_JETTY_STOP_PORT = '9007'
+# public.data_stores.uuid for the 'DSS1' row in openbis_test_openbis_sync_big_harvester.sql.
+# There is no pre-populated store fixture for harvester, but datasets synced in during the test
+# still need to land under the UUID the harvester's own DSS is registered with.
+HARVESTER_STORAGE_UUID = '7F69D222-BB69-48F0-A014-DB17D031C463'
 TYPE_PREFIX = 'DS1_'
 
 
@@ -60,17 +72,40 @@ class TestCase(systemtest.testcase.TestCase):
 
     def execute(self):
         openbis_data_source = self._setupOpenbisDataSource()
+        self._openbis_data_source = openbis_data_source
         openbis_data_source.allUp()
+        self._afsUp(openbis_data_source)
         self._normalize_legacy_resolution_property_type(openbis_data_source)
         self._drop_test_examples(openbis_data_source)
         self._freeze_some_entities(openbis_data_source)
 
         openbis_harvester = self._setupOpenbisHarvester()
+        self._openbis_harvester = openbis_harvester
         openbis_harvester.allUp()
+        self._afsUp(openbis_harvester)
 
         self._waitUntilSyncIsFinished(openbis_harvester)
-        
+
         self._checkData(openbis_data_source, openbis_harvester)
+
+    def releaseResources(self):
+        # The AFS server isn't part of OpenbisController.allUp()/allDown() (as-service.sh /
+        # dss-service.sh only), so it needs its own explicit shutdown here; otherwise it is
+        # left running as an orphan process after the test finishes.
+        for openbis in (getattr(self, '_openbis_data_source', None), getattr(self, '_openbis_harvester', None)):
+            if openbis is not None:
+                self._afsDown(openbis)
+        super(type(self), self).releaseResources()
+
+    def _afsUp(self, openbis):
+        """ Starts up the AFS server paired with the given openBIS instance. """
+        util.executeCommand(["%s/bin/afs-service.sh" % openbis.installPath, "start"],
+                            "Starting up AFS server '%s' failed." % openbis.instanceName)
+
+    def _afsDown(self, openbis):
+        """ Stops the AFS server paired with the given openBIS instance. """
+        util.executeCommand(["%s/bin/afs-service.sh" % openbis.installPath, "stop"],
+                            "Shutting down AFS server '%s' failed." % openbis.instanceName)
 
     def executeInDevMode(self):
         openbis_data_source = self.createOpenbisController('data_source', port=DATA_SOURCE_AS_PORT, dropDatabases=False)
@@ -456,12 +491,14 @@ class TestCase(systemtest.testcase.TestCase):
     def _setupOpenbisDataSource(self):
         self.installOpenbis(instanceName='data_source', technologies=ALL_TECHNOLOGIES)
         openbis_data_source = self.createOpenbisController('data_source', port=DATA_SOURCE_AS_PORT)
+        self._setUpJettyStopPort(openbis_data_source, DATA_SOURCE_JETTY_STOP_PORT)
         openbis_data_source.setDataStoreServerPort(DATA_SOURCE_DSS_PORT)
         openbis_data_source.setOpenbisPortDataStoreServer(DATA_SOURCE_AS_PORT)
         openbis_data_source.enableProjectSamples()
         openbis_data_source.setDummyAuthentication()
         openbis_data_source.setDataStoreServerProperty("host-address", "https://localhost")
         self._applyOpenbisInstanceTemplate(openbis_data_source, 'data_source')
+        self._setUpAfsServer(openbis_data_source, DATA_SOURCE_AFS_PORT, DATA_SOURCE_STORAGE_UUID)
         openbis_data_source.asProperties['max-number-of-sessions-per-user'] = '0'
         openbis_data_source.dssProperties['database.kind'] = openbis_data_source.databaseKind
         openbis_data_source.createTestDatabase('openbis')
@@ -474,12 +511,19 @@ class TestCase(systemtest.testcase.TestCase):
     def _setupOpenbisHarvester(self):
         self.installOpenbis(instanceName='harvester', technologies=ALL_TECHNOLOGIES)
         openbis_harvester = self.createOpenbisController('harvester', port=HARVESTER_AS_PORT)
+        self._setUpJettyStopPort(openbis_harvester, HARVESTER_JETTY_STOP_PORT)
         openbis_harvester.setDataStoreServerPort(HARVESTER_DSS_PORT)
         openbis_harvester.setOpenbisPortDataStoreServer(HARVESTER_AS_PORT)
         openbis_harvester.enableProjectSamples()
         openbis_harvester.setDummyAuthentication()
         openbis_harvester.setDataStoreServerProperty("host-address", "https://localhost")
         self._applyOpenbisInstanceTemplate(openbis_harvester, 'harvester')
+        afsUrl = self._setUpAfsServer(openbis_harvester, HARVESTER_AFS_PORT, HARVESTER_STORAGE_UUID)
+        # The harvester's own DSS also loads the openbis-sync plugin (enableCorePlugin below), so
+        # it needs afs-local-url too: without it, DataSourceRequestHandler would fall back to
+        # afs-url, which is fine here since both point at the same localhost port, but leaving it
+        # unset would be silently relying on that coincidence instead of stating it explicitly.
+        openbis_harvester.setDataStoreServerProperty("afs-local-url", afsUrl)
         openbis_harvester.asProperties['max-number-of-sessions-per-user'] = '0'
         openbis_harvester.asProperties['code-plugins.allowed-editing-users'] = '.*'
         openbis_harvester.dssProperties['database.kind'] = openbis_harvester.databaseKind
@@ -488,6 +532,65 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_harvester.enableCorePlugin("openbis-sync")
         util.copyFromTo(self.getTemplatesFolder(), openbis_harvester.installPath, "harvester-config.txt")
         return openbis_harvester
+
+    def _setUpJettyStopPort(self, openbis, port):
+        """
+        server-application-server/dist/server/install.sh hardcodes JETTY_STOP_PORT=8079 for
+        every AS it installs, with no way to parametrize it through the installer's own inputs.
+        Running data_source and harvester side by side on one host means the second AS to start
+        fails to bind Jetty's ShutdownMonitor on 8079 ("Address already in use"). Harmless
+        functionally - shutdown.sh falls back to kill -KILL when it can't reach the stop port -
+        but it means that instance never gets a graceful stop. Give each instance its own port.
+        """
+        jettyPropertiesFile = "%s/servers/openBIS-server/jetty/etc/jetty.properties" % openbis.installPath
+        jettyProperties = util.readProperties(jettyPropertiesFile)
+        jettyProperties['JETTY_STOP_PORT'] = port
+        util.writeProperties(jettyPropertiesFile, jettyProperties)
+
+    def _setUpAfsServer(self, openbis, port, storageUuid):
+        """
+        Points this instance's AFS server at its own port and wires the DSS's openbis-sync
+        plugin (afs-url) to it. Each test instance runs its own AFS server on localhost, so
+        data_source and harvester must not share the default port - otherwise the second one
+        to start fails to bind it and re-sync delivery of AFS-backed data fails with
+        ConnectException. Returns the resulting AFS URL.
+
+        Also repoints the AFS server's own openBISUrl at this instance's AS: the packaged
+        default (http://localhost:8888) only matches a single-instance deployment, and this
+        test moves each instance's AS to its own port via setOpenbisPortDataStoreServer(),
+        which openBISUrl was never kept in sync with - the AFS server then fails to start
+        ("Could not login to the AS server") because it's logging into nothing on 8888.
+        Must run after setOpenbisPortDataStoreServer()/_applyOpenbisInstanceTemplate() have
+        already put the real AS URL into openbis.dssProperties['server-url'].
+
+        Also switches the AFS server's own login identity (openBISUser/openBISPassword) from
+        the packaged default 'afsserver' to 'admin': this test's fixture databases (see
+        templates/test_openbis_sync_big/openbis_test_openbis_sync_big_{data_source,harvester}.sql)
+        only seed role assignments for 'admin' (instance-wide ADMIN) and 'etlserver'
+        (instance-wide ETL_SERVER) - there is no 'afsserver' person at all, so the AFS server
+        would authenticate fine (dummy-authentication-service accepts any credentials) but then
+        fail authorization with "No role assignments could be found for user 'afsserver'".
+        The password value itself is irrelevant under dummy-authentication-service.
+
+        Also sets storageUuid: the packaged default leaves it blank, but storageRoot resolves to
+        $DSS_ROOT_DIR/store (the same physical store the DSS itself uses), where files live under
+        <storageUuid>/<xx>/<yy>/<zz>/<datasetCode> - an empty/mismatched storageUuid makes every
+        lookup fail with NoSuchFileException. Must match the target instance's own
+        public.data_stores.uuid row (DATA_SOURCE_STORAGE_UUID/HARVESTER_STORAGE_UUID above),
+        since that's also what the pre-populated data_source store fixture is laid out under.
+        """
+        afsPropertiesFile = "%s/servers/afs-server/etc/service.properties" % openbis.installPath
+        afsProperties = util.readProperties(afsPropertiesFile)
+        afsUrl = "http://localhost:%s/afs-server" % port
+        afsProperties['httpServerPort'] = port
+        afsProperties['httpServerPublicUrl'] = afsUrl
+        afsProperties['openBISUrl'] = openbis.dssProperties['server-url']
+        afsProperties['openBISUser'] = 'admin'
+        afsProperties['openBISPassword'] = 'admin'
+        afsProperties['storageUuid'] = storageUuid
+        util.writeProperties(afsPropertiesFile, afsProperties)
+        openbis.setDataStoreServerProperty("afs-url", afsUrl)
+        return afsUrl
 
     def _applyOpenbisInstanceTemplate(self, openbis, templateFolder):
         util.copyFromTo("%s/%s" % (self.getTemplatesFolder(), templateFolder),
