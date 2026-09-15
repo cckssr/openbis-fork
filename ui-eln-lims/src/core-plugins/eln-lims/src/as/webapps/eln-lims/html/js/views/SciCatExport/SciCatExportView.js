@@ -160,6 +160,10 @@ function SciCatExportView(exportController, exportModel) {
 
             var propertyTypes = sampleType.propertyTypeGroups.flatMap(x => x.propertyTypes)
 
+            if(profile.isMultiGroup()) {
+                ExportUtil.paintGroupCheckboxes($container, "scicat-groups");
+            }
+
             this._paintPublicationProperties($container, propertyTypes);
 
 

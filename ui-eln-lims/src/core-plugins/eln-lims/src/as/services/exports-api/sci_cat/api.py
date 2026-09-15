@@ -111,7 +111,8 @@ def getGroups(sessionToken, v3):
     groups = [group.getCode()[:-len("_ELN_SETTINGS")] for group in settingSamples]
     return groups
 
-def createNewPublication(sessionToken, v3, properties, collectorIds, groupPrefix):
+def createNewPublication(sessionToken, v3, properties,
+                         collectorIds, groupPrefix):
     sampleCreation = SampleCreation()
     sampleCreation.setTypeId(EntityTypePermId('PUBLICATION'))
     sampleCreation.setExperimentId(ExperimentIdentifier('/' + groupPrefix + 'PUBLICATIONS/' + groupPrefix
@@ -170,41 +171,68 @@ def exportSciCat_withEmail(context, params, date):
     v3 = context.getApplicationService()
     userEmail = v3.getSessionInformation(sessionToken).getPerson().getEmail()
     mailClient = CommonServiceProvider.createEMailClient()
-    groups = getGroups(sessionToken, v3)
-    groupPrefix = ""
-    collectorIds = collectExportIds(v3, sessionToken, params.get('exportData'))
-    if len(groups) > 1:
-        print("Multi-group instance detected.")
-        OPERATION_LOG.info("Multi-group instance detected.")
-        spaceNode = filter(lambda x: x.exportableKind == ExportableKind.SPACE, collectorIds.getPermIds())[0]
-        for group in groups:
-            if spaceNode.getPermId().startswith(group + "_"):
-                groupPrefix = group + "_"
-                print("Detected entities from group: '%s'" % group)
-                OPERATION_LOG.info("Detected entities from group: '%s'" % group)
-                break
-        print("Group detected: ", groupPrefix)
-        OPERATION_LOG.info("Group detected: " + str(groupPrefix))
+
+    group_params = params.get('exportData')['groups']
+
+    if len(group_params) > 0:
+        print("Groups detected: ", str(group_params))
+        OPERATION_LOG.info("Groups detected: %s" % str(group_params))
     else:
-        print("Single group instance detected.")
-        OPERATION_LOG.info("Single group instance detected.")
+        print("No group detected.")
+        OPERATION_LOG.info("No group detected.")
+
+    collectorIds = collectExportIds(v3, sessionToken, params.get('exportData'))
+
+    # groups = getGroups(sessionToken, v3)
+    # groupPrefix = ""
+    # if len(groups) > 1:
+    #     print("Multi-group instance detected.")
+    #     OPERATION_LOG.info("Multi-group instance detected.")
+    #     spaceNode = filter(lambda x: x.exportableKind == ExportableKind.SPACE, collectorIds.getPermIds())[0]
+    #     for group in groups:
+    #         if spaceNode.getPermId().startswith(group + "_"):
+    #             groupPrefix = group + "_"
+    #             print("Detected entities from group: '%s'" % group)
+    #             OPERATION_LOG.info("Detected entities from group: '%s'" % group)
+    #             break
+    #     print("Group detected: ", groupPrefix)
+    #     OPERATION_LOG.info("Group detected: " + str(groupPrefix))
+    # else:
+    #     print("Single group instance detected.")
+    #     OPERATION_LOG.info("Single group instance detected.")
 
     publicationProps = params.get('exportData')["publicationProps"]
     print("Received publication properties:", publicationProps)
     OPERATION_LOG.info("Received publication properties:" + str(publicationProps))
-    publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds, groupPrefix)
-    OPERATION_LOG.info("Publication creation result: " + str(publicationResult))
-    if publicationResult["error"] is not None:
-        errorStr = str(publicationResult["error"])
-        sendMailFailure(mailClient, userEmail, "SciCat export failed during creation of publication with exception:\n" + errorStr)
-        return
 
-    publicationPermId = publicationResult["result"]
-    OPERATION_LOG.info("PUBLICATION_PERMID: %s" % publicationPermId)
+    publicationPermIds = []
+    for group in group_params:
+        groupPrefix = ""
+        if not group == "GENERAL":
+            groupPrefix = group + "_"
+        publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds, groupPrefix)
+        OPERATION_LOG.info("Publication creation result: " + str(publicationResult))
+        if publicationResult["error"] is not None:
+            errorStr = str(publicationResult["error"])
+            sendMailFailure(mailClient, userEmail, "SciCat export failed during creation of publication with exception:\n" + errorStr)
+            return
+
+        publicationPermId = publicationResult["result"]
+        OPERATION_LOG.info("PUBLICATION_PERMID: %s" % publicationPermId)
+        publicationPermIds.append(publicationPermId)
 
     exportData = params.get("exportData")
     nodeExportList = exportData['nodeExportList']
-    nodeExportList.append({'kind': "SAMPLE", 'permId': publicationPermId})
+    # nodeExportList.append({'kind': "SAMPLE", 'permId': publicationPermId})
+    for pubId in publicationPermIds:
+        nodeExportList.append({'kind': "SAMPLE", 'permId': pubId})
+
+    for creatorId in publicationProps['PUBLICATION.CREATOR']:
+        nodeExportList.append({'kind': "SAMPLE", 'permId': creatorId})
+
+    for publisherId in publicationProps['PUBLICATION.PUBLISHER']:
+        nodeExportList.append({'kind': "SAMPLE", 'permId': publisherId})
+
     print("nodeExportList", nodeExportList)
 
     roCrateExport = exportRoCrate(context, params, False)
@@ -245,15 +273,16 @@ def exportSciCat_withEmail(context, params, date):
         links = ""
         for key in body.keys():
             value = str(body[key])
-            if key.startswith("/"):
-                publishedDatasetLink = sciCatDetailUrl + URLEncoder.encode(value, "UTF-8")
-                links += "\t" + key + " -> " + publishedDatasetLink + "\n"
-                publicationPrefix = '/' + groupPrefix + 'PUBLICATIONS/' + groupPrefix + 'PUBLIC_REPOSITORIES/'
-                if key.startswith(publicationPrefix):
-                    OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermId))
-                    updateDOI(sessionToken, v3, publicationPermId, value, publishedDatasetLink)
-            else:
-                links += "\t" + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
+            # if key.startswith("/"):
+            #     publishedDatasetLink = sciCatDetailUrl + URLEncoder.encode(value, "UTF-8")
+            #     links += "\t" + key + " -> " + publishedDatasetLink + "\n"
+            #     publicationPrefix = '/' + groupPrefix + 'PUBLICATIONS/' + groupPrefix + 'PUBLIC_REPOSITORIES/'
+            #     if key.startswith(publicationPrefix):
+            #         OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermId))
+            #         updateDOI(sessionToken, v3, publicationPermId, value, publishedDatasetLink)
+            # else:
+            #     links += "\t" + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
+            links += "\t" + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
         sendMail(mailClient, userEmail, links, "Your export has been received by SciCat:\n")
     elif status == 202:
 

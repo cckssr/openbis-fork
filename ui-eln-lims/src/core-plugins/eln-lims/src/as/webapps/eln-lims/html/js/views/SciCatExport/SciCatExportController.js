@@ -83,6 +83,20 @@ function SciCatExportController(parentController) {
 
         var props = _this.exportModel.properties;
 
+        var checkedGroups = []
+        if(profile.isMultiGroup()) {
+            var groupRows = this.exportModel.tableModel.getValues();
+            var nameColumn = this.exportModel.tableModel.columns[0];
+            var valueColumn = this.exportModel.tableModel.columns[1];
+            checkedGroups = groupRows.flatMap(row => row[valueColumn.label] ? [row[nameColumn.label]] : []);
+
+            if (groupRows.length > 0 && checkedGroups.length === 0) {
+                Util.showError('At least one group should be selected.');
+                return;
+            }
+
+        }
+
         var REQUIRED_PUBLICATION_PROPS = ["NAME", "PUBLICATION.DESCRIPTION", "PUBLICATION.ABSTRACT", "PUBLICATION.CREATOR", "PUBLICATION.PUBLISHER"];
 
         var failedFields = [];
@@ -99,7 +113,6 @@ function SciCatExportController(parentController) {
             return;
         }
 
-
         var exportModel = {
             nodeExportList: nodeExportList,
             withLevelsBelow: $("#LEVELS-BELOW-EXPORT-"+_viewId).is(":checked"),
@@ -112,7 +125,8 @@ function SciCatExportController(parentController) {
                 data: $("#DATASET-EXPORT-"+_viewId).is(":checked"), //DATA-EXPORT
                 afsData: $("#FILES-EXPORT-"+_viewId).is(":checked") //DATA-EXPORT
             },
-            publicationProps: props
+            publicationProps: props,
+            groups: checkedGroups
         }
 
         if (nodeExportList.length === 0) {
