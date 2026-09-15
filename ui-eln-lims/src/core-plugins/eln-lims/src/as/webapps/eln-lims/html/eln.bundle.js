@@ -56005,12 +56005,12 @@ function SciCatExportController(parentController) {
         for(let requiredProp of REQUIRED_PUBLICATION_PROPS)
         {
             if(!props[requiredProp]) {
-                failedFields.push(requiredProp);
+                failedFields.push(profile.getPropertyType(requiredProp));
             }
         }
 
         if(failedFields.length > 0) {
-            var errorMessage = failedFields.map(x => x.propertyType.label).join(', ');
+            var errorMessage = failedFields.map(x => x.label).join(', ');
             Util.showError("Following fields are mandatory and can not be empty: " + errorMessage);
             return;
         }
