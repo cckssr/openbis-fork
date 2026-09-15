@@ -65,6 +65,19 @@ configurations.all {
         if (details.requested.group == 'org.apache.ant') {
             details.useVersion '1.10.18'
         }
+        // CVE-2026-64607: httpclient5 5.2.1 (transitive via libthrift
+        // 0.24.0) predates the fixed 5.6.3; force the whole build onto the
+        // current stable 5.x release.
+        if (details.requested.group == 'org.apache.httpcomponents.client5') {
+            details.useVersion '5.6.4'
+        }
+        // CVE-2026-54399/CVE-2026-54428: httpcore5/httpcore5-h2 5.2 (same
+        // libthrift transitive path) predate the fix, which only shipped in
+        // the 5.5-beta line; 5.4.3 is the newest stable 5.4.x release still
+        // ahead of the affected range, without adopting a pre-release.
+        if (details.requested.group == 'org.apache.httpcomponents.core5') {
+            details.useVersion '5.4.3'
+        }
     }
 
     exclude group: 'log4j', module: 'log4j'

@@ -78,14 +78,16 @@
 		<packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-hibernate\-validator\-spi@.*$</packageUrl>
 		<cve>CVE-2023-1932</cve>
 	</suppress>
-	<!-- [2026-09-01] CVE-2026-33929 affects the Apache PDFBox
-	     ExtractEmbeddedFiles example. The configured openbis-ivy mirror does not
-	     carry PDFBox 2.0.37 yet, the repo has no ExtractEmbeddedFiles copy/usage,
-	     and the resolved pdfbox-2.0.36 jar does not include the examples package.
-	     Re-check shortly and remove this once 2.0.37 is available in the mirror. -->
-	<suppress until="2026-09-01Z">
-		<packageUrl regex="true">^pkg:maven/org\.apache\.pdfbox/(pdfbox|xmpbox)@2\.0\.36$</packageUrl>
-		<cve>CVE-2026-33929</cve>
+	<!-- [2027-06-01] oracle:appbundler 1.0-CISD (a build-time-only tool that
+	     packages the installer as a native macOS .app, not a runtime
+	     dependency) is CPE-matched against cpe:apache:ant@1.0 - a 2013-era,
+	     unrelated Oracle utility mismatched to a 13-year-old Ant release
+	     through some shared naming heuristic. No such thing as a "patched"
+	     appbundler to bump to for this - CPE over-match, annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<notes><![CDATA[ oracle:appbundler 1.0-CISD -- CPE mismatch against apache:ant@1.0, build-time-only macOS packaging tool ]]></notes>
+		<packageUrl regex="true">^pkg:maven/oracle/appbundler@.*$</packageUrl>
+		<cve>CVE-2026-78254</cve>
 	</suppress>
 	<!-- [2026-10-15] NOT a false positive - an accepted-risk hold, re-checked
 	     every 30 days rather than the usual tiers. spring-framework 6.2.19 is
@@ -105,17 +107,22 @@
 	<suppress until="2026-10-15Z">
 		<notes><![CDATA[ spring-framework 6.2.19 EOL for the affected CVE batch - accepted risk pending 7.x major upgrade or commercial support; not a false positive, 30-day forced re-review ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@6\.2\.19$</packageUrl>
+		<cve>CVE-2026-47883</cve>
 		<cve>CVE-2026-47884</cve>
 		<cve>CVE-2026-47885</cve>
 		<cve>CVE-2026-47886</cve>
+		<cve>CVE-2026-47887</cve>
 		<cve>CVE-2026-47888</cve>
 		<cve>CVE-2026-47889</cve>
 		<cve>CVE-2026-47890</cve>
 		<cve>CVE-2026-47891</cve>
 		<cve>CVE-2026-47892</cve>
 		<cve>CVE-2026-47893</cve>
+		<cve>CVE-2026-59280</cve>
+		<cve>CVE-2026-59281</cve>
 		<cve>CVE-2026-59282</cve>
 		<cve>CVE-2026-59283</cve>
+		<cve>CVE-2026-59314</cve>
 		<cve>CVE-2026-59313</cve>
 	</suppress>
 	<!-- [2027-06-01] CVE-2026-6860 is a Vert.x TLS hostname/SNI issue. The
