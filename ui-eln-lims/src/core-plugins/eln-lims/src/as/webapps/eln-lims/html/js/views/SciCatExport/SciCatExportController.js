@@ -41,7 +41,7 @@ function SciCatExportController(parentController) {
                             Util.showError('Personal Sci Cat API Token is expired.');
                         }
                     } catch(error) {
-                        Util.showError('Personal Sci Cat API Token is invalid:\n'+error);
+                        Util.showError('Error during initialization of the form:\n'+error);
                     }
                 } else {
                     Util.showError('Personal Sci Cat API Token missing, please set it in your user profile.');
@@ -130,7 +130,7 @@ function SciCatExportController(parentController) {
         }
 
         if (nodeExportList.length === 0) {
-            Util.showInfo("First select something to export.");
+            Util.showError("First select something to export.");
         } else {
             Util.blockUI();
             mainController.serverFacade.exportSciCat(exportModel, _this.exportModel.accessToken, function (result) {

@@ -55957,7 +55957,7 @@ function SciCatExportController(parentController) {
                             Util.showError('Personal Sci Cat API Token is expired.');
                         }
                     } catch(error) {
-                        Util.showError('Personal Sci Cat API Token is invalid:\n'+error);
+                        Util.showError('Error during initialization of the form:\n'+error);
                     }
                 } else {
                     Util.showError('Personal Sci Cat API Token missing, please set it in your user profile.');
@@ -56046,7 +56046,7 @@ function SciCatExportController(parentController) {
         }
 
         if (nodeExportList.length === 0) {
-            Util.showInfo("First select something to export.");
+            Util.showError("First select something to export.");
         } else {
             Util.blockUI();
             mainController.serverFacade.exportSciCat(exportModel, _this.exportModel.accessToken, function (result) {
@@ -56318,7 +56318,17 @@ function SciCatExportView(exportController, exportModel) {
 
             var semanticAnnotations = this._renderPropertyTypeSemanticAnnotations(propertyType.code);
 
-            if(propertyType.code === profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE" || propertyType.code === "FREEFORM_TABLE_STATE" || propertyType.code === profile.getInternalNamespacePrefix() + "ORDER.ORDER_STATE" || propertyType.code === profile.getInternalNamespacePrefix() + "BARCODE" ) {
+            if(propertyType.code === profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE"
+                || propertyType.code === "FREEFORM_TABLE_STATE"
+                || propertyType.code === profile.getInternalNamespacePrefix() + "ORDER.ORDER_STATE"
+                || propertyType.code === profile.getInternalNamespacePrefix() + "BARCODE" ) {
+                continue;
+            }
+
+            if(propertyType.code === profile.getInternalNamespacePrefix() + "XMLCOMMENTS") {
+                var $commentsContainer = $("<div>");
+                $fieldset.append($commentsContainer);
+                this._addCommentsWidget($commentsContainer);
                 continue;
             }
 
@@ -56426,6 +56436,12 @@ function SciCatExportView(exportController, exportModel) {
         $formColumn.append($fieldsetOwner);
 
         return false;
+    }
+
+    this._addCommentsWidget = function($container) {
+        var commentsController = new CommentsController(this.exportModel, FormMode.EDIT, this.exportModel);
+            commentsController.init($container);
+        return commentsController;
     }
 
 

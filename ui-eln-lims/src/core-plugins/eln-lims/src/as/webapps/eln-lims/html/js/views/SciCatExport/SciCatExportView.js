@@ -223,7 +223,17 @@ function SciCatExportView(exportController, exportModel) {
 
             var semanticAnnotations = this._renderPropertyTypeSemanticAnnotations(propertyType.code);
 
-            if(propertyType.code === profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE" || propertyType.code === "FREEFORM_TABLE_STATE" || propertyType.code === profile.getInternalNamespacePrefix() + "ORDER.ORDER_STATE" || propertyType.code === profile.getInternalNamespacePrefix() + "BARCODE" ) {
+            if(propertyType.code === profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE"
+                || propertyType.code === "FREEFORM_TABLE_STATE"
+                || propertyType.code === profile.getInternalNamespacePrefix() + "ORDER.ORDER_STATE"
+                || propertyType.code === profile.getInternalNamespacePrefix() + "BARCODE" ) {
+                continue;
+            }
+
+            if(propertyType.code === profile.getInternalNamespacePrefix() + "XMLCOMMENTS") {
+                var $commentsContainer = $("<div>");
+                $fieldset.append($commentsContainer);
+                this._addCommentsWidget($commentsContainer);
                 continue;
             }
 
@@ -331,6 +341,12 @@ function SciCatExportView(exportController, exportModel) {
         $formColumn.append($fieldsetOwner);
 
         return false;
+    }
+
+    this._addCommentsWidget = function($container) {
+        var commentsController = new CommentsController(this.exportModel, FormMode.EDIT, this.exportModel);
+            commentsController.init($container);
+        return commentsController;
     }
 
 

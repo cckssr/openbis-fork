@@ -97,20 +97,6 @@ def exportSciCat(context, params):
 
     return resultDict("STARTED")
 
-def getGroups(sessionToken, v3):
-
-    from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search import SampleSearchCriteria
-    from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions import SampleFetchOptions
-
-    criteria = SampleSearchCriteria()
-    criteria.withType().withCode().thatEquals("GENERAL_ELN_SETTINGS")
-    fetchOptions = SampleFetchOptions()
-    fetchOptions.withProperties()
-    settingSamples = v3.searchSamples(sessionToken, criteria, fetchOptions).getObjects()
-
-    groups = [group.getCode()[:-len("_ELN_SETTINGS")] for group in settingSamples]
-    return groups
-
 def createNewPublication(sessionToken, v3, properties,
                          collectorIds, groupPrefix):
     sampleCreation = SampleCreation()
@@ -164,6 +150,21 @@ def updateDOI(sessionToken, v3, permId, doi, link=None):
         update.getMetaData().put('ENTITY_LINK.URL', link)
     v3.updateSamples(sessionToken, [update])
 
+def removePublications(sessionToken, v3, publicationPermIds, reason):
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete import SampleDeletionOptions
+    deletionPermIds = list(map(lambda x: SamplePermId(x),  publicationPermIds.values()))
+
+    if len(deletionPermIds) > 0:
+        print("Deletion of unpublished publication objects: %s" % deletionPermIds)
+        OPERATION_LOG.info("Deletion of unpublished publication objects: %s" % deletionPermIds)
+        deletionOption = SampleDeletionOptions()
+        deletionOption.setReason("Failed SciCat export: %s" % reason)
+        v3.deleteSamples(sessionToken, deletionPermIds, deletionOption)
+        print("Deletion successful of %s objects" % len(deletionPermIds))
+        OPERATION_LOG.info("Deletion successful of %s objects" % len(deletionPermIds))
+    else:
+        print("No publication samples to delete.")
+        OPERATION_LOG.info("No publication samples to delete.")
 
 def exportSciCat_withEmail(context, params, date):
     dateStr = date.strftime('%Y-%m-%d-%H-%M-%S')
@@ -183,24 +184,6 @@ def exportSciCat_withEmail(context, params, date):
 
     collectorIds = collectExportIds(v3, sessionToken, params.get('exportData'))
 
-    # groups = getGroups(sessionToken, v3)
-    # groupPrefix = ""
-    # if len(groups) > 1:
-    #     print("Multi-group instance detected.")
-    #     OPERATION_LOG.info("Multi-group instance detected.")
-    #     spaceNode = filter(lambda x: x.exportableKind == ExportableKind.SPACE, collectorIds.getPermIds())[0]
-    #     for group in groups:
-    #         if spaceNode.getPermId().startswith(group + "_"):
-    #             groupPrefix = group + "_"
-    #             print("Detected entities from group: '%s'" % group)
-    #             OPERATION_LOG.info("Detected entities from group: '%s'" % group)
-    #             break
-    #     print("Group detected: ", groupPrefix)
-    #     OPERATION_LOG.info("Group detected: " + str(groupPrefix))
-    # else:
-    #     print("Single group instance detected.")
-    #     OPERATION_LOG.info("Single group instance detected.")
-
     publicationProps = params.get('exportData')["publicationProps"]
     print("Received publication properties:", publicationProps)
     OPERATION_LOG.info("Received publication properties:" + str(publicationProps))
@@ -215,6 +198,7 @@ def exportSciCat_withEmail(context, params, date):
         if publicationResult["error"] is not None:
             errorStr = str(publicationResult["error"])
             sendMailFailure(mailClient, userEmail, "SciCat export failed during creation of publication with exception:\n" + errorStr)
+            removePublications(sessionToken, v3, publicationPermIds, "During creation of publication samples: " + errorStr)
             return
 
         publicationPermId = publicationResult["result"]
@@ -243,6 +227,7 @@ def exportSciCat_withEmail(context, params, date):
     if roCrateExport["error"] is not None:
         errorStr = str(roCrateExport["error"])
         sendMailFailure(mailClient, userEmail, "SciCat export failed during RO-Crate step with exception:\n" + errorStr)
+        removePublications(sessionToken, v3, publicationPermIds, "During RO-Crate creation: " + errorStr)
         return
 
     jobId = roCrateExport["result"]["jobId"]
@@ -252,6 +237,7 @@ def exportSciCat_withEmail(context, params, date):
     if download_result["error"] is not None:
         errorStr = str(download_result["error"])
         sendMailFailure(mailClient, userEmail, "SciCat export failed while getting RO-Crate export with exception:\n" + errorStr)
+        removePublications(sessionToken, v3, publicationPermIds, "During RO-Crate download: " + errorStr)
         return
 
     OPERATION_LOG.info("Sending Ro-Crate to SciCat.")
@@ -262,6 +248,7 @@ def exportSciCat_withEmail(context, params, date):
     if "error" in sciCatOutput:
         errorStr = str(sciCatOutput["error"])
         sendMailFailure(mailClient, userEmail, "SciCat export failed during sending data with exception:\n" + errorStr)
+        removePublications(sessionToken, v3, publicationPermIds, "During SciCat upload: " + errorStr)
         return
 
     # sendMail(mailClient, userEmail, "Your export has been received by SciCat, once it is imported, you will receive another email.", "SciCat received your export:\n")
@@ -292,21 +279,22 @@ def exportSciCat_withEmail(context, params, date):
             else:
                 links += "\t" + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
         sendMail(mailClient, userEmail, links, "Your export has been received by SciCat:\n")
-    elif status == 202:
-
-        jobId = body["jobId"]
-        pollResult = pollSciCatImport(context, Map.of("jobId", jobId, "accessToken", params.get("accessToken")))
-
-        if pollResult["error"] is not None:
-            sendMailFailure(mailClient, userEmail, "SciCat export failed while getting results with exception:\n" + pollResult["error"])
-            return
-
-        #TODO get ids and prepare EMAIL once SciCat implements this path
-        sendMail(mailClient, userEmail, "", "SciCat export results:\n")
+    # elif status == 202:
+    #     # TODO as of 16.09.2026 SciCat did not implement this path
+    #     jobId = body["jobId"]
+    #     pollResult = pollSciCatImport(context, Map.of("jobId", jobId, "accessToken", params.get("accessToken")))
+    #
+    #     if "error" in pollResult:
+    #         errorStr = str(pollResult["error"])
+    #         sendMailFailure(mailClient, userEmail, "SciCat export failed while getting results with exception:\n" + errorStr)
+    #         removePublications(sessionToken, v3, publicationPermIds, "During SciCat polling: " + errorStr)
+    #         return
+    #     sendMail(mailClient, userEmail, "", "SciCat export results:\n")
 
     else:
         status = "Status:" + str(status) + "\n"
         sendMailFailure(mailClient, userEmail, "SciCat returned unexpected %s response:\n%s" % (status, body))
+        removePublications(sessionToken, v3, publicationPermIds, "Unexpected SciCat response: " + status)
 
 
 def collectExportIds(v3, sessionToken, exportData):
@@ -543,10 +531,8 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
             body = json.loads(response.body())
             if 'message' in body:
                 error_message = body['message']
-            elif 'errors' in body:
-                error_message = body['errors'][0]['message']
             else:
-                error_message = str(body)
+                error_message = json.dumps(body, indent=4)
         return {
             "error": error_message
         }
