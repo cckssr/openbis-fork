@@ -8,3 +8,4 @@ notebooks
 *__pycache__/
 *.mypy_cache/
 build/
+test_debug.py

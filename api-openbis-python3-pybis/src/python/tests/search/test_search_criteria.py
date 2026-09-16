@@ -43,14 +43,19 @@ import pytest
 from pybis.pybis import _subcriteria_for_properties  # legacy builder
 from pybis.search import (
     Any,
+    Cmp,
     Between,
     Contains,
+    Eq,
     Ge,
     Gt,
     In,
+    IsSet,
     Le,
     Lt,
     Ne,
+    Not,
+    NotSet,
 )
 
 from pybis.search.search_criteria import (normalize_where, build_property_criteria)
@@ -125,11 +130,7 @@ class TestLegacyJsonEquivalence:
         assert new["fieldType"] == legacy["fieldType"]
         assert new["fieldValue"]["value"] == legacy["fieldValue"]["value"]
 
-    def test_list_value_no_longer_produces_malformed_dto(self):
-        """1.37.5 puts the raw list inside a StringEqualToValue. It must not."""
-        legacy = _subcriteria_for_properties("MY_PROP", ["a", "b"], entity="sample")
-        assert isinstance(legacy["fieldValue"]["value"], list)  # the bug
-
+    def test_list_value_produces_an_or_group(self):
         new = build_property_criteria("MY_PROP", ["a", "b"], entity="sample")
         assert len(new) == 1
         assert new[0]["operator"] == "OR"
@@ -193,6 +194,87 @@ class TestLegacyJsonEquivalence:
         with pytest.raises(ValueError):
             build_property_criteria("STATUS", empty, entity="sample")
 
+    @pytest.mark.parametrize("junk", [object(), None, {1, 2}.__iter__()])
+    def test_uninterpretable_values_raise_instead_of_being_stringified(self, junk):
+        """
+        The old fallback ran str() on anything, so a bad value reached the
+        server as StringEqualToValue("<... object at 0x...>") and came back as
+        "String does not represent a number". Fail at the call site instead.
+        """
+        with pytest.raises(TypeError):
+            build_property_criteria("INT", junk, entity="sample")
+
+    def test_negation_flag_sits_on_the_inner_composite(self):
+        """
+        The 'negated' flag does not cascade: openBIS honours it only on the
+        composite that directly holds the field criteria, and silently ignores
+        it one level up -- returning the UN-negated result set. This pins the
+        exact shape; do not flatten it.
+        """
+        crit = build_property_criteria(
+            "INT", Not(Between("15", "25")), entity="sample"
+        )
+        assert len(crit) == 1
+
+        outer = crit[0]
+        assert outer["@type"].endswith("SampleSearchCriteria")
+        assert "negated" not in outer, "flag on the outer wrapper is a no-op"
+        assert len(outer["criteria"]) == 1
+
+        inner = outer["criteria"][0]
+        assert inner["@type"].endswith("SampleSearchCriteria")
+        assert inner["negated"] is True
+        assert inner["operator"] == "AND"
+        # the negated composite holds the LEAVES directly, nothing in between
+        assert [c["@type"].rsplit(".", 1)[-1] for c in inner["criteria"]] == [
+            "NumberPropertySearchCriteria",
+            "NumberPropertySearchCriteria",
+        ]
+
+    def test_isset_is_a_string_wildcard_whatever_the_data_type(self):
+        """
+        "*" is not a number, so IsSet() must emit a String criteria even for
+        an INTEGER or TIMESTAMP property -- it must not go through _classify.
+        """
+        for prop in ("STATUS", "BATCH", "HARVEST_DATE"):
+            leaf = build_property_criteria(prop, IsSet(), entity="sample")[0]
+            assert leaf["@type"].endswith("StringPropertySearchCriteria"), prop
+            assert leaf["fieldValue"]["@type"] == "as.dto.common.search.AnyStringValue"
+            assert leaf["fieldValue"]["value"] == ""
+
+    def test_notset_uses_the_working_negation_shape(self):
+        outer = build_property_criteria("STATUS", NotSet(), entity="sample")[0]
+        assert "negated" not in outer
+        inner = outer["criteria"][0]
+        assert inner["negated"] is True
+
+    def test_isset_on_a_parent_property(self):
+        crit = build_property_criteria("parent_STATUS", IsSet(), entity="sample")[0]
+        assert crit["@type"].endswith("SampleParentsSearchCriteria")
+        sub_crit = crit["criteria"][0]
+        assert sub_crit["@type"].endswith("StringPropertySearchCriteria")
+        assert sub_crit["fieldName"] == "STATUS"
+        assert sub_crit["fieldType"] == "PROPERTY"
+        assert sub_crit["fieldValue"]["@type"] == "as.dto.common.search.AnyStringValue"
+        assert sub_crit["fieldValue"]["value"] == ""
+
+    def test_ne_wraps_a_single_leaf_the_same_way(self):
+        outer = build_property_criteria("STATUS", Ne("ABORTED"), entity="sample")[0]
+        assert "negated" not in outer
+        inner = outer["criteria"][0]
+        assert inner["negated"] is True
+        assert len(inner["criteria"]) == 1
+        assert inner["criteria"][0]["fieldValue"]["value"] == "ABORTED"
+
+    def test_negation_composes_inside_an_or(self):
+        crit = build_property_criteria(
+            "STATUS", Any(Ne("ABORTED"), Eq("DONE")), entity="sample"
+        )
+        assert len(crit) == 1 and crit[0]["operator"] == "OR"
+        negated_branch = crit[0]["criteria"][0]
+        assert "negated" not in negated_branch
+        assert negated_branch["criteria"][0]["negated"] is True
+
     def test_disjoint_ranges_keep_their_grouping(self):
         crit = build_property_criteria(
             "CONC", Any(Between(0, 1), Between(10, 11)), entity="sample"
@@ -244,9 +326,20 @@ SAMPLES = [
     ("S04", "FAILED", 9.0, 4, "2021-02-01 12:00:00", []),
     ("S05", "ABORTED", 10.0, 5, "2021-02-15 12:00:00", []),
     ("S06", "ABORTED", 10.5, 6, "2021-03-01 12:00:00", []),
+    # S07 straddles June without any single parent being inside it:
+    # the un-merged relation criteria would wrongly match it.
     ("S07", "PENDING", 20.0, 7, "2020-12-31 12:00:00", ["P03", "P04"]),
     ("S08", "PENDING", 0.0, 8, "2021-01-01 12:00:00", []),
+    # S09 has no STATUS at all; S10 has STATUS set to the empty string.
+    # Together they separate "unset" from "set but empty".
+    ("S09", None, 30.0, 9, "2021-04-01 12:00:00", []),
+    ("S10", "", 31.0, 10, "2021-04-02 12:00:00", []),
 ]
+
+#: flip if the server includes rows whose property is unset in a negated search
+INCLUDES_UNSET_PROPERTIES = True
+#: flip if IsSet() matches a property explicitly set to the empty string
+EMPTY_STRING_COUNTS_AS_SET = False
 
 PARENTS = {"P01", "P02", "P03", "P04"}
 CHILDREN = {code for code, *_ in SAMPLES} - PARENTS
@@ -312,7 +405,7 @@ def fixture(openbis_instance):
                 space=space_code,
                 parents=[by_code[p] for p in parents] or None,
                 props={
-                    props["STATUS"]: status,
+                    **({} if status is None else {props["STATUS"]: status}),
                     props["CONC"]: conc,
                     props["BATCH"]: batch,
                     props["HARVEST_DATE"]: harvest,
@@ -369,6 +462,8 @@ class TestLegacySyntaxAgainstServer:
             "S05",
             "S06",
             "S07",
+            "S09",
+            "S10",
         }
 
     def test_property_kwargs_still_work(self, fixture):
@@ -609,9 +704,92 @@ class TestCombinations:
         assert fixture.props["CONC"].lower() in [c.lower() for c in things.df.columns]
 
 
+# ---------------------------------------------------------------------------
+# unverified: negation
+# ---------------------------------------------------------------------------
+
+
 class TestNegation:
-    def test_not_equal(self, fixture):
+    def test_ne_excludes_a_value(self, fixture):
         result = fixture.search(where={fixture.props["STATUS"]: Ne("ABORTED")})
-        assert "S05" not in result
-        assert "S06" not in result
+        assert "S05" not in result and "S06" not in result
         assert {"S01", "S02", "S03", "S04"} <= result
+
+    def test_not_a_range_returns_the_complement(self, fixture):
+        plain = fixture.search(where={fixture.props["CONC"]: Between(1.5, 9.0)})
+        negated = fixture.search(where={fixture.props["CONC"]: Not(Between(1.5, 9.0))})
+        assert plain == {"S02", "S03", "S04"}
+        assert plain & negated == set(), "negation returned overlapping rows"
+        assert plain | negated == PARENTS | CHILDREN
+
+    def test_not_agrees_with_the_directly_expressed_complement(self, fixture):
+        """Any(Lt, Gt) and Not(Between) must select the same samples."""
+        assert fixture.search(
+            where={fixture.props["CONC"]: Not(Between(1.5, 9.0))}
+        ) == fixture.search(where={fixture.props["CONC"]: Any(Lt(1.5), Gt(9.0))})
+
+    def test_not_a_list(self, fixture):
+        assert fixture.search(
+            where={fixture.props["STATUS"]: Not(In(["DONE", "FAILED"]))}
+        ) == {"S05", "S06", "S07", "S08", "S09", "S10"}
+
+    def test_negation_combined_with_another_constraint(self, fixture):
+        assert fixture.search(
+            where={
+                fixture.props["STATUS"]: Ne("ABORTED"),
+                fixture.props["CONC"]: Between(0.5, 20.0),
+            }
+        ) == {"S01", "S02", "S03", "S04", "S07"}
+
+    def test_unset_property_behaviour_is_pinned(self, fixture):
+        """
+        S09 has no STATUS at all. Whether negation returns it is a server
+        decision; assert whichever way it goes so a change is visible.
+        """
+        result = fixture.search(where={fixture.props["STATUS"]: Ne("ABORTED")})
+        assert ("S09" in result) == INCLUDES_UNSET_PROPERTIES
+
+
+class TestPropertyPresence:
+    """
+    IsSet()/NotSet() rest on a wildcard match, so their exact semantics are a
+    server question. These tests answer it rather than assuming.
+    """
+
+    def test_isset_excludes_the_sample_without_the_property(self, fixture):
+        result = fixture.search(where={fixture.props["STATUS"]: IsSet()})
+        assert "S09" not in result
+        assert {"S01", "S05", "S08"} <= result
+
+    def test_notset_returns_the_sample_without_the_property(self, fixture):
+        assert "S09" in fixture.search(where={fixture.props["STATUS"]: NotSet()})
+
+    def test_isset_and_notset_partition_the_samples(self, fixture):
+        is_set = fixture.search(where={fixture.props["STATUS"]: IsSet()})
+        not_set = fixture.search(where={fixture.props["STATUS"]: NotSet()})
+        assert is_set & not_set == set()
+        assert is_set | not_set == PARENTS | CHILDREN
+
+    def test_empty_string_classification_is_pinned(self, fixture):
+        """S10 has STATUS = ''. Does a wildcard consider that a value?"""
+        is_set = fixture.search(where={fixture.props["STATUS"]: IsSet()})
+        assert ("S10" in is_set) == EMPTY_STRING_COUNTS_AS_SET
+
+    def test_isset_works_on_a_non_string_property(self, fixture):
+        """
+        Probes whether a String criteria matches an INTEGER property. Every
+        sample has BATCH, so anything short of the full set means the server
+        will not apply a String criteria to a non-VARCHAR property -- in which
+        case IsSet() is only usable on text properties.
+        """
+        assert fixture.search(where={fixture.props["BATCH"]: IsSet()}) == (
+            PARENTS | CHILDREN
+        )
+
+    def test_notset_combined_with_another_constraint(self, fixture):
+        assert fixture.search(
+            where={
+                fixture.props["STATUS"]: NotSet(),
+                fixture.props["CONC"]: Gt(25.0),
+            }
+        ) == {"S09", "S10"}

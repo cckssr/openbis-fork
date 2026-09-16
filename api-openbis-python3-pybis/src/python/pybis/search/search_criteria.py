@@ -1,23 +1,49 @@
-#   Copyright ETH 2026 Zürich, Scientific IT Services
-#
-#   Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#   See the License for the specific language governing permissions and
-#   limitations under the License.
-#
+"""
+Proposed `pybis/search_criteria.py`
+===================================
+
+Replacement for the `where=` / `**properties` handling in
+`Openbis.get_samples()` (and the identical code in get_experiments /
+get_datasets).
+
+Design constraints
+------------------
+* Purely client-side: emits the same JSON-RPC search-criteria DTOs the
+  V3 API already understands. No server change needed.
+* Backward compatible: every ``where`` value that works today produces
+  byte-identical JSON.
+* Composition is expressed by *nesting* an entity search criteria with
+  its own ``operator``, which is the pattern pybis already uses in
+  ``_subcriteria_for_code_new(..., operator="OR")``.
+
+Integration points in pybis.py
+------------------------------
+1. ``_subcriteria_for_properties`` -> ``build_property_criteria`` (below),
+   which returns a *list* of criteria dicts instead of a single dict.
+2. In ``get_samples`` / ``get_experiments`` / ``get_datasets``::
+
+       for prop, value in properties.items():
+           sub_criteria += build_property_criteria(prop, value, entity="sample")
+
+3. ``where`` gains a second accepted shape: a *list of (prop, value) pairs*,
+   so the same property can legally appear more than once even without the
+   Q-object sugar.
+"""
 
 from __future__ import annotations
 
 import datetime
+import numbers
 import re
 
+# ---------------------------------------------------------------------------
+# operator tables
+#
+# The strict date operators are the fix for a real bug: pybis 1.37.5 maps
+# both ">" and ">=" to DateLaterThanOrEqualToValue, and both "<" and "<=" to
+# DateEarlierThanOrEqualToValue, so `"> 2021-01-01"` silently includes
+# 2021-01-01. DateLaterThanValue / DateEarlierThanValue exist in the V3 DTOs.
+# ---------------------------------------------------------------------------
 
 _PREFIX = "as.dto.common.search."
 
@@ -104,6 +130,8 @@ class Cmp(Predicate):
         return [_leaf(prop, self.op, self.value, entity, ctx)]
 
 
+
+
 class All(Predicate):
     """AND over several predicates on the *same* property."""
 
@@ -148,23 +176,80 @@ class Any(Predicate):
 
 class Not(Predicate):
     """
-    Negation. Emits ``"negated": true`` on a wrapping entity criteria.
+    Negation.
 
-    NOTE: AbstractEntitySearchCriteria exposes negate()/isNegated() in the
-    20.10 Java API, but the exact JSON field name is not documented in the
-    javadoc. Verify against your target server before relying on this;
-    if it is unsupported, drop this class from the proposal — nothing else
-    depends on it.
+    The ``"negated": true`` flag does NOT cascade: openBIS applies it only to
+    the criteria that directly holds the field criteria being negated, and
+    ignores it on any composite above that. So the flag goes on the INNER
+    composite, and that composite is then wrapped in a plain (non-negated)
+    one:
+
+        SampleSearchCriteria (AND)              <- outer wrapper, no flag
+          SampleSearchCriteria (AND, negated)   <- the flag belongs here
+            NumberPropertySearchCriteria >= 15
+            NumberPropertySearchCriteria <= 25
+
+    Putting the flag on the outer wrapper instead is accepted by the server
+    and silently returns the UN-negated result set. Do not "simplify" this by
+    dropping a level or moving the flag up -- test_negation_flag_sits_on_the_
+    inner_composite pins the exact shape.
     """
 
     def __init__(self, predicate):
         self.predicate = _coerce(predicate)
 
     def render(self, prop, entity, ctx):
-        inner = self.predicate.render(prop, entity, dict(ctx, wrap_all=True))
-        wrapper = _composite(inner, "AND", entity, ctx)
-        wrapper["negated"] = True
-        return [wrapper]
+        rendered = self.predicate.render(
+            prop, entity, dict(ctx, operator="AND", wrap_all=True)
+        )
+        if len(rendered) == 1 and rendered[0].get("@type") == ENTITY_SEARCH_TYPE[entity]:
+            negated = dict(rendered[0])  # already the composite holding the leaves
+        else:
+            negated = _composite(rendered, "AND", entity, ctx)
+        negated["negated"] = True
+        return [_composite([negated], "AND", entity, ctx)]
+
+
+class IsSet(Predicate):
+    """
+    The property has a value.
+
+    There is no "is not null" criteria in the V3 DTOs, so this is a wildcard
+    match on any value: ``StringEqualToValue("*")`` with ``useWildcards``.
+    Deliberately NOT routed through _classify() -- the criteria must be a
+    StringPropertySearchCriteria whatever the property's declared data type,
+    because "*" is not a number or a date.
+
+    Two things this cannot settle from the client side:
+
+    * whether a property explicitly set to the empty string counts as set
+    * whether a String criteria matches against a non-VARCHAR property
+      (INTEGER, REAL, TIMESTAMP) on your server
+
+    TestPropertyPresence covers both against a live instance.
+    """
+
+    def render(self, prop, entity, ctx):
+        relation, prop_name = _split_relation(prop)
+        leaf = {
+            "@type": _PREFIX + "StringPropertySearchCriteria",
+            "fieldName": _field_name(prop_name),
+            "fieldType": "PROPERTY",
+            "fieldValue": {"@type": "as.dto.common.search.AnyStringValue", "value": ""},
+        }
+        if relation:
+            return [
+                {
+                    "@type": RELATION_SEARCH_TYPE[entity][relation],
+                    "criteria": [leaf],
+                }
+            ]
+        return [leaf]
+
+
+def NotSet():
+    """The property has no value. Shorthand for ``Not(IsSet())``."""
+    return Not(IsSet())
 
 
 def In(values):
@@ -200,7 +285,8 @@ def Eq(v):
 
 
 def Ne(v):
-    return Cmp("!=", v)
+    """Shorthand for Not(Eq(v))."""
+    return Not(Cmp("==", v))
 
 
 def Contains(v):
@@ -212,7 +298,50 @@ def Contains(v):
 # ---------------------------------------------------------------------------
 
 
-def _coerce(value):
+_SCALAR_TYPES = (str, numbers.Number, datetime.date, datetime.datetime)
+
+
+def _reject(prop, value):
+    """
+    Raise on a value we cannot interpret, instead of falling back to str().
+
+    The old fallback stringified anything, so a mis-imported helper travelled
+    all the way to the server as
+    ``StringEqualToValue("<...Cmp object at 0x...>")`` and came back as
+    "String does not represent a number". Failing here instead names the cause.
+    """
+    where = f"`where` value for {prop!r}" if prop else "`where` value"
+
+    if callable(getattr(value, "render", None)) and type(value).__name__ in (
+        "Predicate",
+        "Cmp",
+        "All",
+        "Any",
+        "Not",
+    ):
+        raise TypeError(
+            f"{where} is a {type(value).__name__} from "
+            f"{type(value).__module__!r}, which is a DIFFERENT module object "
+            f"than {Predicate.__module__!r}. Two copies of search_criteria are "
+            "loaded, so isinstance() fails and the predicate is not "
+            "recognised. Import the helpers from the same place pybis does, "
+            f"e.g. `from {Predicate.__module__} import ...`."
+        )
+
+    if value is None:
+        raise TypeError(
+            f"{where} is None. openBIS has no null comparison; omit the key "
+            "instead, or search for the empty string explicitly."
+        )
+
+    raise TypeError(
+        f"{where} has unsupported type {type(value).__name__}. Expected a "
+        "string, number, date/datetime, list, operator dict, or one of the "
+        "search helpers (Between, In, Any, All, Not, ...)."
+    )
+
+
+def _coerce(value, prop=None):
     """
     Map a raw ``where`` value onto a Predicate.
 
@@ -247,6 +376,8 @@ def _coerce(value):
         if match:
             op, rest = match.groups()
             return Cmp(op, rest.strip())
+    if not isinstance(value, _SCALAR_TYPES):
+        _reject(prop, value)
     return Cmp("==", value)
 
 
@@ -313,13 +444,9 @@ def _leaf(prop, op, value, entity, ctx):
         eq_type = STRING_OPS[op]
         crit_type = _PREFIX + "StringPropertySearchCriteria"
 
-    field_name = prop_name
-    if field_name.startswith("_"):
-        field_name = "$" + field_name[1:]
-
     leaf = {
         "@type": crit_type,
-        "fieldName": field_name.upper(),
+        "fieldName": _field_name(prop_name),
         "fieldType": "ATTRIBUTE" if is_attribute else "PROPERTY",
         "fieldValue": {"@type": eq_type, "value": value},
     }
@@ -343,6 +470,13 @@ def _all_same_relation(criteria, entity):
         len(types) == 1
         and next(iter(types)) in RELATION_SEARCH_TYPE.get(entity, {}).values()
     )
+
+
+def _field_name(prop_name):
+    """Property codes starting with '_' denote openBIS internal '$' properties."""
+    if prop_name.startswith("_"):
+        prop_name = "$" + prop_name[1:]
+    return prop_name.upper()
 
 
 def _split_relation(prop):
@@ -393,7 +527,7 @@ def build_property_criteria(prop, value, entity="sample", property_type=None):
     (AND) criteria list. Replaces _subcriteria_for_properties.
     """
     ctx = {"operator": "AND", "type": property_type}
-    return _coerce(value).render(prop, entity, ctx)
+    return _coerce(value, prop).render(prop, entity, ctx)
 
 
 def normalize_where(where, kwargs):
@@ -429,3 +563,25 @@ def normalize_where(where, kwargs):
             "there is no way to tell an override from an extra constraint."
         )
     return pairs + list(kwargs.items())
+
+
+# ---------------------------------------------------------------------------
+# The corresponding change in pybis.py::get_samples
+# ---------------------------------------------------------------------------
+#
+#   -    if where:
+#   -        if properties is None:
+#   -            properties = where
+#   -        else:
+#   -            properties = {**where, **properties}
+#   -
+#   -    if properties is not None:
+#   -        for prop in properties:
+#   -            sub_criteria.append(
+#   -                _subcriteria_for_properties(prop, properties[prop], entity="sample")
+#   -            )
+#   +    for prop, value in normalize_where(where, properties):
+#   +        sub_criteria += build_property_criteria(prop, value, entity="sample")
+#
+# The same two-line replacement applies verbatim in get_experiments() and
+# get_datasets(); only the `entity=` argument changes.

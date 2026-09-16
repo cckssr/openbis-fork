@@ -1242,7 +1242,7 @@ replaces the first.
 For anything beyond the shapes above, import the helpers:
 
 ```python
-from pybis import All, Any, Between, Contains, Eq, Ge, Gt, In, Le, Lt
+from pybis.search import All, Any, Between, Contains, Eq, Ge, Gt, In, IsSet, Le, Lt, Ne, Not, NotSet
 ```
 
 | helper            | meaning                                            |
@@ -1257,6 +1257,8 @@ from pybis import All, Any, Between, Contains, Eq, Ge, Gt, In, Le, Lt
 | `Any(a, b, ...)`  | at least one of the constraints holds (OR)         |
 | `All(a, b, ...)`  | all of the constraints hold (AND)                  |
 | `Not(a)`          | the constraint `a` does not hold                   |
+| `IsSet()`         | the property has a value                           |
+| `NotSet()`        | the property has no value                          |
 
 `Between` takes an `inclusive` argument to open either end of the interval. Half-open intervals are
 usually what you want for month or year boundaries:
@@ -1300,28 +1302,44 @@ timestamp — `Le("2021-01-31 17:00:00")` — or a `datetime` object.
 ```
 
 ###### negation
- 
+
 `Ne` excludes a single value, `Not` inverts any constraint — including a composite one:
- 
+
 ```python
 samples = o.get_samples(
     where = {
       "STATUS": Ne('ABORTED'),                    # anything but ABORTED
     })
- 
+
 samples = o.get_samples(
     where = {
       "CONCENTRATION": Not(Between(1.5, 9)),      # outside the interval
       "STATUS": Not(In(['FAILED', 'ABORTED'])),   # neither of the two
     })
 ```
- 
+
 `Ne(v)` is shorthand for `Not(Eq(v))`, so the two forms behave identically.
- 
+`Not(Between(lo, hi))` and `Any(Lt(lo), Gt(hi))` are not equivalent. `Not(Between(lo, hi))` will return samples
+outside the range `(lo, hi)` but also include not set values. `Not(Between(lo, hi))` plus `isSet()` is equivalent to `Any(Lt(lo), Gt(hi))`
+
 ```{note}
-Negation says nothing about samples where the property is **not set at all**. Whether those are
-returned by `Ne('ABORTED')` depends on the openBIS instance, so add an explicit constraint if it
-matters to the result.
+Negation says nothing about samples where the property is **not set at all**. Combine with
+`IsSet()` on the same key if those need to be excluded, or use `Any` to include them:
+
+    where = [("STATUS", Ne('ABORTED')), ("STATUS", IsSet())]
+```
+
+###### presence and absence
+
+`IsSet()` matches samples where the property has a value, `NotSet()` those where it has none:
+
+```python
+samples = o.get_samples(
+    where = {
+      "COMMENT": NotSet(),        # never filled in
+      "STATUS": IsSet(),          # filled in, whatever the value
+    })
+```
 
 ###### repeating the same key
 
@@ -1372,7 +1390,6 @@ samples = o.get_samples(where={"STATUS": "DONE"}, STATUS="ABORTED")
 When `where` is given as a **list of pairs**, a key present in both raises a `ValueError`, because
 there is no way to tell an override from an additional constraint. Use one form or the other.
 
-
 ***Note: Attributes download***
 
 The `get_samples()` method, by default, returns fewer details to make the download process faster.
@@ -1393,7 +1410,6 @@ samples = o.get_samples(
 
 ```
 
-
 **⚠️ Clarification**
 
 - `get_samples()` method is always downloading object properties
@@ -1401,12 +1417,13 @@ samples = o.get_samples(
 - `None` values of list `attributes` are ignored during saving process
 
 **Example:**
+
 ```python
 # get sample with get_sample() method
 sample = o.get_sample('/DEFAULT/DEFAULT/EXP2')
 sample
 
-Out[1]: 
+Out[1]:
 attribute            value
 -------------------  ------------------------------
 code                 EXP2
@@ -1424,7 +1441,7 @@ components           []
 samples = o.get_samples(identifier='/DEFAULT/DEFAULT/EXP2')
 samples[0]
 
-Out[1]: 
+Out[1]:
 attribute            value
 -------------------  ------------------------------
 code                 EXP2
@@ -1578,6 +1595,10 @@ for dataset in datasets:
     dataset.download()
 dataset = datasets[0]
 ```
+
+
+More advanced `where` constructs can be found [here](#the-where-parameter) 
+
 
 ***Note: Attributes download***
 
