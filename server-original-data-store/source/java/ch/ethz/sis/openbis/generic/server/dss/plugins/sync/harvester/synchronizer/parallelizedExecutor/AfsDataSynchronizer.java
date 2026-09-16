@@ -35,6 +35,7 @@ import org.apache.commons.io.FileUtils;
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.RetryingAfsClient;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.IncomingAfsFile;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -57,9 +58,9 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
 
     private static final long PATH_BUSY_RETRY_DELAY_MILLIS = 1000;
 
-    private final AfsClient sourceAfsClient;
+    private final RetryingAfsClient sourceAfsClient;
 
-    private final AfsClient harvesterAfsClient;
+    private final RetryingAfsClient harvesterAfsClient;
 
     private final File tempDirBase;
 
@@ -72,8 +73,8 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
     public AfsDataSynchronizer(AfsClient sourceAfsClient, AfsClient harvesterAfsClient, File tempDirBase,
             AfsDataSynchronizationSummary summary, boolean dryRun, boolean deletionAllowed)
     {
-        this.sourceAfsClient = sourceAfsClient;
-        this.harvesterAfsClient = harvesterAfsClient;
+        this.sourceAfsClient = new RetryingAfsClient(sourceAfsClient);
+        this.harvesterAfsClient = new RetryingAfsClient(harvesterAfsClient);
         this.tempDirBase = tempDirBase;
         this.summary = summary;
         this.dryRun = dryRun;
@@ -718,7 +719,7 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
             String livePath = livePathForTrashedPath(directory);
             String stagingPath = backupPath + "/staging-directory-" + UUID.randomUUID();
             boolean livePathStaged = false;
-            if (AfsClientUploadHelper.getServerFilePresence(harvesterAfsClient, owner.permId(), livePath).isPresent())
+            if (harvesterAfsClient.getFilePresence(owner.permId(), livePath).isPresent())
             {
                 // Trash creation needs this path; retain any unrelated live subtree server-side while it is used.
                 harvesterAfsClient.move(owner.permId(), livePath, owner.permId(), stagingPath);
@@ -745,7 +746,7 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
         {
             String path = file.getPath();
             Optional<ch.ethz.sis.afsapi.dto.File> existing =
-                    AfsClientUploadHelper.getServerFilePresence(harvesterAfsClient, owner.permId(), path);
+                    harvesterAfsClient.getFilePresence(owner.permId(), path);
             if (existing.isPresent() && Boolean.TRUE.equals(existing.get().getDirectory()))
             {
                 // clearDelta removed and journaled the old children; remove the remaining directory before writing a file.
@@ -758,7 +759,7 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
                 }
                 deleteIfPresent(owner.permId(), path);
             }
-            if (AfsClientUploadHelper.getServerFilePresence(harvesterAfsClient, owner.permId(), path).isPresent())
+            if (harvesterAfsClient.getFilePresence(owner.permId(), path).isPresent())
             {
                 // Snapshot rebuilding may already have restored the desired current file.
                 if (file.getHash().equals(harvesterAfsClient.hash(owner.permId(), path)))
@@ -921,7 +922,7 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
 
     private void deleteIfPresent(String ownerPermId, String path) throws Exception
     {
-        if (AfsClientUploadHelper.getServerFilePresence(harvesterAfsClient, ownerPermId, path).isPresent())
+        if (harvesterAfsClient.getFilePresence(ownerPermId, path).isPresent())
         {
             harvesterAfsClient.delete(ownerPermId, path, false);
         }
@@ -966,7 +967,7 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
 
     private void ensureOwnerRootExists(String ownerPermId) throws Exception
     {
-        if (AfsClientUploadHelper.getServerFilePresence(harvesterAfsClient, ownerPermId, "/").isEmpty())
+        if (harvesterAfsClient.getFilePresence(ownerPermId, "/").isEmpty())
         {
             harvesterAfsClient.create(ownerPermId, "/", true);
         }
@@ -1112,7 +1113,7 @@ public class AfsDataSynchronizer implements ITaskExecutor<List<AfsDataSynchroniz
             Files.createDirectories(mirroredFile.getParent());
             Files.move(downloadedFile, mirroredFile);
             if (Files.size(mirroredFile) == 0
-                    && AfsClientUploadHelper.getServerFilePresence(harvesterAfsClient, ownerPermId, destinationPath.toString()).isPresent())
+                    && harvesterAfsClient.getFilePresence(ownerPermId, destinationPath.toString()).isPresent())
             {
                 // The upload helper creates missing empty files but does not truncate existing ones.
                 harvesterAfsClient.truncate(ownerPermId, destinationPath.toString(), 0L);

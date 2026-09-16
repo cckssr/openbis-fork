@@ -25,6 +25,7 @@ import javax.xml.stream.XMLStreamWriter;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.RetryingAfsClient;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -46,21 +47,21 @@ class AfsDataWriter
 {
     private final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
 
-    private final URI afsServerUri;
+        private final RetryingAfsClient afsClient;
 
     AfsDataWriter(DeliveryContext context)
     {
         String afsUrl = context.getAfsLocalUrl();
-        afsServerUri = (afsUrl == null || afsUrl.isBlank()) ? null : URI.create(afsUrl);
+        URI afsServerUri = (afsUrl == null || afsUrl.isBlank()) ? null : URI.create(afsUrl);
+        afsClient = afsServerUri == null ? null : new RetryingAfsClient(new AfsClient(afsServerUri));
     }
 
     void write(XMLStreamWriter writer, String ownerPermId, String sessionToken) throws XMLStreamException
     {
-        if (afsServerUri == null)
+        if (afsClient == null)
         {
             return;
         }
-        AfsClient afsClient = new AfsClient(afsServerUri);
         afsClient.setSessionToken(sessionToken);
         // one recursive listing covers both live content and .afs.trash, so directory emptiness can be checked
         // against everything at once
@@ -99,7 +100,7 @@ class AfsDataWriter
      * Lists everything under the owner's root, live and trashed alike, split into files and directories. Returns
      * {@code false} if the owner has no AFS store yet.
      */
-    private boolean list(AfsClient afsClient, String ownerPermId, List<File> files, List<File> directories)
+    private boolean list(RetryingAfsClient afsClient, String ownerPermId, List<File> files, List<File> directories)
     {
         File[] entries;
         try
@@ -174,7 +175,7 @@ class AfsDataWriter
         return false;
     }
 
-    private String hash(AfsClient afsClient, String ownerPermId, String path)
+    private String hash(RetryingAfsClient afsClient, String ownerPermId, String path)
     {
         try
         {
