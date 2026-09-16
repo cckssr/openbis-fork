@@ -17,7 +17,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.exporter;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.*;
@@ -49,6 +48,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityCollector;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
@@ -67,6 +67,7 @@ import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportablePermId;
 import ch.ethz.sis.openbis.generic.server.xls.export.FieldType;
 import ch.ethz.sis.openbis.generic.server.xls.export.XLSExport;
+import ch.ethz.sis.openbis.generic.server.xls.importer.utils.FileServerUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -80,8 +81,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.openhtmltopdf.extend.FSSupplier;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import jakarta.annotation.Resource;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jsoup.Jsoup;
@@ -89,8 +92,6 @@ import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-
-import jakarta.annotation.Resource;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -424,7 +425,7 @@ public class ExportExecutor implements IExportExecutor
             exportFiles(valueFiles, new File(xlsxDirectory, DATA_DIRECTORY), Function.identity());
         }
 
-        final Map<String, byte[]> miscellaneousFiles = xlsExportResult.getMiscellaneousFiles();
+        final Set<String> miscellaneousFiles = xlsExportResult.getMiscellaneousFiles();
         if (!miscellaneousFiles.isEmpty())
         {
             exportBinaryFiles(miscellaneousFiles, new File(xlsxDirectory, MISCELLANEOUS_DIRECTORY + '/' + FILE_SERVICE_SUBDIRECTORY),
@@ -458,17 +459,17 @@ public class ExportExecutor implements IExportExecutor
         }
     }
 
-    private static void exportBinaryFiles(final Map<String, byte[]> fileNameToContentsMap, final File directory,
+    private static void exportBinaryFiles(final Set<String> filePaths, final File directory,
             final Function<String, String> fileNameTransformer) throws IOException
     {
         mkdirs(directory);
-        for (final Map.Entry<String, byte[]> fileEntry : fileNameToContentsMap.entrySet())
+        for (final String filePath : filePaths)
         {
-            final File file = new File(directory, fileNameTransformer.apply(fileEntry.getKey()));
+            final File file = new File(directory, fileNameTransformer.apply(filePath));
             mkdirs(file.getParentFile());
             try (final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file), BUFFER_SIZE))
             {
-                bos.write(fileEntry.getValue());
+                bos.write(FileServerUtils.readAllBytes(StringEscapeUtils.unescapeHtml4(filePath)));
                 bos.flush();
             }
         }

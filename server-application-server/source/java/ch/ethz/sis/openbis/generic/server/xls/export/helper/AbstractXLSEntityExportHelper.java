@@ -56,7 +56,7 @@ public abstract class AbstractXLSEntityExportHelper<ENTITY extends IPermIdHolder
         final Collection<ENTITY> entities = getEntities(api, sessionToken, permIds);
         final Collection<String> warnings = new ArrayList<>();
         final Map<String, String> valueFiles = new HashMap<>();
-        final Map<String, byte[]> miscellaneousFiles = new HashMap<>();
+        final Set<String> miscellaneousFiles = new HashSet<>(); // TODO: try using a file names instead of actual file content
 
         // Sorting after grouping is needed only to make sure that the tests pass, because entrySet() can have elements
         // in arbitrary order.
@@ -128,12 +128,12 @@ public abstract class AbstractXLSEntityExportHelper<ENTITY extends IPermIdHolder
                 for (final ENTITY entity : entry.getValue())
                 {
                     final PropertyValue[] entityValues = Stream.concat(
-                            Arrays.stream(attributes).map(attribute -> new PropertyValue(getAttributeValue(entity, attribute), Map.of())),
+                            Arrays.stream(attributes).map(attribute -> new PropertyValue(getAttributeValue(entity, attribute), Set.of())),
                             propertyTypes.stream().map(getPropertiesMappingFunction(textFormatting, getMergedProperties(entity), warnings))
                     ).toArray(PropertyValue[]::new);
 
                     Arrays.stream(entityValues).filter(Objects::nonNull).map(PropertyValue::getMiscellaneousFiles).filter(Objects::nonNull)
-                            .forEach(miscellaneousFiles::putAll);
+                            .forEach(miscellaneousFiles::addAll);
                     final String[] stringValues = Arrays.stream(entityValues)
                             .map(propertyValue -> propertyValue != null ? propertyValue.getValue() : null)
                             .collect(Collectors.toList()).toArray(String[]::new);
@@ -233,7 +233,7 @@ public abstract class AbstractXLSEntityExportHelper<ENTITY extends IPermIdHolder
                                 {
                                     case ATTRIBUTE:
                                     {
-                                        return Stream.of(new PropertyValue(getAttributeValue(entity, Attribute.valueOf(fieldId)), Map.of()));
+                                        return Stream.of(new PropertyValue(getAttributeValue(entity, Attribute.valueOf(fieldId)), Set.of()));
                                     }
                                     case PROPERTY:
                                     {
@@ -254,7 +254,7 @@ public abstract class AbstractXLSEntityExportHelper<ENTITY extends IPermIdHolder
                             {
                                 if (propertyValue != null && propertyValue.getMiscellaneousFiles() != null)
                                 {
-                                    miscellaneousFiles.putAll(propertyValue.getMiscellaneousFiles());
+                                    miscellaneousFiles.addAll(propertyValue.getMiscellaneousFiles());
                                 }
                             });
                     final String[] stringValues = Arrays.stream(entityValues)

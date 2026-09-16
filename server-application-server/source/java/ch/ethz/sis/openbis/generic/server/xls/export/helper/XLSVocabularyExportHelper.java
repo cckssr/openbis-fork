@@ -170,10 +170,10 @@ public class XLSVocabularyExportHelper extends AbstractXLSExportHelper<IEntityTy
                 addRow(rowNumber++, false, ExportableKind.VOCABULARY_TYPE, permId, warnings, valueFiles, values);
             }
 
-            return new AdditionResult(rowNumber + 1, warnings, valueFiles, Map.of());
+            return new AdditionResult(rowNumber + 1, warnings, valueFiles, Set.of());
         } else
         {
-            return new AdditionResult(rowNumber, warnings, valueFiles, Map.of());
+            return new AdditionResult(rowNumber, warnings, valueFiles, Set.of());
         }
     }
 

@@ -174,7 +174,7 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
     private static PropertyValue getPlainMultilineVarcharProperty(final Map<String, Serializable> properties, final PropertyType propertyType)
     {
         return getProperty(properties, propertyType) != null
-                ? new PropertyValue(((String) properties.get(propertyType.getCode())).replaceAll("<[^>]+>", ""), Map.of())
+                ? new PropertyValue(((String) properties.get(propertyType.getCode())).replaceAll("<[^>]+>", ""), Set.of())
                 : null;
     }
 
@@ -185,7 +185,7 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
                 Objects.equals(propertyType.getMetaData().get("custom_widget"), "Word Processor"))
         {
             final String value = (String) properties.get(propertyType.getCode());
-            final Map<String, byte[]> imageFiles = findImageFiles(value, warnings);
+            final Set<String> imageFiles = findImageFiles(value, warnings);
             return new PropertyValue(value, imageFiles);
         } else
         {
@@ -193,7 +193,7 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
         }
     }
 
-    public static Map<String, byte[]> findImageFiles(final String input, final Collection<String> warnings)
+    public static Set<String> findImageFiles(final String input, final Collection<String> warnings)
     {
         if (input == null)
         {
@@ -204,18 +204,12 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
         final String regex = "<img\\s+src=[\"'](http)?.*?(/openbis/openbis/file-service)(/[^\"']*?)[\"']";
         final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
         final Matcher matcher = pattern.matcher(input);
-        final Map<String, byte[]> imageFiles = new HashMap<>();
+        final Set<String> imageFiles = new HashSet<>();
 
         while (matcher.find())
         {
             final String filePath = matcher.group(3);
-            try
-            {
-                imageFiles.put(filePath, FileServerUtils.readAllBytes(filePath));
-            } catch (final IOException e)
-            {
-                warnings.add(String.format("Could not read the file at path '%s'.", filePath));
-            }
+            imageFiles.add(filePath);
         }
 
         return imageFiles;
@@ -245,7 +239,7 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
                         }
                         sb.append(getPropertyValueAsString(propertyType, value));
                     }
-                    return new PropertyValue(sb.toString(), Map.of());
+                    return new PropertyValue(sb.toString(), Set.of());
                 }
             } else
             {
@@ -269,11 +263,11 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
                     }
                 }
                 sb.append("]");
-                return new PropertyValue(sb.toString(), Map.of());
+                return new PropertyValue(sb.toString(), Set.of());
             }
         } else
         {
-            return new PropertyValue(getPropertyValueAsString(propertyType, propertyValue), Map.of());
+            return new PropertyValue(getPropertyValueAsString(propertyType, propertyValue), Set.of());
         }
     }
 
@@ -332,10 +326,10 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
     {
         private final String value;
 
-        /** File name to content map. */
-        private final Map<String, byte[]> miscellaneousFiles;
+        /** File file paths. */
+        private final Set<String> miscellaneousFiles;
 
-        protected PropertyValue(final String value, final Map<String, byte[]> miscellaneousFiles)
+        protected PropertyValue(final String value, final Set<String> miscellaneousFiles)
         {
             this.value = value;
             this.miscellaneousFiles = miscellaneousFiles;
@@ -346,7 +340,7 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
             return value;
         }
 
-        public Map<String, byte[]> getMiscellaneousFiles()
+        public Set<String> getMiscellaneousFiles()
         {
             return miscellaneousFiles;
         }

@@ -20,6 +20,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.server.xls.importer.utils.FileServerUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
@@ -347,18 +348,20 @@ public class XLSExportTest
 
         assertWorkbooksEqual(actualResult.getWorkbook(), expectedResult);
 
-        final Map<String, byte[]> miscellaneousFiles = actualResult.getMiscellaneousFiles();
-        assertEquals(miscellaneousFiles.size(), 2);
+        // Only the file paths are collected here (no bytes read yet) - the actual file contents are read later,
+        // lazily, when the export is written out (see XLSExport#writeToOutputStream).
+        final Set<String> miscellaneousFiles = actualResult.getMiscellaneousFiles();
+        assertEquals(miscellaneousFiles, Set.of(
+                "/eln-lims/c1/b2/91/c1b2912a-2ed6-40d6-8d9f-8c3ec2b29c5c/c1b2912a-2ed6-40d6-8d9f-8c3ec2b29c5c.jpg",
+                "/eln-lims/46/63/05/466305f0-4842-441f-b21c-777ea82079b4/466305f0-4842-441f-b21c-777ea82079b4.jpg"));
 
-        final byte[] bytes1 = miscellaneousFiles.get(
-                "/eln-lims/c1/b2/91/c1b2912a-2ed6-40d6-8d9f-8c3ec2b29c5c/c1b2912a-2ed6-40d6-8d9f-8c3ec2b29c5c.jpg");
-        assertNotNull(bytes1);
-        assertTrue(bytes1.length > 0);
-
-        final byte[] bytes2 = miscellaneousFiles.get(
-                "/eln-lims/46/63/05/466305f0-4842-441f-b21c-777ea82079b4/466305f0-4842-441f-b21c-777ea82079b4.jpg");
-        assertNotNull(bytes2);
-        assertTrue(bytes2.length > 0);
+        // Verify that each collected path actually resolves to real, non-empty file contents when read back,
+        // the same way the export does when it writes the miscellaneous files out.
+        for (final String miscellaneousFile : miscellaneousFiles)
+        {
+            final byte[] bytes = FileServerUtils.readAllBytes(miscellaneousFile);
+            assertTrue(bytes.length > 0, "Expected non-empty contents for " + miscellaneousFile);
+        }
     }
 
     public static void assertWorkbooksEqual(final Workbook actual, final Workbook expected)

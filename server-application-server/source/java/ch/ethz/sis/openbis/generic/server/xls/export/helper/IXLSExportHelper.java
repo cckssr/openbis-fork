@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -43,10 +44,10 @@ public interface IXLSExportHelper<ENTITY_TYPE extends IEntityType>
 
         private final Map<String, String> valueFiles;
 
-        private final Map<String, byte[]> miscellaneousFiles;
+        private final Set<String> miscellaneousFiles;
 
         public AdditionResult(final int rowNumber, final Collection<String> warnings, final Map<String, String> valueFiles,
-                final Map<String, byte[]> miscellaneousFiles)
+                final Set<String> miscellaneousFiles)
         {
             this.rowNumber = rowNumber;
             this.warnings = warnings;
@@ -69,7 +70,7 @@ public interface IXLSExportHelper<ENTITY_TYPE extends IEntityType>
             return valueFiles;
         }
 
-        public Map<String, byte[]> getMiscellaneousFiles()
+        public Set<String> getMiscellaneousFiles()
         {
             return miscellaneousFiles;
         }

@@ -161,10 +161,10 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
             warnings.addAll(additionResult.getWarnings());
             rowNumber = additionResult.getRowNumber();
 
-            return new AdditionResult(rowNumber + 1, warnings, valueFiles, Map.of());
+            return new AdditionResult(rowNumber + 1, warnings, valueFiles, Set.of());
         } else
         {
-            return new AdditionResult(rowNumber, warnings, valueFiles, Map.of());
+            return new AdditionResult(rowNumber, warnings, valueFiles, Set.of());
         }
     }
 
@@ -223,7 +223,7 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
             };
             addRow(rowNumber++, false, exportableKind, permId, warnings, valueFiles, values);
         }
-        return new AdditionResult(rowNumber, warnings, valueFiles, Map.of());
+        return new AdditionResult(rowNumber, warnings, valueFiles, Set.of());
     }
 
 

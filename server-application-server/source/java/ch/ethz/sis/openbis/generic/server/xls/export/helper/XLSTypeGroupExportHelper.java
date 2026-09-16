@@ -192,7 +192,7 @@ public class XLSTypeGroupExportHelper extends AbstractXLSExportHelper<IEntityTyp
             rowNumber++;
         }
 
-        return new AdditionResult(rowNumber, warnings, valueFiles, Map.of());
+        return new AdditionResult(rowNumber, warnings, valueFiles, Set.of());
     }
 
 

@@ -149,7 +149,7 @@ public class XLSProjectExportHelper extends AbstractXLSExportHelper<IEntityType>
             }
         }
 
-        return new AdditionResult(rowNumber + 1, warnings, valueFiles, Map.of());
+        return new AdditionResult(rowNumber + 1, warnings, valueFiles, Set.of());
     }
 
     protected Attribute[] getAttributes()

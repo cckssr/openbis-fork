@@ -23,19 +23,16 @@ import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.*;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import ch.ethz.sis.openbis.generic.server.xls.importer.utils.FileServerUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -102,7 +99,7 @@ public class XLSExport
     {
         final Map<String, String> scripts = exportResult.getScripts();
         final Map<String, String> valueFiles = exportResult.getValueFiles();
-        final Map<String, byte[]> miscellaneousFiles = exportResult.getMiscellaneousFiles();
+        final Set<String> miscellaneousFiles = exportResult.getMiscellaneousFiles();
         if (scripts.isEmpty() && valueFiles.isEmpty() && miscellaneousFiles.isEmpty())
         {
             try
@@ -138,11 +135,11 @@ public class XLSExport
                     zos.closeEntry();
                 }
 
-                for (final Map.Entry<String, byte[]> miscellaneousFile : miscellaneousFiles.entrySet())
+                for (final String miscellaneousFilePath : miscellaneousFiles)
                 {
                     zos.putNextEntry(new ZipEntry(String.format("%s/%s/%s", MISCELLANEOUS_DIRECTORY, FILE_SERVICE_SUBDIRECTORY,
-                            miscellaneousFile.getKey())));
-                    bos.write(miscellaneousFile.getValue());
+                            miscellaneousFilePath)));
+                    bos.write(FileServerUtils.readAllBytes(StringEscapeUtils.unescapeHtml4(miscellaneousFilePath)));
                     bos.flush();
                     zos.closeEntry();
                 }
@@ -180,7 +177,7 @@ public class XLSExport
         final Map<String, String> scripts = new HashMap<>();
         final Collection<String> warnings = new ArrayList<>();
         final Map<String, String> valueFiles = new HashMap<>();
-        final Map<String, byte[]> miscellaneousFiles = new HashMap<>();
+        final Set<String> miscellaneousFiles = new HashSet<>();
 
         for (final Collection<ExportablePermId> exportablePermIdGroup : groupedExportablePermIds)
         {
@@ -196,7 +193,7 @@ public class XLSExport
             rowNumber = additionResult.getRowNumber();
             warnings.addAll(additionResult.getWarnings());
             valueFiles.putAll(additionResult.getValueFiles());
-            miscellaneousFiles.putAll(additionResult.getMiscellaneousFiles());
+            miscellaneousFiles.addAll(additionResult.getMiscellaneousFiles());
 
             final IEntityType entityType = exportReferredMasterData ? helper.getEntityType(api, sessionToken,
                     exportablePermId.getPermId().getPermId()) : null;
@@ -394,10 +391,11 @@ public class XLSExport
 
         private final Map<String, String> valueFiles;
 
-        private final Map<String, byte[]> miscellaneousFiles;
+        private final Set<String> miscellaneousFiles;
 
         public PrepareWorkbookResult(final Workbook workbook, final Map<String, String> scripts,
-                final Collection<String> warnings, final Map<String, String> valueFiles, final Map<String, byte[]> miscellaneousFiles)
+                final Collection<String> warnings, final Map<String, String> valueFiles,
+                final Set<String> miscellaneousFiles)
         {
             this.workbook = workbook;
             this.scripts = scripts;
@@ -426,7 +424,7 @@ public class XLSExport
             return valueFiles;
         }
 
-        public Map<String, byte[]> getMiscellaneousFiles()
+        public Set<String> getMiscellaneousFiles()
         {
             return miscellaneousFiles;
         }
