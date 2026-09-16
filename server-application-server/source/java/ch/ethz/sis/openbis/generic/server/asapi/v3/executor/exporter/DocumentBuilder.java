@@ -15,14 +15,9 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.exporter;
 
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import ch.ethz.sis.shared.log.classic.core.LogCategory;
-import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.util.List;
 
@@ -35,9 +30,7 @@ class DocumentBuilder
 
     private static final String END_RICH_TEXT = "</body></html>";
 
-    private StringBuffer doc = new StringBuffer();
-
-    private String closedDoc;
+    private StringBuilder doc = new StringBuilder();
 
     private boolean closed = false;
 
@@ -45,12 +38,6 @@ class DocumentBuilder
     {
         System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
         startDoc();
-    }
-
-    public void setDocument(final String doc)
-    {
-        this.doc = new StringBuffer(doc);
-        closed = true;
     }
 
     private void startDoc()
@@ -70,8 +57,9 @@ class DocumentBuilder
         {
             doc.append("</body>");
             doc.append("</html>");
+            // A builder doubles its capacity whenever it grows, and the unused part would stay allocated for as long as the document is used.
+            doc.trimToSize();
             closed = true;
-            closedDoc = fixImages(doc);
         }
     }
 
@@ -132,16 +120,23 @@ class DocumentBuilder
         }
     }
 
-    public String getHtml()
+    public StringBuilder getHtml()
     {
         if (!closed)
         {
             endDoc();
         }
-        return closedDoc;
+        return doc;
     }
 
-    private String cleanXMLEnvelope(final String value)
+    /**
+     * Strips the XML envelope the rich text editor wraps its values into. Package private, because the values are also parsed by
+     * {@link ExportExecutor}, which has to strip the envelope before handing them over to a HTML parser.
+     *
+     * @param value the property value to be cleaned
+     * @return the value without the XML envelope
+     */
+    static String cleanXMLEnvelope(final String value)
     {
         if (value.startsWith(START_RICH_TEXT) && value.endsWith(END_RICH_TEXT))
         {
@@ -150,35 +145,6 @@ class DocumentBuilder
         {
             return value;
         }
-    }
-
-    private String fixImages(StringBuffer buffer)
-    {
-        final Document jsoupDoc = Jsoup.parse(buffer.toString());
-        jsoupDoc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
-        final Elements elements = jsoupDoc.select("img");
-
-        // Fixes images sizes
-        for (final Element element : elements)
-        {
-            final String style = element.attr("style");
-            final String[] rules = style.split(";");
-            for (final String rule : rules)
-            {
-                final String[] ruleElements = rule.split(":");
-                if (ruleElements.length == 2)
-                {
-                    final String ruleKey = ruleElements[0].trim();
-                    final String ruleValue = ruleElements[1].trim();
-                    if ((ruleKey.equalsIgnoreCase("width") || ruleKey.equalsIgnoreCase("height")) && ruleValue.endsWith("px"))
-                    {
-                        element.attr(ruleKey, ruleValue.substring(0, ruleValue.length() - 2));
-                    }
-                }
-            }
-        }
-
-        return jsoupDoc.html();
     }
 
 }

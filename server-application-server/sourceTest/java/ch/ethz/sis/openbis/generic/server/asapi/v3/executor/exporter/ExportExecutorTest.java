@@ -33,6 +33,8 @@ public class ExportExecutorTest
 
     private static final String ERRONEOUS_FOLDER_NAME_DATA_PROVIDER = "erroneousFolderNameData";
 
+    private static final String HSL_TO_HEX_DATA_PROVIDER = "hslToHexData";
+
     private static final String SPACE_CODE = "TEST_SPACE";
 
     private static final String PROJECT_CODE = "TEST_PROJECT";
@@ -294,6 +296,44 @@ public class ExportExecutorTest
             },
     };
 
+    private static final Object[][] HSL_TO_HEX_DATA = {
+            {
+                    // Empty document
+                    "", "color", ""
+            },
+            {
+                    // No colors
+                    "<p>No colors here</p>", "color", "<p>No colors here</p>"
+            },
+            {
+                    // The whole document is a single declaration
+                    "color:hsl(0, 0%, 0%);", "color", "color: #000000;"
+            },
+            {
+                    // Several declarations surrounded by text
+                    "<span style=\"color:hsl(120, 100%, 50%);\">a</span><span style=\"color:hsl(240, 100%, 50%);\">b</span>", "color",
+                    "<span style=\"color: #008000;\">a</span><span style=\"color: #000080;\">b</span>"
+            },
+            {
+                    // Adjacent declarations
+                    "color:hsl(0,0%,0%);color:hsl(30,40%,50%);", "color", "color: #000000;color: #80664D;"
+            },
+            {
+                    // Characters outside of Latin-1 around the declaration
+                    "\u00FC\uD83D\uDE00<b style=\"color:hsl(0, 75%, 60%);\">\u00FC\uD83D\uDE00</b>\u00FC\uD83D\uDE00", "color",
+                    "\u00FC\uD83D\uDE00<b style=\"color: #992626;\">\u00FC\uD83D\uDE00</b>\u00FC\uD83D\uDE00"
+            },
+            {
+                    // The replacements (23 characters) are shorter than the first two declarations (26 characters) and longer than the last two
+                    // (19 characters): the third one fits into the space freed before it, the fourth one does not and shifts the rest to the right
+                    "<p style=\"color:hsl(120, 100%, 50%);\">1</p><p style=\"color:hsl(240, 100%, 50%);\">2</p>"
+                            + "<p style=\"color:hsl(0,0%,0%);\">3</p><p style=\"color:hsl(0,0%,0%);\">4</p>end",
+                    "outline-color",
+                    "<p style=\"outline-color: #008000;\">1</p><p style=\"outline-color: #000080;\">2</p>"
+                            + "<p style=\"outline-color: #000000;\">3</p><p style=\"outline-color: #000000;\">4</p>end"
+            },
+    };
+
     @DataProvider
     private Object[][] nextZipEntryData()
     {
@@ -316,6 +356,12 @@ public class ExportExecutorTest
     private Object[][] erroneousFolderNameData()
     {
         return ERRONEOUS_FOLDER_NAME_DATA;
+    }
+
+    @DataProvider
+    private Object[][] hslToHexData()
+    {
+        return HSL_TO_HEX_DATA;
     }
 
     @Test(dataProvider = NEXT_ZIP_ENTRY_DATA_PROVIDER)
@@ -360,6 +406,14 @@ public class ExportExecutorTest
         final String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 $!#%'()+,-.;=@[]^_{}~\\/:*?\"<>|`";
         final String expectedOutput = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 $!#%'()+,-.;=@[]^_{}~__________";
         assertEquals(ExportExecutor.escapeUnsafeCharacters(input), expectedOutput);
+    }
+
+    @Test(dataProvider = HSL_TO_HEX_DATA_PROVIDER)
+    public void testReplaceHSLToHex(final String html, final String cssProperty, final String expectedResult)
+    {
+        final StringBuilder builder = new StringBuilder(html);
+        ExportPDFUtils.replaceHSLToHex(builder, cssProperty, ExportPDFUtils.HSL_COLOR_PATTERN);
+        assertEquals(builder.toString(), expectedResult);
     }
 
 }

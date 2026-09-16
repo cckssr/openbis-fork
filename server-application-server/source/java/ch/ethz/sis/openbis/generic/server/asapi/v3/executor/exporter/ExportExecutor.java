@@ -17,97 +17,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.exporter;
 
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.DATASET;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.EXPERIMENT;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.MASTER_DATA_EXPORTABLE_KINDS;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.PROJECT;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.SAMPLE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.SPACE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.FieldType.ATTRIBUTE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.FieldType.PROPERTY;
-import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.DATA_DIRECTORY;
-import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.ExportResult;
-import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.FILE_SERVICE_SUBDIRECTORY;
-import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.MISCELLANEOUS_DIRECTORY;
-import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.SCRIPTS_DIRECTORY;
-import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.TextFormatting;
-import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.ZIP_EXTENSION;
-import static ch.ethz.sis.openbis.generic.server.xls.export.helper.AbstractXLSExportHelper.FIELD_ID_KEY;
-import static ch.ethz.sis.openbis.generic.server.xls.export.helper.AbstractXLSExportHelper.FIELD_TYPE_KEY;
-import static ch.systemsx.cisd.openbis.generic.shared.Constants.DOWNLOAD_URL;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.executor.exporter.ExportPropertiesUtils.BUFFER_SIZE;
-
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-
-import jakarta.annotation.Resource;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
-import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityCollector;
-import ch.ethz.sis.openbis.generic.server.xls.export.*;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.jsoup.Jsoup;
-import org.jsoup.helper.W3CDom;
-import org.jsoup.nodes.Document;
-import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.openhtmltopdf.extend.FSSupplier;
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDescriptionHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityTypeHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IExperimentHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IIdentifierHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModificationDateHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModifierHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IParentChildrenHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistrationDateHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistratorHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISampleHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
@@ -137,6 +50,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityCollector;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownload;
@@ -145,15 +59,65 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFil
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.FileServiceServlet;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.ObjectMapperResource;
+import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
+import ch.ethz.sis.openbis.generic.server.xls.export.ExportablePermId;
+import ch.ethz.sis.openbis.generic.server.xls.export.FieldType;
+import ch.ethz.sis.openbis.generic.server.xls.export.XLSExport;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.ethz.sis.shared.log.classic.core.LogCategory;
-import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.openhtmltopdf.extend.FSSupplier;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.jsoup.Jsoup;
+import org.jsoup.helper.W3CDom;
+import org.jsoup.nodes.Document;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+
+import jakarta.annotation.Resource;
+
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.executor.exporter.ExportPropertiesUtils.getFilesRepositoryPath;
+import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.*;
+import static ch.ethz.sis.openbis.generic.server.xls.export.FieldType.ATTRIBUTE;
+import static ch.ethz.sis.openbis.generic.server.xls.export.FieldType.PROPERTY;
+import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.*;
+import static ch.ethz.sis.openbis.generic.server.xls.export.helper.AbstractXLSExportHelper.FIELD_ID_KEY;
+import static ch.ethz.sis.openbis.generic.server.xls.export.helper.AbstractXLSExportHelper.FIELD_TYPE_KEY;
+import static ch.systemsx.cisd.openbis.generic.shared.Constants.DOWNLOAD_URL;
 
 @SuppressWarnings("SizeReplaceableByIsEmpty")
 @Component
@@ -165,6 +129,12 @@ public class ExportExecutor implements IExportExecutor
     public static final String XLSX_DIRECTORY = "xlsx";
 
     public static final String PDF_DIRECTORY = "hierarchy";
+
+    public static final String DATA_DIRECTORY = "data";
+
+    public static final String MISCELLANEOUS_DIRECTORY = "miscellaneous";
+
+    public static final String FILE_SERVICE_SUBDIRECTORY = "file-service";
 
     public static final String SHARED_SAMPLES_DIRECTORY = "(shared)";
 
@@ -192,6 +162,21 @@ public class ExportExecutor implements IExportExecutor
 
     private static final String PYTHON_EXTENSION = ".py";
 
+    private static final String COMMON_STYLE = "border: 1px solid black;";
+
+    private static final String TABLE_STYLE = COMMON_STYLE + " border-collapse: collapse;";
+
+    private static final String DATA_TAG_START = "<DATA>";
+
+    private static final int DATA_TAG_START_LENGTH = DATA_TAG_START.length();
+
+    private static final String DATA_TAG_END = "</DATA>";
+
+    private static final int DATA_TAG_END_LENGTH = DATA_TAG_END.length();
+
+    /** Buffer size of the buffered streams. */
+    private static final int BUFFER_SIZE = 3 * 1024;
+
     private static final String KIND_DOCUMENT_PROPERTY_ID = "Kind";
 
     private static final String TYPE_DOCUMENT_PROPERTY_ID = "Type";
@@ -203,6 +188,7 @@ public class ExportExecutor implements IExportExecutor
 
     private static final List<String> AFS_PATHS_TO_FILTER = List.of("/.afs.trash", "/.afs.snapshots");
 
+    private static final Pattern FILE_SERVICE_PATTERN = Pattern.compile("/openbis/" + FileServiceServlet.FILE_SERVICE_PATH + "/");
 
     @Resource(name = ObjectMapperResource.NAME)
     private ObjectMapper objectMapper;
@@ -807,7 +793,7 @@ public class ExportExecutor implements IExportExecutor
     }
 
     private void createFilesAndDirectoriesForSpacesOfEntities(final String sessionToken, final File docDirectory, final Collection<?> entities,
-            final Map<String, Map<String, List<Map<String, String>>>> exportFields, final Set<ExportFormat> exportFormats) throws IOException
+                                                              final Map<String, Map<String, List<Map<String, String>>>> exportFields, final Set<ExportFormat> exportFormats) throws IOException
     {
         final boolean hasHtmlFormat = exportFormats.contains(ExportFormat.HTML);
         final boolean hasPdfFormat = exportFormats.contains(ExportFormat.PDF);
@@ -819,23 +805,19 @@ public class ExportExecutor implements IExportExecutor
                 final Space space = (Space) entity;
 
                 final Map<String, List<Map<String, String>>> entityTypeExportFieldsMap = getEntityTypeExportFieldsMap(exportFields, SPACE);
-                final String html = getHtml(sessionToken, space, entityTypeExportFieldsMap);
-                final byte[] htmlBytes = html.getBytes(StandardCharsets.UTF_8);
+                final StringBuilder html = getHtml(sessionToken, space, entityTypeExportFieldsMap);
+                final Path repositoryPath = getFilesRepositoryPath(configurer);
 
                 if (hasHtmlFormat)
                 {
                     final File htmlFile = createNextDocFile(docDirectory, space.getCode(), null, null, null, null, null, null, null, HTML_EXTENSION);
-                    try (final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(htmlFile), BUFFER_SIZE))
-                    {
-                        writeInChunks(bos, htmlBytes);
-                        bos.flush();
-                    }
+                    ExportImageUtils.writeHtml(htmlFile.toPath(), html, repositoryPath);
                 }
 
                 if (hasPdfFormat)
                 {
                     final File pdfFile = createNextDocFile(docDirectory, space.getCode(), null, null, null, null, null, null, null, PDF_EXTENSION);
-                    buildPdf(pdfFile, html);
+                    buildPdf(pdfFile, html, repositoryPath);
                 }
             } else
             {
@@ -1173,7 +1155,7 @@ public class ExportExecutor implements IExportExecutor
         final int length = bytes.length;
         for (int pos = 0; pos < length; pos += BUFFER_SIZE)
         {
-            os.write(Arrays.copyOfRange(bytes, pos, Math.min(pos + BUFFER_SIZE, length)));
+            os.write(bytes, pos, Math.min(BUFFER_SIZE, length - pos));
         }
         os.flush();
     }
@@ -1199,82 +1181,88 @@ public class ExportExecutor implements IExportExecutor
         return docFile;
     }
 
-    private static void writeLargeString(final Path file, final String text) throws IOException
-    {
-        final int chunkSize = 512 * 1024; // 512 KiB of characters
-
-        try (final BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8))
-        {
-            for (int offset = 0; offset < text.length(); )
-            {
-                final int count = Math.min(chunkSize, text.length() - offset);
-                writer.write(text, offset, count);
-                offset += count;
-            }
-        }
-    }
-
     private void createDocFilesForEntity(final String sessionToken, final File docDirectory,
-            final Map<String, List<Map<String, String>>> entityTypeExportFieldsMap,
-            final ICodeHolder entity, final String spaceCode, final String projectCode, final String experimentCode,
-            final String experimentName, final String containerCode, final String sampleCode, final String sampleName, final String dataSetCode,
-            final Set<ExportFormat> exportFormats) throws IOException
+                                         final Map<String, List<Map<String, String>>> entityTypeExportFieldsMap,
+                                         final ICodeHolder entity, final String spaceCode, final String projectCode, final String experimentCode,
+                                         final String experimentName, final String containerCode, final String sampleCode, final String sampleName, final String dataSetCode,
+                                         final Set<ExportFormat> exportFormats) throws IOException
     {
         final boolean hasHtmlFormat = exportFormats.contains(ExportFormat.HTML);
         final boolean hasPdfFormat = exportFormats.contains(ExportFormat.PDF);
-        final String html = getHtml(sessionToken, entity, entityTypeExportFieldsMap);
+        final StringBuilder html = getHtml(sessionToken, entity, entityTypeExportFieldsMap);
+        final Path repositoryPath = getFilesRepositoryPath(configurer);
 
         if (hasHtmlFormat)
         {
             final File htmlFile = createNextDocFile(docDirectory, spaceCode, projectCode, experimentCode, experimentName, containerCode, sampleCode,
                     sampleName, dataSetCode, HTML_EXTENSION);
-            writeLargeString(htmlFile.toPath(), html);
+            ExportImageUtils.writeHtml(htmlFile.toPath(), html, repositoryPath);
         }
 
         if (hasPdfFormat)
         {
             final File pdfFile = createNextDocFile(docDirectory, spaceCode, projectCode, experimentCode, experimentName, containerCode, sampleCode,
                     sampleName, dataSetCode, PDF_EXTENSION);
-            buildPdf(pdfFile, html);
+            buildPdf(pdfFile, html, repositoryPath);
         }
     }
 
-    private static void buildPdf(final File pdfFile, final String html) throws IOException
+    /**
+     * Builds the PDF file from the HTML document. The images referenced by the document are read from the file repository while rendering.
+     * <p>
+     * The HSL colors are converted in the given document itself, so any other use of the document has to happen before.
+     *
+     * @param repositoryPath canonical path of the file repository
+     */
+    private static void buildPdf(final File pdfFile, final StringBuilder html, final Path repositoryPath) throws IOException
     {
         try (final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(pdfFile), BUFFER_SIZE))
         {
-            final PdfRendererBuilder builder = new PdfRendererBuilder();
-            builder.useFont(new FSSupplier<InputStream>()
-            {
-                @Override
-                public InputStream supply()
-                {
-                    return ExportPDFUtils.class.getResourceAsStream("OpenSans-Regular.ttf");
-                }
-            }, "OpenSans");
-            builder.useFont(new FSSupplier<InputStream>()
-            {
-                @Override
-                public InputStream supply()
-                {
-                    return ExportPDFUtils.class.getResourceAsStream("NotoSansMath-Regular.ttf");
-                }
-            }, "NotoSansMath");
-            builder.useFont(new FSSupplier<InputStream>()
-            {
-                @Override
-                public InputStream supply()
-                {
-                    return ExportPDFUtils.class.getResourceAsStream("NotoEmoji-Regular.ttf");
-                }
-            }, "NotoEmoji");
+            final PdfRendererBuilder builder = getPdfRendererBuilder();
 
-            String replacedHtml = ExportPDFUtils.addStyleHeader(html);
-            replacedHtml = ExportPDFUtils.replaceHSLToHex(replacedHtml, "color", ExportPDFUtils.hslColorPattern);
-            replacedHtml = ExportPDFUtils.insertPagePagebreak(replacedHtml, "<h2>Identification Info</h2>");
-            Document replacedHtmlDoc = Jsoup.parse(replacedHtml);
-            builder.useFastMode().withW3cDocument(new W3CDom().fromJsoup(replacedHtmlDoc), null).toStream(bos).run();
+            ExportPDFUtils.replaceHSLToHex(html, "color", ExportPDFUtils.HSL_COLOR_PATTERN);
+
+            // The style sheet and the page break go into the parsed document: the builder is trimmed to its size, so inserting into it would
+            // reallocate it.
+            final Document document = Jsoup.parse(html.toString());
+            ExportPDFUtils.addStyleHeader(document);
+            ExportPDFUtils.insertPageBreak(document, "Identification Info");
+
+            builder.useProtocolsStreamImplementation(ExportImageUtils.createImageStreamFactory(repositoryPath),
+                    ExportImageUtils.IMAGE_REFERENCE_PROTOCOL);
+            builder.useFastMode().withW3cDocument(new W3CDom().fromJsoup(document), null).toStream(bos).run();
         }
+    }
+
+    @NonNull
+    private static PdfRendererBuilder getPdfRendererBuilder()
+    {
+        final PdfRendererBuilder builder = new PdfRendererBuilder();
+        builder.useFont(new FSSupplier<InputStream>()
+        {
+            @Override
+            public InputStream supply()
+            {
+                return ExportPDFUtils.class.getResourceAsStream("OpenSans-Regular.ttf");
+            }
+        }, "OpenSans");
+        builder.useFont(new FSSupplier<InputStream>()
+        {
+            @Override
+            public InputStream supply()
+            {
+                return ExportPDFUtils.class.getResourceAsStream("NotoSansMath-Regular.ttf");
+            }
+        }, "NotoSansMath");
+        builder.useFont(new FSSupplier<InputStream>()
+        {
+            @Override
+            public InputStream supply()
+            {
+                return ExportPDFUtils.class.getResourceAsStream("NotoEmoji-Regular.ttf");
+            }
+        }, "NotoEmoji");
+        return builder;
     }
 
     static String getNextDocDirectoryName(final String spaceCode, final String projectCode, final String experimentCode, final String experimentName,
@@ -1536,7 +1524,7 @@ public class ExportExecutor implements IExportExecutor
         return name != null ? name.replaceAll(UNSAFE_CHARACTERS_REGEXP, "_") : null;
     }
 
-    private String getHtml(final String sessionToken, final ICodeHolder entityObj,
+    private StringBuilder getHtml(final String sessionToken, final ICodeHolder entityObj,
             final Map<String, List<Map<String, String>>> entityTypeExportFieldsMap) throws IOException
     {
         final IApplicationServerInternalApi v3 = CommonServiceProvider.getApplicationServerApi();
@@ -1622,7 +1610,7 @@ public class ExportExecutor implements IExportExecutor
                         } else if (propertyType.getDataType() == DataType.MULTILINE_VARCHAR &&
                                 Objects.equals(propertyType.getMetaData().get("custom_widget"), "Word Processor"))
                         {
-                            propertyValue = ExportPropertiesUtils.encodeImages(configurer, initialPropertyValue);
+                            propertyValue = ExportPropertiesUtils.referenceImages(initialPropertyValue, configurer);
                         } else if (propertyType.getDataType() == DataType.XML
                                 && Objects.equals(propertyType.getMetaData().get("custom_widget"), "Spreadsheet")
                                 && initialPropertyValue.toUpperCase().startsWith(ExportPropertiesUtils.DATA_TAG_START) && initialPropertyValue.toUpperCase()
@@ -1698,7 +1686,7 @@ public class ExportExecutor implements IExportExecutor
             if (description != null && !Objects.equals(description, "\uFFFD(undefined)"))
             {
                 documentBuilder.addHeader("Description", 2);
-                documentBuilder.addParagraph(ExportPropertiesUtils.encodeImages(configurer, description));
+                documentBuilder.addParagraph(ExportPropertiesUtils.referenceImages(description, configurer));
             }
         }
 
@@ -1817,7 +1805,6 @@ public class ExportExecutor implements IExportExecutor
         return documentBuilder.getHtml();
     }
 
-
     private static IEntityType getEntityType(final IApplicationServerInternalApi v3, final String sessionToken, final ICodeHolder entityObj)
     {
         if (entityObj instanceof Experiment)
@@ -1905,8 +1892,6 @@ public class ExportExecutor implements IExportExecutor
         }
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
-
-
 
     /**
      * Whether the set does not forbid a value.
@@ -2023,15 +2008,6 @@ public class ExportExecutor implements IExportExecutor
         {
             final List<Path> filePaths = stream.filter(path -> path.toFile().isFile()).limit(2).collect(Collectors.toList());
             return filePaths.size() == 1 ? filePaths.get(0).toFile() : null;
-        }
-    }
-
-    public static boolean isAbsoluteUrl(final String url) {
-        try {
-            new URL(url);
-            return true;
-        } catch (final MalformedURLException e) {
-            return false;
         }
     }
 

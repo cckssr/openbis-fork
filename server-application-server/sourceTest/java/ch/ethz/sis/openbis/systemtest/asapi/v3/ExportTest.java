@@ -56,6 +56,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -76,6 +77,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -824,7 +829,7 @@ public class ExportTest extends AbstractTest
             )
             {
                 logComparedFiles("stream", expectedResultFilePath, actualResultFilePath);
-                compareStreams(expectedResultInputStream, actualResultInputStream);
+                compareHtmlStreams(expectedResultInputStream, actualResultInputStream);
             }
         } else
         {
@@ -890,9 +895,13 @@ public class ExportTest extends AbstractTest
                             final InputStream actualInputStream = actualZipFile.getInputStream(actualEntry);
                     )
                     {
-                        logComparedFiles("zip-entry", expectedResultFilePath + "!" + expectedZipEntry,
-                                actualResultFilePath + "!" + actualEntry.getName());
-                        compareStreams(expectedInputStream, actualInputStream);
+                        if (expectedZipEntry.endsWith(HTML_EXTENSION))
+                        {
+                            compareHtmlStreams(expectedInputStream, actualInputStream);
+                        } else
+                        {
+                            compareStreams(expectedInputStream, actualInputStream);
+                        }
                     }
                 }
             }
@@ -957,6 +966,9 @@ public class ExportTest extends AbstractTest
                     {
                         logComparedFiles("directory-xlsx", expectedFile.getAbsolutePath(), actualFile.getAbsolutePath());
                         compareXlsxStreams(expectedInputStream, actualInputStream);
+                    } else if (expectedFileName.endsWith(HTML_EXTENSION))
+                    {
+                        compareHtmlStreams(expectedInputStream, actualInputStream);
                     } else
                     {
                         logComparedFiles("directory-stream", expectedFile.getAbsolutePath(), actualFile.getAbsolutePath());
@@ -997,6 +1009,43 @@ public class ExportTest extends AbstractTest
             }
             assertNull(actualReader.readLine());
         }
+    }
+
+    /**
+     * Compares HTML documents by their parsed content. The exporter writes HTML without any formatting, so the formatting of the expected
+     * documents is not relevant.
+     */
+    private static void compareHtmlStreams(final InputStream expectedResultInputStream, final InputStream actualResultInputStream)
+            throws IOException
+    {
+        final String expectedHtml = normalizeHtml(new String(expectedResultInputStream.readAllBytes(), StandardCharsets.UTF_8));
+        final String actualHtml = normalizeHtml(new String(actualResultInputStream.readAllBytes(), StandardCharsets.UTF_8));
+        compareStreams(new ByteArrayInputStream(expectedHtml.getBytes(StandardCharsets.UTF_8)),
+                new ByteArrayInputStream(actualHtml.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Parses the HTML document and serialises it pretty printed, without the whitespace-only text between the tags. Parsing also applies the
+     * nesting rules of HTML, for instance moves a figure or a table out of the paragraph it was written into.
+     */
+    private static String normalizeHtml(final String html)
+    {
+        final Document document = Jsoup.parse(html);
+        for (final Element element : document.getAllElements())
+        {
+            if (!element.is("pre, textarea") && !element.parents().is("pre, textarea"))
+            {
+                for (final TextNode textNode : new ArrayList<>(element.textNodes()))
+                {
+                    if (textNode.isBlank())
+                    {
+                        textNode.remove();
+                    }
+                }
+            }
+        }
+        document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+        return document.html();
     }
 
     private File getActualFile(final String actualResultFilePath)

@@ -12,35 +12,76 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.nodes.DataNode;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 public class ExportPDFUtils
 {
 
-    static final Pattern hslColorPattern = Pattern.compile("color:hsl\\(.*?\\);");
-    static final Pattern hslBackgroundColorPattern = Pattern.compile("background-color:hsl\\(.*?\\);");
+    static final Pattern HSL_COLOR_PATTERN = Pattern.compile("color:hsl\\(.*?\\);");
+    private static final Pattern hslBackgroundColorPattern = Pattern.compile("background-color:hsl\\(.*?\\);");
+    private static String styleCSS = null;
     static final String COMMON_STYLE = "border: 1px solid black;";
     static final String TABLE_STYLE = COMMON_STYLE + " border-collapse: collapse;";
 
     /*
-     * This algorithm to replace HSL to Hex colors has the benefit of having a complexity of O(n)
-     * It only transverses the source and destination strings once without creating additional copies
+     * Replaces the HSL colors found by the pattern with their Hex representation in place, without creating a copy of the document.
+     * The builder is compacted in a single pass: the text following a replacement is moved left by the number of characters saved so far,
+     * which keeps the complexity at O(n) instead of shifting the whole remainder of a potentially very large document on every match.
      */
-    public static String replaceHSLToHex(String html, String cssProperty, Pattern pattern) {
-        Matcher matcher = pattern.matcher(html);
-        StringBuilder builder = null;
-        while (matcher.find()) {
-            if (builder == null) {
-                builder = new StringBuilder(html);
+    public static void replaceHSLToHex(final StringBuilder html, final String cssProperty, final Pattern pattern)
+    {
+        final Matcher matcher = pattern.matcher(html);
+        // Everything before readIndex has been processed, and the result of it occupies everything before writeIndex.
+        int readIndex = 0;
+        int writeIndex = 0;
+
+        while (matcher.find(readIndex)) {
+            final int matchStart = matcher.start();
+            final int matchEnd = matcher.end();
+
+            final String[] hslParts = html.substring(matchStart + 10, matchEnd - 2).replace("%", "").split(",");
+            final String hex = hslToHex(Float.parseFloat(hslParts[0]) / 360, Float.parseFloat(hslParts[1]) / 100,
+                    Float.parseFloat(hslParts[2]) / 100);
+            final String hexColor = cssProperty + ": " + hex + ";";
+
+            writeIndex = moveCharacters(html, readIndex, matchStart, writeIndex);
+
+            if (writeIndex + hexColor.length() <= matchEnd) {
+                for (int i = 0; i < hexColor.length(); i++) {
+                    html.setCharAt(writeIndex++, hexColor.charAt(i));
+                }
+                readIndex = matchEnd;
+            } else {
+                // The replacement does not fit into the space freed so far, so the unprocessed text has to be shifted right.
+                // (Matcher.find(int) resets the matcher, so it picks up the new length of the builder.)
+                html.replace(writeIndex, matchEnd, hexColor);
+                writeIndex += hexColor.length();
+                readIndex = writeIndex;
             }
-            String[] hslParts = html.substring(matcher.start()+10, matcher.end()-2).replace("%", "").split(",");
-            String hex = hslToHex(Float.parseFloat(hslParts[0])/360, Float.parseFloat(hslParts[1])/100, Float.parseFloat(hslParts[2])/100);
-            String hexColor = cssProperty + ": " + hex + ";";
-            int offset = html.length() - builder.length();
-            builder.replace((matcher.start() - offset), (matcher.end() - offset), hexColor);
         }
-        if (builder != null) {
-            html = builder.toString();
+
+        writeIndex = moveCharacters(html, readIndex, html.length(), writeIndex);
+        html.setLength(writeIndex);
+    }
+
+    /**
+     * Moves the characters in the range [from, to) of the builder to the given destination, which must not be after <code>from</code>.
+     *
+     * @return the index right after the last moved character
+     */
+    private static int moveCharacters(final StringBuilder builder, final int from, final int to, final int destination)
+    {
+        if (destination == from) {
+            return to;
         }
-        return html;
+
+        int writeIndex = destination;
+        for (int readIndex = from; readIndex < to; readIndex++) {
+            builder.setCharAt(writeIndex++, builder.charAt(readIndex));
+        }
+        return writeIndex;
     }
 
     public static String hslToHex(double hue, double saturation, double lightness) {
@@ -58,15 +99,18 @@ public class ExportPDFUtils
         return hex;
     }
 
-    static String styleCSS = null;
-    public static String addStyleHeader(String replacedHtml) throws IOException
+    public static void addStyleHeader(final Document document) throws IOException
     {
         if (styleCSS == null) {
             InputStream is = ExportPDFUtils.class.getResourceAsStream("content-styles-css-2.css");
-            styleCSS = new String(readInputStream(is));
+            // The style sheet contains HSL colors too, so they are converted like the ones of the document.
+            final StringBuilder css = new StringBuilder(new String(readInputStream(is)));
+            replaceHSLToHex(css, "color", HSL_COLOR_PATTERN);
+            styleCSS = css.toString();
         }
 
-        return replacedHtml.replace("<head></head>", "<head><style>" + styleCSS + "</style></head>");
+        // A data node, so that the style sheet is not escaped.
+        document.head().appendElement("style").appendChild(new DataNode(styleCSS));
     }
 
     public static byte[] readInputStream(InputStream inputStream) throws IOException
@@ -82,8 +126,22 @@ public class ExportPDFUtils
         return outputStream.toByteArray();
     }
 
-    public static String insertPagePagebreak(String html, String before) {
-        return html.replace(before, "<div class=\"pagebreak\"> </div>" + before);
+    /**
+     * Inserts a page break before the first second level header with the given text. If there is no such header, the document is not changed.
+     *
+     * @param document HTML document where the page break will be inserted
+     * @param headerText text of the header before which the page break is to be added
+     */
+    public static void insertPageBreak(final Document document, final String headerText)
+    {
+        for (final Element header : document.getElementsByTag("h2"))
+        {
+            if (header.text().equals(headerText))
+            {
+                header.before("<div class=\"pagebreak\"> </div>");
+                return;
+            }
+        }
     }
 
     public static String convertJsonToHtml(final JsonNode node)

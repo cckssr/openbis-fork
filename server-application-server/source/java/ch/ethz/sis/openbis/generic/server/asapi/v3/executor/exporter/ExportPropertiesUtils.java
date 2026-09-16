@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
@@ -153,6 +154,82 @@ final class ExportPropertiesUtils
         return new File(configurer.getPropertyValue(REPO_PATH_KEY, DEFAULT_REPO_PATH));
     }
 
+    public static Path getFilesRepositoryPath(final ExposablePropertyPlaceholderConfigurer configurer) throws IOException
+    {
+        return getFilesRepository(configurer).getCanonicalFile().toPath();
+    }
 
     private ExportPropertiesUtils() {}
+
+    public static String referenceImage(final String imageSrc, final ExposablePropertyPlaceholderConfigurer configurer)
+            throws IOException
+    {
+        if (imageSrc.lastIndexOf('.') >= 0 && !isAbsoluteUrl(imageSrc))
+        {
+            final String relativePath = extractFileServicePath(imageSrc);
+            // Resolved already here, so that an invalid or missing image fails the export while the document is built, as it did before.
+            ExportImageUtils.resolveImageFile(getFilesRepositoryPath(configurer), relativePath);
+            return ExportImageUtils.createImageReference(relativePath);
+        } else
+        {
+            // Invalid image file or the path is absolute. We just return the initial reference.
+            return imageSrc;
+        }
+    }
+
+    public static String referenceImages(final String initialPropertyValue,
+                                         final ExposablePropertyPlaceholderConfigurer configurer) throws IOException
+    {
+        // The envelope has to go before parsing, otherwise the XML declaration ends up as a comment in the body of the parsed document.
+        final Document doc = Jsoup.parseBodyFragment(DocumentBuilder.cleanXMLEnvelope(initialPropertyValue));
+        final Elements imageElements = doc.select("img");
+
+        if (imageElements.isEmpty())
+        {
+            // No images, so the value is left untouched to avoid the cost of serialising the document back.
+            return initialPropertyValue;
+        }
+
+        // XML syntax keeps the image tags self-closed, as the PDF renderer expects. Pretty printing is switched off so that the rich text
+        // of the user is handed over unchanged, apart from the image sources.
+        doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml).prettyPrint(false);
+
+        for (final Element imageElement : imageElements)
+        {
+            fixImageSize(imageElement);
+
+            final String imageSrc = imageElement.attr("src");
+            if (!imageSrc.isEmpty())
+            {
+                imageElement.attr("src", referenceImage(imageSrc, configurer));
+            }
+        }
+
+        return doc.body().html();
+    }
+
+    /**
+     * Converts the pixel sizes of an image given in its <code>style</code> attribute to the <code>width</code> and <code>height</code> attributes.
+     * This is done here, on the property value, rather than on the assembled document.
+     *
+     * @param imageElement the image element to be fixed in place
+     */
+    private static void fixImageSize(final Element imageElement)
+    {
+        final String style = imageElement.attr("style");
+        final String[] rules = style.split(";");
+        for (final String rule : rules)
+        {
+            final String[] ruleElements = rule.split(":");
+            if (ruleElements.length == 2)
+            {
+                final String ruleKey = ruleElements[0].trim();
+                final String ruleValue = ruleElements[1].trim();
+                if ((ruleKey.equalsIgnoreCase("width") || ruleKey.equalsIgnoreCase("height")) && ruleValue.endsWith("px"))
+                {
+                    imageElement.attr(ruleKey, ruleValue.substring(0, ruleValue.length() - 2));
+                }
+            }
+        }
+    }
 }
