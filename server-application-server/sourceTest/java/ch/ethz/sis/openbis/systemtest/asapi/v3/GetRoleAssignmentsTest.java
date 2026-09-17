@@ -131,6 +131,31 @@ public class GetRoleAssignmentsTest extends AbstractTest
     }
 
     @Test
+    public void testGetForNonAdminUsers()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_GROUP_OBSERVER, PASSWORD);
+
+        RoleAssignmentFetchOptions fetchOptions = new RoleAssignmentFetchOptions();
+        fetchOptions.withProject().withSpace();
+        fetchOptions.withSpace();
+
+        RoleAssignmentTechId id = new RoleAssignmentTechId(6L);
+
+        // When
+        Map<IRoleAssignmentId, RoleAssignment> map = v3api.getRoleAssignments(sessionToken,
+                Arrays.asList(new RoleAssignmentTechId(1L), new RoleAssignmentTechId(2L), new RoleAssignmentTechId(3L), new RoleAssignmentTechId(4L),
+                        new RoleAssignmentTechId(5L), id), fetchOptions);
+
+        // Then (only the user's own assignment is returned)
+        assertEquals(map.size(), 1);
+        assertEquals(map.get(id).getRole(), Role.OBSERVER);
+        assertEquals(map.get(id).getRoleLevel(), RoleLevel.SPACE);
+        assertEquals(map.get(id).getSpace().getCode(), "TESTGROUP");
+        assertEquals(map.get(id).getProject(), null);
+    }
+
+    @Test
     public void testLogging()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

@@ -22,15 +22,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.AuthorizationGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.create.AuthorizationGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.AuthorizationGroupPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleLevel;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.id.RoleAssignmentTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.search.RoleAssignmentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 
 /**
  * @author Franz-Josef Elmer
@@ -251,6 +263,125 @@ public class SearchRoleAssignmentsTest extends AbstractTest
 
         // Then
         assertRoleAssignments(assignments, "ADMIN SPACE[CISD] for user test\n");
+    }
+
+    @Test
+    public void testSearchForNonAdminUsers()
+    {
+        String instanceAdminToken = v3api.login(TEST_USER, PASSWORD);
+
+        // spaces
+        SpaceCreation spaceCreation = new SpaceCreation();
+        spaceCreation.setCode("SPACE_" + UUID.randomUUID());
+
+        SpacePermId spacePermId = v3api.createSpaces(instanceAdminToken, List.of(spaceCreation)).getFirst();
+
+        // projects
+        ProjectCreation projectCreation = new ProjectCreation();
+        projectCreation.setSpaceId(new SpacePermId(spaceCreation.getCode()));
+        projectCreation.setCode("PROJECT_" + UUID.randomUUID());
+
+        ProjectIdentifier projectIdentifier = new ProjectIdentifier(spaceCreation.getCode(), projectCreation.getCode());
+
+        v3api.createProjects(instanceAdminToken, List.of(projectCreation));
+
+        // space admin
+        PersonCreation spaceAdminCreation = new PersonCreation();
+        spaceAdminCreation.setUserId("space_admin_" + UUID.randomUUID());
+
+        // space user
+        PersonCreation spaceUserCreation = new PersonCreation();
+        spaceUserCreation.setUserId("space_user_" + UUID.randomUUID());
+
+        // project admin
+        PersonCreation projectAdminCreation = new PersonCreation();
+        projectAdminCreation.setUserId("project_admin_" + UUID.randomUUID() + "_pa_on");
+
+        // project user
+        PersonCreation projectUserCreation = new PersonCreation();
+        projectUserCreation.setUserId("project_user_" + UUID.randomUUID() + "_pa_on");
+
+        v3api.createPersons(instanceAdminToken, List.of(spaceAdminCreation, spaceUserCreation, projectAdminCreation, projectUserCreation));
+
+        // space admin via group assignment
+        AuthorizationGroupCreation spaceAdminGroupCreation = new AuthorizationGroupCreation();
+        spaceAdminGroupCreation.setCode("space_admin_group_" + UUID.randomUUID());
+        spaceAdminGroupCreation.setUserIds(List.of(new PersonPermId(spaceAdminCreation.getUserId())));
+
+        final AuthorizationGroupPermId spaceAdminGroupId =
+                v3api.createAuthorizationGroups(instanceAdminToken, List.of(spaceAdminGroupCreation)).getFirst();
+
+        RoleAssignmentCreation spaceAdminGroupRole = new RoleAssignmentCreation();
+        spaceAdminGroupRole.setSpaceId(new SpacePermId(spaceCreation.getCode()));
+        spaceAdminGroupRole.setAuthorizationGroupId(spaceAdminGroupId);
+        spaceAdminGroupRole.setRole(Role.ADMIN);
+
+        v3api.createRoleAssignments(instanceAdminToken, List.of(spaceAdminGroupRole));
+
+        // space user via direct assignment
+        RoleAssignmentCreation spaceUserRole = new RoleAssignmentCreation();
+        spaceUserRole.setSpaceId(new SpacePermId(spaceCreation.getCode()));
+        spaceUserRole.setUserId(new PersonPermId(spaceUserCreation.getUserId()));
+        spaceUserRole.setRole(Role.USER);
+
+        v3api.createRoleAssignments(instanceAdminToken, List.of(spaceUserRole));
+
+        // project admin via group assignment
+        AuthorizationGroupCreation projectAdminGroupCreation = new AuthorizationGroupCreation();
+        projectAdminGroupCreation.setCode("project_admin_group_" + UUID.randomUUID());
+        projectAdminGroupCreation.setUserIds(List.of(new PersonPermId(projectAdminCreation.getUserId())));
+
+        final AuthorizationGroupPermId projectAdminGroupId =
+                v3api.createAuthorizationGroups(instanceAdminToken, List.of(projectAdminGroupCreation)).getFirst();
+
+        RoleAssignmentCreation projectAdminGroupRole = new RoleAssignmentCreation();
+        projectAdminGroupRole.setProjectId(new ProjectIdentifier(spaceCreation.getCode(), projectCreation.getCode()));
+        projectAdminGroupRole.setAuthorizationGroupId(projectAdminGroupId);
+        projectAdminGroupRole.setRole(Role.ADMIN);
+
+        v3api.createRoleAssignments(instanceAdminToken, List.of(projectAdminGroupRole));
+
+        // project user via direct assignment
+        RoleAssignmentCreation projectUserRole = new RoleAssignmentCreation();
+        projectUserRole.setProjectId(new ProjectIdentifier(spaceCreation.getCode(), projectCreation.getCode()));
+        projectUserRole.setUserId(new PersonPermId(projectUserCreation.getUserId()));
+        projectUserRole.setRole(Role.USER);
+
+        v3api.createRoleAssignments(instanceAdminToken, List.of(projectUserRole));
+
+        RoleAssignmentSearchCriteria criteria = new RoleAssignmentSearchCriteria();
+        RoleAssignmentFetchOptions fetchOptions = new RoleAssignmentFetchOptions();
+        fetchOptions.withSpace();
+        fetchOptions.withProject();
+        fetchOptions.withUser();
+        fetchOptions.withAuthorizationGroup();
+
+        // check space admin roles
+        String spaceAdminSessionToken = v3api.login(spaceAdminCreation.getUserId(), PASSWORD);
+        SearchResult<RoleAssignment> spaceAdminResult = v3api.searchRoleAssignments(spaceAdminSessionToken, criteria, fetchOptions);
+        assertRoleAssignments(spaceAdminResult.getObjects(),
+                "ADMIN PROJECT[" + projectIdentifier + "] for group " + projectAdminGroupId + "\n"
+                        + "ADMIN SPACE[" + spacePermId + "] for group " + spaceAdminGroupId + "\n"
+                        + "USER PROJECT[" + projectIdentifier + "] for user " + projectUserCreation.getUserId() + "\n"
+                        + "USER SPACE[" + spacePermId + "] for user " + spaceUserCreation.getUserId() + "\n");
+
+        // check space user roles
+        String spaceUserSessionToken = v3api.login(spaceUserCreation.getUserId(), PASSWORD);
+        SearchResult<RoleAssignment> spaceUserResult = v3api.searchRoleAssignments(spaceUserSessionToken, criteria, fetchOptions);
+        assertRoleAssignments(spaceUserResult.getObjects(), "USER SPACE[" + spacePermId + "] for user " + spaceUserCreation.getUserId() + "\n");
+
+        // check project admin roles
+        String projectAdminSessionToken = v3api.login(projectAdminCreation.getUserId(), PASSWORD);
+        SearchResult<RoleAssignment> projectAdminResult = v3api.searchRoleAssignments(projectAdminSessionToken, criteria, fetchOptions);
+        assertRoleAssignments(projectAdminResult.getObjects(),
+                "ADMIN PROJECT[" + projectIdentifier + "] for group " + projectAdminGroupId + "\n"
+                        + "USER PROJECT[" + projectIdentifier + "] for user " + projectUserCreation.getUserId() + "\n");
+
+        // check project user roles
+        String projectUserSessionToken = v3api.login(projectUserCreation.getUserId(), PASSWORD);
+        SearchResult<RoleAssignment> projectUserResult = v3api.searchRoleAssignments(projectUserSessionToken, criteria, fetchOptions);
+        assertRoleAssignments(projectUserResult.getObjects(),
+                "USER PROJECT[" + projectIdentifier + "] for user " + projectUserCreation.getUserId() + "\n");
     }
 
     @Test

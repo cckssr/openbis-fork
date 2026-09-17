@@ -18,8 +18,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.roleassignment;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,11 +32,19 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.fetchoptions.Role
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.id.RoleAssignmentTechId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.OperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.IRoleAssignmentAuthorizationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.roleassignment.RoleAssignmentUtils;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationResults;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.authorizationgroup.AuthorizationGroupQuery;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.space.SpaceQuery;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.IAuthorizationConfig;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.lemnik.eodsql.QueryTool;
 
 /**
  * @author Franz-Josef Elmer
@@ -75,34 +84,73 @@ public class RoleAssignmentTranslator
         try
         {
             authorizationExecutor.canGet(new OperationContext(context.getSession()));
-            return new HashSet<>(inputs);
         } catch (AuthorizationFailureException ex)
         {
             return new HashSet<>();
         }
-    }
 
-    @Override
-    protected void filterTranslated(TranslationContext context, Map<Long, RoleAssignment> translated)
-    {
-        if (authorizationConfig.isProjectLevelEnabled())
+        PersonPE person = context.getSession().tryGetPerson();
+
+        if (person.isSystemUser() || RoleAssignmentUtils.isInstanceAdmin(person) || RoleAssignmentUtils.isETLServer(person))
         {
-            return;
-        }
-
-        Collection<Long> projectRoleIds = new HashSet<Long>();
-
-        for (Map.Entry<Long, RoleAssignment> entry : translated.entrySet())
+            // only these users can see all role assignments
+            return new HashSet<>(inputs);
+        } else
         {
-            if (RoleLevel.PROJECT.equals(entry.getValue().getRoleLevel()))
+            RoleAssignmentQuery assignmentQuery = QueryTool.getManagedQuery(RoleAssignmentQuery.class);
+            List<RoleAssignmentBaseRecord> assignments = assignmentQuery.getRoleAssignments(new LongOpenHashSet(inputs));
+
+            Set<Long> spacesUserIsAdminOf = new HashSet<>();
+            Set<Long> projectsUserIsAdminOf = new HashSet<>();
+
+            // find spaces and projects the user is admin of
+            for (RoleAssignmentPE role : context.getSession().tryGetPerson().getAllPersonRoles())
             {
-                projectRoleIds.add(entry.getKey());
+                if (role.getRole().equals(RoleWithHierarchy.RoleCode.ADMIN))
+                {
+                    if (role.getRoleLevel().equals(RoleWithHierarchy.RoleLevel.SPACE))
+                    {
+                        spacesUserIsAdminOf.add(role.getSpace().getId());
+                    } else if (role.getRoleLevel().equals(RoleWithHierarchy.RoleLevel.PROJECT) && authorizationConfig.isProjectLevelEnabled())
+                    {
+                        projectsUserIsAdminOf.add(role.getProject().getId());
+                    }
+                }
             }
-        }
 
-        for (Long projectRoleId : projectRoleIds)
-        {
-            translated.remove(projectRoleId);
+            // add projects that belong to the spaces the user is admin of
+            SpaceQuery spaceQuery = QueryTool.getManagedQuery(SpaceQuery.class);
+            Set<Long> projectsInSpacesUserIsAdminOf =
+                    spaceQuery.getProjectIds(new LongOpenHashSet(spacesUserIsAdminOf)).stream().map(r -> r.relatedId).collect(Collectors.toSet());
+            projectsUserIsAdminOf.addAll(projectsInSpacesUserIsAdminOf);
+
+            // find groups the user belongs to
+            AuthorizationGroupQuery groupQuery = QueryTool.getManagedQuery(AuthorizationGroupQuery.class);
+            Set<Long> groupsUserBelongsTo = groupQuery.getAuthorizationGroupsForUser(context.getSession().tryGetPerson().getId()).
+                    stream().map(r -> r.relatedId).collect(Collectors.toSet());
+
+            Set<Long> result = new HashSet<>();
+            for (RoleAssignmentBaseRecord assignment : assignments)
+            {
+                if (assignment.pers_id_grantee != null && assignment.pers_id_grantee.equals(context.getSession().tryGetPerson().getId()))
+                {
+                    // roles assigned to the user
+                    result.add(assignment.id);
+                } else if (assignment.ag_id_grantee != null && groupsUserBelongsTo.contains(assignment.ag_id_grantee))
+                {
+                    // roles assigned to a group the user belongs to
+                    result.add(assignment.id);
+                } else if (assignment.space_id != null && spacesUserIsAdminOf.contains(assignment.space_id))
+                {
+                    // roles assigned to other users/groups but for spaces the user is admin of
+                    result.add(assignment.id);
+                } else if (assignment.project_id != null && projectsUserIsAdminOf.contains(assignment.project_id))
+                {
+                    // roles assigned to other users/groups but for projects the user is admin of
+                    result.add(assignment.id);
+                }
+            }
+            return result;
         }
     }
 

@@ -62,7 +62,7 @@ public class RoleAssignmentUtils
 
     public static boolean isETLServer(PersonPE personPE)
     {
-        for (RoleAssignmentPE roleAssigment : personPE.getRoleAssignments())
+        for (RoleAssignmentPE roleAssigment : personPE.getAllPersonRoles())
         {
             if (roleAssigment.getRole().equals(RoleCode.ETL_SERVER))
             {
@@ -74,7 +74,7 @@ public class RoleAssignmentUtils
 
     public static boolean isInstanceAdmin(PersonPE personPE)
     {
-        for (RoleAssignmentPE roleAssigment : personPE.getRoleAssignments())
+        for (RoleAssignmentPE roleAssigment : personPE.getAllPersonRoles())
         {
             if (roleAssigment.getSpace() == null && roleAssigment.getProject() == null
                     && roleAssigment.getRole().equals(RoleCode.ADMIN))
@@ -84,10 +84,10 @@ public class RoleAssignmentUtils
         }
         return false;
     }
-    
+
     private static boolean isSpaceAdmin(PersonPE personPE, SpacePE spacePE)
     {
-        for (RoleAssignmentPE roleAssigment : personPE.getRoleAssignments())
+        for (RoleAssignmentPE roleAssigment : personPE.getAllPersonRoles())
         {
             if (spacePE.equals(roleAssigment.getSpace()) && roleAssigment.getRole().equals(RoleCode.ADMIN))
             {

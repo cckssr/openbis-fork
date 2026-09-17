@@ -41,7 +41,7 @@ public class RoleAssignmentAuthorizationExecutor implements IRoleAssignmentAutho
     private IAuthorizationConfig authorizationConfig;
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_ADMIN)
+    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
     @Capability("GET_ROLE_ASSIGNMENT")
     public void canGet(IOperationContext context)
     {
@@ -75,7 +75,7 @@ public class RoleAssignmentAuthorizationExecutor implements IRoleAssignmentAutho
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_ADMIN)
+    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
     @Capability("SEARCH_ROLE_ASSIGNMENT")
     public void canSearch(IOperationContext context)
     {

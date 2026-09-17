@@ -30,5 +30,7 @@ public class RoleAssignmentBaseRecord extends ObjectBaseRecord
     public String role_code;
     public Long space_id;
     public Long project_id;
+    public Long pers_id_grantee;
+    public Long ag_id_grantee;
     public Date registrationDate;
 }
