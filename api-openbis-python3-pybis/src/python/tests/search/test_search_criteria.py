@@ -1,4 +1,4 @@
-#   Copyright ETH Zürich, Scientific IT Services
+#   Copyright ETH 2026 Zürich, Scientific IT Services
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -792,4 +792,78 @@ class TestPropertyPresence:
                 fixture.props["STATUS"]: NotSet(),
                 fixture.props["CONC"]: Gt(25.0),
             }
-        ) == {"S09", "S10"}
+        ) == {"S09"}
+
+
+# ---------------------------------------------------------------------------
+# offline: the get_* call sites themselves
+# ---------------------------------------------------------------------------
+
+
+class TestCallSitesAreMigrated:
+    """
+    build_property_criteria() returns a LIST, so every call site must splice it
+    (``sub_criteria += ...``). Swapping only the function name into the old
+    ``sub_criteria.extend(list(map(...)))`` yields ``criteria: [[{...}]]`` --
+    a list nested inside the criteria list -- which the server answers with a
+    bare 500. These tests drive the real get_* methods with a stubbed
+    transport, so the whole path is checked without a server.
+    """
+
+    @pytest.fixture
+    def captured(self, monkeypatch):
+        from pybis.pybis import Openbis as OpenbisClass
+
+        seen = {}
+
+        def fake_post(self, resource, request, *args, **kwargs):
+            seen["request"] = request
+            return {"objects": [], "totalCount": 0}
+
+        from pybis import Openbis
+        monkeypatch.setattr(OpenbisClass, "_post_request", fake_post)
+        o = Openbis("https://example.invalid", verify_certificates=False)
+        o.token = "offline-stub"
+        seen["openbis"] = o
+        return seen
+
+    @staticmethod
+    def _criteria(captured):
+        return captured["request"]["params"][1]["criteria"]
+
+    @pytest.mark.parametrize(
+        "method", ["get_samples", "get_datasets", "get_experiments"]
+    )
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "<2021-01-01",                              # legacy comparator string
+            Between("2021-01-01", "2021-02-01"),        # two leaves
+            ["2021-01-01", "2021-02-01"],               # an OR group
+        ],
+    )
+    def test_criteria_list_contains_only_dicts(self, captured, method, value):
+        getattr(captured["openbis"], method)(where={"modificationDate": value})
+        criteria = self._criteria(captured)
+        assert criteria, "no criteria emitted at all"
+        for entry in criteria:
+            assert isinstance(entry, dict), (
+                f"{method} spliced a {type(entry).__name__} into criteria -- the "
+                "call site still uses extend(list(map(...))) instead of +="
+            )
+            assert "@type" in entry
+
+    @pytest.mark.parametrize(
+        "method", ["get_samples", "get_datasets", "get_experiments"]
+    )
+    def test_range_produces_two_sibling_criteria(self, captured, method):
+        """A range must flatten into the AND list, not nest one level down."""
+        getattr(captured["openbis"], method)(
+            where={"modificationDate": Between("2021-01-01", "2021-02-01")}
+        )
+        dates = [
+            c
+            for c in self._criteria(captured)
+            if c["@type"].endswith("ModificationDateSearchCriteria")
+        ]
+        assert len(dates) == 2

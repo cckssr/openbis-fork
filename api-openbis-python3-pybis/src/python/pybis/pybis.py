@@ -2646,7 +2646,7 @@ class Openbis:
         if is_finished is not None:
             sub_criteria.append(_subcriteria_for_is_finished(is_finished))
         for prop, value in normalize_where(where, properties):
-            sub_criteria.append(build_property_criteria(prop, value, entity="experiment"))
+            sub_criteria += build_property_criteria(prop, value, entity="experiment")
 
         search_criteria = get_search_type_for_entity("experiment")
         search_criteria["criteria"] = sub_criteria
@@ -2870,7 +2870,7 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_status(status))
 
         for prop, value in normalize_where(where, properties):
-            sub_criteria.append(build_property_criteria(prop, value, entity="dataset"))
+            sub_criteria += build_property_criteria(prop, value, entity="dataset")
 
         search_criteria = get_search_type_for_entity("dataset")
         search_criteria["criteria"] = sub_criteria
