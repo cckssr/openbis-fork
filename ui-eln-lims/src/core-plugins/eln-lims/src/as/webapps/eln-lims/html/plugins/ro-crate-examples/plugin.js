@@ -22,7 +22,7 @@ $.extend(RoCrateExamplesPluginViewTechnology.prototype, ELNLIMSPlugin.prototype,
                     resolve(result);
                 }, "ro-crate-examples", (error) => {
                     console.log(error);
-                    resolve(result);
+                    resolve(error);
                 });
             });
         },
