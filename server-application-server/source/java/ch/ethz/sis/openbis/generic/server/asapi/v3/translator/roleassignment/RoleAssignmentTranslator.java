@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.roleassignment;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -111,7 +112,8 @@ public class RoleAssignmentTranslator
                     if (role.getRoleLevel().equals(RoleWithHierarchy.RoleLevel.SPACE))
                     {
                         spacesUserIsAdminOf.add(role.getSpace().getId());
-                    } else if (role.getRoleLevel().equals(RoleWithHierarchy.RoleLevel.PROJECT) && authorizationConfig.isProjectLevelEnabled())
+                    } else if (role.getRoleLevel().equals(RoleWithHierarchy.RoleLevel.PROJECT) && authorizationConfig.isProjectLevelEnabled()
+                            && authorizationConfig.isProjectLevelUser(context.getSession().tryGetPerson().getUserId()))
                     {
                         projectsUserIsAdminOf.add(role.getProject().getId());
                     }
@@ -151,6 +153,30 @@ public class RoleAssignmentTranslator
                 }
             }
             return result;
+        }
+    }
+
+    @Override
+    protected void filterTranslated(TranslationContext context, Map<Long, RoleAssignment> translated)
+    {
+        if (authorizationConfig.isProjectLevelEnabled())
+        {
+            return;
+        }
+
+        Set<Long> projectRoleIds = new HashSet<>();
+
+        for (Map.Entry<Long, RoleAssignment> entry : translated.entrySet())
+        {
+            if (RoleLevel.PROJECT.equals(entry.getValue().getRoleLevel()))
+            {
+                projectRoleIds.add(entry.getKey());
+            }
+        }
+
+        for (Long projectRoleId : projectRoleIds)
+        {
+            translated.remove(projectRoleId);
         }
     }
 
