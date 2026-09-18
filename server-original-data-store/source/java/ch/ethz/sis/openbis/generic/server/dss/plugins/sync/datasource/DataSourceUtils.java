@@ -18,7 +18,12 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.TreeMap;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author Franz-Josef Elmer
@@ -31,5 +36,22 @@ class DataSourceUtils
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
         format.setTimeZone(TimeZone.getTimeZone("GMT"));
         return format.format(date) + "Z";
+    }
+
+    static void addMetaData(XMLStreamWriter writer, Map<String, String> metaData) throws XMLStreamException
+    {
+        // An empty element distinguishes an empty map from older sources that omit metadata.
+        writer.writeStartElement("xmd:metaData");
+        if (metaData != null)
+        {
+            for (Map.Entry<String, String> entry : new TreeMap<>(metaData).entrySet())
+            {
+                writer.writeStartElement("xmd:entry");
+                writer.writeAttribute("key", entry.getKey());
+                writer.writeCharacters(entry.getValue());
+                writer.writeEndElement();
+            }
+        }
+        writer.writeEndElement();
     }
 }

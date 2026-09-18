@@ -16,14 +16,18 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
 import java.util.Collections;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -43,6 +47,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.Externa
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
@@ -156,6 +167,9 @@ public class MasterDataSynchronizer
         processEntityTypes(masterData.getDataSetTypesToProcess(), propertyAssignmentsToProcess);
         monitor.log("process experiment types");
         processEntityTypes(masterData.getExperimentTypesToProcess(), propertyAssignmentsToProcess);
+        monitor.log("process type groups");
+        processTypeGroups(masterData.getTypeGroupsToProcess(), masterData.getTypeGroupAssignmentsToProcess(),
+                masterData.getNameTranslator());
         monitor.log("process external data management systems");
         processExternalDataManagementSystems(masterData.getExternalDataManagementSystemsToProcess());
 
@@ -746,6 +760,129 @@ public class MasterDataSynchronizer
     private String getCode(ICodeHolder codeHolder)
     {
         return codeHolder == null ? null : codeHolder.getCode();
+    }
+
+    private void processTypeGroups(Map<String, TypeGroupCreation> typeGroupsToProcess,
+            Map<String, List<TypeGroupAssignmentCreation>> typeGroupAssignmentsToProcess,
+            INameTranslator nameTranslator)
+    {
+        TypeGroupFetchOptions fetchOptions = new TypeGroupFetchOptions();
+        fetchOptions.withTypeGroupAssignments().withSampleType();
+        SearchResult<TypeGroup> typeGroupSearchResult =
+                v3api.searchTypeGroups(sessionToken, new TypeGroupSearchCriteria(), fetchOptions);
+        List<TypeGroup> existingTypeGroups = typeGroupSearchResult.getObjects();
+
+        Map<String, TypeGroup> existingTypeGroupMap = new HashMap<>();
+        for (TypeGroup typeGroup : existingTypeGroups)
+        {
+            existingTypeGroupMap.put(typeGroup.getCode(), typeGroup);
+        }
+
+        for (TypeGroupCreation incomingTypeGroup : typeGroupsToProcess.values())
+        {
+            boolean incomingIsInternal = isInternallyManagedBySystem(incomingTypeGroup);
+            TypeGroup existingTypeGroup = existingTypeGroupMap.get(getCode(incomingTypeGroup, nameTranslator));
+            List<TypeGroupAssignmentCreation> incomingAssignments = typeGroupAssignmentsToProcess.get(incomingTypeGroup.getCode());
+            if (existingTypeGroup != null)
+            {
+                boolean existingIsInternal = Boolean.TRUE.equals(existingTypeGroup.isManagedInternally());
+                if (existingIsInternal != incomingIsInternal)
+                {
+                    errorsOut.println("The type group " + getCode(incomingTypeGroup, nameTranslator)
+                            + " is managed internally on the source (" + incomingIsInternal
+                            + ") but not on the target (" + existingIsInternal + "), or vice versa.");
+                } else
+                {
+                    String diff = calculateDiff(existingTypeGroup, incomingTypeGroup);
+                    if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                    {
+                        synchronizerFacade.updateTypeGroup(incomingTypeGroup, diff);
+                    }
+                    processTypeGroupAssignments(existingTypeGroup, incomingAssignments);
+                }
+            } else if (incomingIsInternal)
+            {
+                errorsOut.println("There is no internal type group " + getCode(incomingTypeGroup, nameTranslator) + ".");
+            } else
+            {
+                synchronizerFacade.registerTypeGroup(incomingTypeGroup);
+                if (incomingAssignments != null && incomingAssignments.isEmpty() == false)
+                {
+                    synchronizerFacade.assignObjectTypesToTypeGroup(incomingAssignments);
+                }
+            }
+        }
+    }
+
+    private void processTypeGroupAssignments(TypeGroup existingTypeGroup, List<TypeGroupAssignmentCreation> incomingAssignments)
+    {
+        Set<String> existingMemberCodes = new HashSet<>();
+        for (TypeGroupAssignment assignment : existingTypeGroup.getTypeGroupAssignments())
+        {
+            existingMemberCodes.add(assignment.getSampleType().getCode());
+        }
+
+        Set<String> incomingMemberCodes = new HashSet<>();
+        List<TypeGroupAssignmentCreation> assignmentsToAdd = new ArrayList<>();
+        if (incomingAssignments != null)
+        {
+            for (TypeGroupAssignmentCreation incomingAssignment : incomingAssignments)
+            {
+                String sampleTypeCode = getSampleTypeCode(incomingAssignment);
+                incomingMemberCodes.add(sampleTypeCode);
+                if (existingMemberCodes.contains(sampleTypeCode) == false)
+                {
+                    assignmentsToAdd.add(incomingAssignment);
+                }
+            }
+        }
+        if (assignmentsToAdd.isEmpty() == false)
+        {
+            synchronizerFacade.assignObjectTypesToTypeGroup(assignmentsToAdd);
+        }
+
+        if (config.isPropertyUnassignmentAllowed())
+        {
+            for (String existingMemberCode : existingMemberCodes)
+            {
+                if (incomingMemberCodes.contains(existingMemberCode) == false)
+                {
+                    synchronizerFacade.unassignObjectTypeFromTypeGroup(existingTypeGroup.getCode(), existingMemberCode);
+                }
+            }
+        }
+    }
+
+    private static String getSampleTypeCode(TypeGroupAssignmentCreation assignment)
+    {
+        return ((EntityTypePermId) assignment.getSampleTypeId()).getPermId();
+    }
+
+    private boolean isInternallyManagedBySystem(TypeGroupCreation typeGroup)
+    {
+        // Unlike vocabularies/property types, an internally-managed type group can only ever be created by the
+        // system user (enforced server-side by CreateTypeGroupExecutor), so there is no separate registrator to check.
+        return typeGroup.isManagedInternally();
+    }
+
+    private String getCode(TypeGroupCreation typeGroup, INameTranslator nameTranslator)
+    {
+        String originalCode = typeGroup.getCode();
+        if (isInternallyManagedBySystem(typeGroup))
+        {
+            originalCode = nameTranslator.translateBack(originalCode);
+        }
+        return originalCode;
+    }
+
+    private String calculateDiff(TypeGroup existingTypeGroup, TypeGroupCreation incomingTypeGroup)
+    {
+        DiffBuilder<?> diffBuilder =
+                new DiffBuilder<Object>(existingTypeGroup, incomingTypeGroup, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                        .append("metaData", normalizedMetaData(existingTypeGroup.getMetaData()),
+                                normalizedMetaData(incomingTypeGroup.getMetaData()));
+        DiffResult<?> diffResult = diffBuilder.build();
+        return render(diffResult, existingTypeGroup, incomingTypeGroup);
     }
 
 }

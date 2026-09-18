@@ -79,6 +79,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyId;
@@ -159,6 +163,64 @@ public class MasterDataDelivererTest
         assertFalse(xml.contains("xmd:validationPlugins"), xml);
         assertFalse(xml.contains("xmd:propertyTypes"), xml);
         assertFalse(xml.contains("xmd:externalDataManagementSystems"), xml);
+        assertFalse(xml.contains("xmd:typeGroups"), xml);
+    }
+
+    @Test
+    public void testDeliverEntitiesWritesTypeGroups() throws Exception
+    {
+        Map<ExportableKind, List<String>> permIdsByKind = new EnumMap<>(ExportableKind.class);
+        permIdsByKind.put(ExportableKind.TYPE_GROUP, List.of("TG_A"));
+
+        TypeGroupId typeGroupId = new TypeGroupId("TG_A");
+        TypeGroup typeGroup = new TypeGroup();
+        typeGroup.setFetchOptions(new TypeGroupFetchOptions());
+        typeGroup.setCode("TG_A");
+        typeGroup.setManagedInternally(false);
+        typeGroup.setRegistrationDate(new Date());
+        typeGroup.setModificationDate(new Date());
+        typeGroup.setMetaData(Collections.emptyMap());
+
+        mockery.checking(new Expectations()
+        {
+            {
+                allowing(api).getSampleTypes(with(SESSION_TOKEN), with(Collections.<IEntityTypeId> emptyList()),
+                        with(any(SampleTypeFetchOptions.class)));
+                will(returnValue(Collections.emptyMap()));
+
+                allowing(api).getExperimentTypes(with(SESSION_TOKEN), with(Collections.<IEntityTypeId> emptyList()),
+                        with(any(ExperimentTypeFetchOptions.class)));
+                will(returnValue(Collections.emptyMap()));
+
+                allowing(api).getDataSetTypes(with(SESSION_TOKEN), with(Collections.<IEntityTypeId> emptyList()),
+                        with(any(DataSetTypeFetchOptions.class)));
+                will(returnValue(Collections.emptyMap()));
+
+                allowing(api).getVocabularies(with(SESSION_TOKEN), with(Collections.<IVocabularyId> emptyList()),
+                        with(any(VocabularyFetchOptions.class)));
+                will(returnValue(Collections.emptyMap()));
+
+                allowing(api).getPlugins(with(SESSION_TOKEN), with(Collections.<IPluginId> emptyList()), with(any(PluginFetchOptions.class)));
+                will(returnValue(Collections.emptyMap()));
+
+                allowing(api).getPropertyTypes(with(SESSION_TOKEN), with(Collections.<IPropertyTypeId> emptyList()),
+                        with(any(PropertyTypeFetchOptions.class)));
+                will(returnValue(Collections.emptyMap()));
+
+                allowing(api).getExternalDataManagementSystems(with(SESSION_TOKEN), with(Collections.<IExternalDmsId> emptyList()),
+                        with(any(ExternalDmsFetchOptions.class)));
+                will(returnValue(Collections.emptyMap()));
+
+                allowing(api).getTypeGroups(with(SESSION_TOKEN), with(List.<ITypeGroupId> of(typeGroupId)),
+                        with(any(TypeGroupFetchOptions.class)));
+                will(returnValue(Map.of(typeGroupId, typeGroup)));
+            }
+        });
+
+        String xml = deliverEntities(permIdsByKind);
+
+        assertTrue(xml.contains("xmd:typeGroups"), xml);
+        assertTrue(xml.contains("TG_A"), xml);
     }
 
     @DataProvider

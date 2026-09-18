@@ -33,9 +33,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
@@ -98,9 +102,15 @@ public class MasterDataParser
 
     MultiKeyMap<String, List<NewETPTAssignment>> entityPropertyAssignments = new MultiKeyMap<String, List<NewETPTAssignment>>();
 
+    private Map<String, TypeGroupCreation> typeGroups = new HashMap<String, TypeGroupCreation>();
+
+    private Map<String, List<TypeGroupAssignmentCreation>> typeGroupAssignments = new HashMap<String, List<TypeGroupAssignmentCreation>>();
+
     private NameMapper vocabularyNameMapper;
 
     private NameMapper propertyTypeNameMapper;
+
+    private NameMapper typeGroupNameMapper;
 
     private MasterDataParser(INameTranslator nameTranslator)
     {
@@ -142,6 +152,7 @@ public class MasterDataParser
         parseDataSetTypes(docElement.getElementsByTagName("xmd:dataSetTypes"));
         parseExperimentTypes(docElement.getElementsByTagName("xmd:collectionTypes"));
         parseExternalDataManagementSystems(docElement.getElementsByTagName("xmd:externalDataManagementSystems"));
+        typeGroupNameMapper = parseTypeGroups(docElement.getElementsByTagName("xmd:typeGroups"));
     }
 
     public Map<String, Script> getValidationPlugins()
@@ -182,6 +193,21 @@ public class MasterDataParser
     public Map<String, ExternalDms> getExternalDataManagementSystems()
     {
         return externalDataManagementSystems;
+    }
+
+    public Map<String, TypeGroupCreation> getTypeGroups()
+    {
+        return typeGroups;
+    }
+
+    public Map<String, List<TypeGroupAssignmentCreation>> getTypeGroupAssignments()
+    {
+        return typeGroupAssignments;
+    }
+
+    public NameMapper getTypeGroupNameMapper()
+    {
+        return typeGroupNameMapper;
     }
 
     public NameMapper getVocabularyNameMapper()
@@ -253,6 +279,68 @@ public class MasterDataParser
             edms.setAddress(getAttribute(element, "address"));
             externalDataManagementSystems.put(code, edms);
         }
+    }
+
+    private NameMapper parseTypeGroups(NodeList typeGroupsNode) throws XPathExpressionException
+    {
+        NameMapper nameMapper = new NameMapper(nameTranslator);
+        if (typeGroupsNode.getLength() == 0)
+        {
+            return nameMapper;
+        }
+        validateElementNode(typeGroupsNode, "typeGroups");
+
+        Element typeGroupsElement = (Element) typeGroupsNode.item(0);
+        NodeList typeGroupNodes = typeGroupsElement.getElementsByTagName("xmd:typeGroup");
+
+        for (int i = 0; i < typeGroupNodes.getLength(); i++)
+        {
+            Element typeGroupElement = (Element) typeGroupNodes.item(i);
+            Boolean managedInternally = Boolean.valueOf(getAttribute(typeGroupElement, "managedInternally"));
+            String registratorId = getAttribute(typeGroupElement, "registrator");
+            String code = nameTranslator.translate(
+                    nameMapper.registerName(getAttribute(typeGroupElement, "code"), managedInternally, registratorId));
+
+            TypeGroupCreation typeGroup = new TypeGroupCreation();
+            typeGroup.setCode(code);
+            typeGroup.setManagedInternally(Boolean.TRUE.equals(managedInternally));
+            Map<String, String> metaData = parseMetaData(typeGroupElement);
+            if (metaData != null)
+            {
+                typeGroup.setMetaData(metaData);
+            }
+            typeGroups.put(code, typeGroup);
+
+            parseTypeGroupAssignments(code, typeGroupElement);
+        }
+        return nameMapper;
+    }
+
+    private void parseTypeGroupAssignments(String typeGroupCode, Element typeGroupElement) throws XPathExpressionException
+    {
+        NodeList assignmentsNode = typeGroupElement.getElementsByTagName("xmd:typeGroupAssignments");
+        if (assignmentsNode.getLength() == 0)
+        {
+            return;
+        }
+        validateElementNode(assignmentsNode, "typeGroupAssignments");
+
+        List<TypeGroupAssignmentCreation> list = new ArrayList<>();
+        Element assignmentsElement = (Element) assignmentsNode.item(0);
+        NodeList assignmentNodes = assignmentsElement.getElementsByTagName("xmd:typeGroupAssignment");
+        for (int i = 0; i < assignmentNodes.getLength(); i++)
+        {
+            Element assignmentElement = (Element) assignmentNodes.item(i);
+            String sampleTypeCode = nameTranslator.translate(getAttribute(assignmentElement, "objectTypeCode"));
+
+            TypeGroupAssignmentCreation assignment = new TypeGroupAssignmentCreation();
+            assignment.setTypeGroupId(new TypeGroupId(typeGroupCode));
+            assignment.setSampleTypeId(new EntityTypePermId(sampleTypeCode,
+                    ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE));
+            assignment.setManagedInternally(Boolean.valueOf(getAttribute(assignmentElement, "managedInternally")));
+            list.add(assignment);
+        }
+        typeGroupAssignments.put(typeGroupCode, list);
     }
 
     private void validateElementNode(NodeList nodeList, String tagName) throws XPathExpressionException

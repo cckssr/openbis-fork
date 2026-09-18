@@ -22,6 +22,8 @@ import java.util.Map;
 import org.apache.commons.collections4.map.MultiKeyMap;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
@@ -63,9 +65,15 @@ class MasterData
 
     private MultiKeyMap<String, List<NewETPTAssignment>> propertyAssignmentsToProcess = new MultiKeyMap<String, List<NewETPTAssignment>>();
 
+    private Map<String, TypeGroupCreation> typeGroupsToProcess = new HashMap<String, TypeGroupCreation>();
+
+    private Map<String, List<TypeGroupAssignmentCreation>> typeGroupAssignmentsToProcess = new HashMap<String, List<TypeGroupAssignmentCreation>>();
+
     private NameMapper vocabularyNameMapper;
 
     private NameMapper propertyTypeNameMapper;
+
+    private NameMapper typeGroupNameMapper;
 
     public MasterData(INameTranslator nameTranslator)
     {
@@ -117,6 +125,16 @@ class MasterData
         return vocabulariesToProcess;
     }
 
+    public Map<String, TypeGroupCreation> getTypeGroupsToProcess()
+    {
+        return typeGroupsToProcess;
+    }
+
+    public Map<String, List<TypeGroupAssignmentCreation>> getTypeGroupAssignmentsToProcess()
+    {
+        return typeGroupAssignmentsToProcess;
+    }
+
     public NameMapper getVocabularyNameMapper()
     {
         return vocabularyNameMapper;
@@ -125,6 +143,11 @@ class MasterData
     public NameMapper getPropertyTypeNameMapper()
     {
         return propertyTypeNameMapper;
+    }
+
+    public NameMapper getTypeGroupNameMapper()
+    {
+        return typeGroupNameMapper;
     }
 
     public Map<String, ExternalDms> getExternalDataManagementSystemsToProcess()
@@ -167,6 +190,16 @@ class MasterData
         this.propertyAssignmentsToProcess = propertyAssignmentsToProcess;
     }
 
+    public void setTypeGroupsToProcess(Map<String, TypeGroupCreation> typeGroupsToProcess)
+    {
+        this.typeGroupsToProcess = typeGroupsToProcess;
+    }
+
+    public void setTypeGroupAssignmentsToProcess(Map<String, List<TypeGroupAssignmentCreation>> typeGroupAssignmentsToProcess)
+    {
+        this.typeGroupAssignmentsToProcess = typeGroupAssignmentsToProcess;
+    }
+
     public void setVocabularyNameMapper(NameMapper vocabularyNameMapper)
     {
         this.vocabularyNameMapper = vocabularyNameMapper;
@@ -175,5 +208,10 @@ class MasterData
     public void setPropertyTypeNameMapper(NameMapper propertyTypeNameMapper)
     {
         this.propertyTypeNameMapper = propertyTypeNameMapper;
+    }
+
+    public void setTypeGroupNameMapper(NameMapper typeGroupNameMapper)
+    {
+        this.typeGroupNameMapper = typeGroupNameMapper;
     }
 }

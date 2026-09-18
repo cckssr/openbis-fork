@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
@@ -67,6 +69,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.HarvesterMaintenanceTask;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.BasicAuthCredentials;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.datasourceconnector.DataSourceConnector;
@@ -139,6 +149,29 @@ public class IntegrationOpenbisSyncTest
     private static final Map<String, String> SCHEMA_FEATURES_PROPERTY_TYPE_METADATA = Map.of("unit", "nm");
 
     private static final Map<String, String> SCHEMA_FEATURES_SAMPLE_TYPE_METADATA = Map.of("source", "sync-test");
+
+    // --- Scenario: Object Type Group + membership sync (BIS-2821 ext.5) ---
+
+    private static final String TYPE_GROUP_CODE = "SYNC_TYPE_GROUP";
+
+    /** This member's assignment gets removed mid-test; {@link #TYPE_GROUP_SAMPLE_TYPE_CODE_2} stays assigned
+     * throughout so the group remains reachable via Extension 2's selection (which discovers a type group
+     * only by walking a *currently selected* sample type's own {@code getTypeGroupAssignments()}) - removing
+     * a group's only member would otherwise drop it out of scope entirely, before the harvester ever gets a
+     * chance to notice the removal. */
+    private static final String TYPE_GROUP_SAMPLE_TYPE_CODE = "SYNC_TYPE_GROUP_SAMPLE_TYPE";
+
+    private static final String TYPE_GROUP_SAMPLE_TYPE_CODE_2 = "SYNC_TYPE_GROUP_SAMPLE_TYPE_2";
+
+    private static final String TYPE_GROUP_SPACE_CODE = "SYNC_TYPE_GROUP_SPACE";
+
+    private static final String TYPE_GROUP_SAMPLE_CODE = "SYNC_TYPE_GROUP_SAMPLE";
+
+    private static final String TYPE_GROUP_SAMPLE_CODE_2 = "SYNC_TYPE_GROUP_SAMPLE_2";
+
+    private static final Map<String, String> TYPE_GROUP_METADATA_INITIAL = Map.of("stage", "draft");
+
+    private static final Map<String, String> TYPE_GROUP_METADATA_UPDATED = Map.of("stage", "final");
 
     // --- Scenario: AFS data attached to a sample and an experiment (BIS-2819 ext.3: AFS sync) ---
 
@@ -271,6 +304,49 @@ public class IntegrationOpenbisSyncTest
                 AFS_EXPERIMENT_FILE_CONTENT, "harvested experiment AFS file content");
     }
 
+    @Test
+    public void testHarvestTypeGroupAndGatedMembershipRemoval() throws Exception
+    {
+        IntegrationTestFacade facade = new IntegrationTestFacade(environment);
+        OpenBIS sourceOpenBIS = sourceLogin();
+        OpenBIS harvester = harvesterLogin();
+        String harvestedTypeGroupCode = NAME_PREFIX + TYPE_GROUP_CODE;
+        String harvestedSampleTypeCode = NAME_PREFIX + TYPE_GROUP_SAMPLE_TYPE_CODE;
+        String harvestedSampleTypeCode2 = NAME_PREFIX + TYPE_GROUP_SAMPLE_TYPE_CODE_2;
+
+        List<String> exportablePermIds = createTypeGroupScenario(facade, sourceOpenBIS);
+
+        assertNull(findHarvestedTypeGroup(harvester, harvestedTypeGroupCode),
+                "harvested type group must not exist before sync");
+
+        // Phase 1: initial sync creates the group with both its members.
+        runHarvester(exportablePermIds, false, false);
+        facade.waitUntilCondition(
+                () -> findHarvestedTypeGroup(harvester, harvestedTypeGroupCode) != null,
+                SYNC_VERIFICATION_TIMEOUT_MILLIS);
+        verifyTypeGroup(harvester, TYPE_GROUP_METADATA_INITIAL, Set.of(harvestedSampleTypeCode, harvestedSampleTypeCode2));
+
+        // Phase 2: metaData changes on the source; re-sync with master-data-update-allowed to pick it up.
+        updateTypeGroupMetaData(sourceOpenBIS, TYPE_GROUP_METADATA_UPDATED);
+        runHarvester(exportablePermIds, true, false);
+        facade.waitUntilCondition(
+                () -> TYPE_GROUP_METADATA_UPDATED.equals(findHarvestedTypeGroup(harvester, harvestedTypeGroupCode).getMetaData()),
+                SYNC_VERIFICATION_TIMEOUT_MILLIS);
+
+        // Phase 3: one member is unassigned on the source (the other stays, keeping the group in scope for
+        // Extension 2's selection); without the flag, the harvested copy keeps both members.
+        removeTypeGroupAssignment(sourceOpenBIS);
+        runHarvester(exportablePermIds, true, false);
+        assertEquals(harvestedTypeGroupMemberCodes(harvester, harvestedTypeGroupCode),
+                Set.of(harvestedSampleTypeCode, harvestedSampleTypeCode2),
+                "member must still be present without property-unassignment-allowed");
+
+        // Phase 4: with the flag, the now-stale member gets removed, leaving only the untouched one.
+        runHarvester(exportablePermIds, true, true);
+        assertEquals(harvestedTypeGroupMemberCodes(harvester, harvestedTypeGroupCode), Set.of(harvestedSampleTypeCode2),
+                "member must be removed once property-unassignment-allowed is set");
+    }
+
     // --- Scenario builders: create the source hierarchy, return the exportable-perm-id tokens to harvest ---
 
     private List<String> createSpaceSubtree(IntegrationTestFacade facade, OpenBIS sourceOpenBIS)
@@ -348,6 +424,69 @@ public class IntegrationOpenbisSyncTest
         return List.of("SPACE:" + SCHEMA_FEATURES_SPACE_CODE);
     }
 
+    /**
+     * Creates a type group with two member sample types, and one sample of each type - like
+     * {@link #createSchemaFeaturesScenario}, a bare type group registration with no synced entity of a
+     * member type would never be exported (Extension 2's {@code ExportEntityTypeCollector} only pulls in a
+     * type group via a selected sample type's {@code getTypeGroupAssignments()}). Two members, not one, so
+     * that removing one later still leaves the group reachable via the other (see
+     * {@link #TYPE_GROUP_SAMPLE_TYPE_CODE}'s javadoc).
+     */
+    private List<String> createTypeGroupScenario(IntegrationTestFacade facade, OpenBIS sourceOpenBIS)
+    {
+        TypeGroupCreation typeGroupCreation = new TypeGroupCreation();
+        typeGroupCreation.setCode(TYPE_GROUP_CODE);
+        typeGroupCreation.setMetaData(TYPE_GROUP_METADATA_INITIAL);
+        sourceOpenBIS.createTypeGroups(List.of(typeGroupCreation));
+
+        SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
+        sampleTypeCreation.setCode(TYPE_GROUP_SAMPLE_TYPE_CODE);
+        SampleTypeCreation sampleTypeCreation2 = new SampleTypeCreation();
+        sampleTypeCreation2.setCode(TYPE_GROUP_SAMPLE_TYPE_CODE_2);
+        sourceOpenBIS.createSampleTypes(List.of(sampleTypeCreation, sampleTypeCreation2));
+
+        TypeGroupAssignmentCreation assignmentCreation = new TypeGroupAssignmentCreation();
+        assignmentCreation.setTypeGroupId(new TypeGroupId(TYPE_GROUP_CODE));
+        assignmentCreation.setSampleTypeId(new EntityTypePermId(TYPE_GROUP_SAMPLE_TYPE_CODE,
+                ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE));
+        TypeGroupAssignmentCreation assignmentCreation2 = new TypeGroupAssignmentCreation();
+        assignmentCreation2.setTypeGroupId(new TypeGroupId(TYPE_GROUP_CODE));
+        assignmentCreation2.setSampleTypeId(new EntityTypePermId(TYPE_GROUP_SAMPLE_TYPE_CODE_2,
+                ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE));
+        sourceOpenBIS.createTypeGroupAssignments(List.of(assignmentCreation, assignmentCreation2));
+
+        Space space = facade.createSpace(sourceOpenBIS, TYPE_GROUP_SPACE_CODE);
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(new EntityTypePermId(TYPE_GROUP_SAMPLE_TYPE_CODE));
+        sampleCreation.setSpaceId(space.getPermId());
+        sampleCreation.setCode(TYPE_GROUP_SAMPLE_CODE);
+        SampleCreation sampleCreation2 = new SampleCreation();
+        sampleCreation2.setTypeId(new EntityTypePermId(TYPE_GROUP_SAMPLE_TYPE_CODE_2));
+        sampleCreation2.setSpaceId(space.getPermId());
+        sampleCreation2.setCode(TYPE_GROUP_SAMPLE_CODE_2);
+        sourceOpenBIS.createSamples(List.of(sampleCreation, sampleCreation2));
+
+        return List.of("SPACE:" + TYPE_GROUP_SPACE_CODE);
+    }
+
+    private void updateTypeGroupMetaData(OpenBIS sourceOpenBIS, Map<String, String> metaData)
+    {
+        TypeGroupUpdate update = new TypeGroupUpdate();
+        update.setTypeGroupId(new TypeGroupId(TYPE_GROUP_CODE));
+        update.getMetaData().set(metaData);
+        sourceOpenBIS.updateTypeGroups(List.of(update));
+    }
+
+    private void removeTypeGroupAssignment(OpenBIS sourceOpenBIS)
+    {
+        TypeGroupAssignmentId id = new TypeGroupAssignmentId(
+                new EntityTypePermId(TYPE_GROUP_SAMPLE_TYPE_CODE, ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE),
+                new TypeGroupId(TYPE_GROUP_CODE));
+        TypeGroupAssignmentDeletionOptions options = new TypeGroupAssignmentDeletionOptions();
+        options.setReason("integration test: exercise gated membership removal");
+        sourceOpenBIS.deleteTypeGroupAssignments(List.of(id), options);
+    }
+
     // --- Scenario verifiers: look the harvested copies up through the harvester's V3 API ---
 
     private void verifySpaceSubtree(OpenBIS harvester)
@@ -413,6 +552,32 @@ public class IntegrationOpenbisSyncTest
                 .findFirst().orElse(null);
         assertNotNull(assignment, "harvested property assignment for " + harvestedPropertyTypeCode);
         assertTrue(assignment.isUnique(), "harvested property assignment must be unique");
+    }
+
+    private void verifyTypeGroup(OpenBIS harvester, Map<String, String> expectedMetaData, Set<String> expectedMemberCodes)
+    {
+        String harvestedTypeGroupCode = NAME_PREFIX + TYPE_GROUP_CODE;
+        TypeGroup typeGroup = findHarvestedTypeGroup(harvester, harvestedTypeGroupCode);
+        assertNotNull(typeGroup, "harvested type group");
+        assertEquals(typeGroup.getMetaData(), expectedMetaData, "harvested type group metaData");
+        assertEquals(harvestedTypeGroupMemberCodes(harvester, harvestedTypeGroupCode), expectedMemberCodes,
+                "harvested type group members");
+    }
+
+    private TypeGroup findHarvestedTypeGroup(OpenBIS harvester, String typeGroupCode)
+    {
+        TypeGroupId id = new TypeGroupId(typeGroupCode);
+        TypeGroupFetchOptions fetchOptions = new TypeGroupFetchOptions();
+        fetchOptions.withTypeGroupAssignments().withSampleType();
+        return harvester.getTypeGroups(List.of(id), fetchOptions).get(id);
+    }
+
+    private Set<String> harvestedTypeGroupMemberCodes(OpenBIS harvester, String typeGroupCode)
+    {
+        TypeGroup typeGroup = findHarvestedTypeGroup(harvester, typeGroupCode);
+        return typeGroup == null ? Set.of() : typeGroup.getTypeGroupAssignments().stream()
+                .map(assignment -> assignment.getSampleType().getCode())
+                .collect(Collectors.toSet());
     }
 
     private OpenBIS sourceLogin()
@@ -509,14 +674,27 @@ public class IntegrationOpenbisSyncTest
     }
 
     /**
-     * Runs the harvester once, on demand, against the externalized {@link #HARVESTER_CONFIG_FILE}.
+     * Runs the harvester once, on demand, against the externalized {@link #HARVESTER_CONFIG_FILE}, with
+     * {@code master-data-update-allowed}/{@code property-unassignment-allowed} left at their file defaults
+     * (both absent, i.e. {@code false}).
      */
     private void runHarvester(List<String> exportablePermIds) throws Exception
+    {
+        runHarvester(exportablePermIds, false, false);
+    }
+
+    /**
+     * Runs the harvester once, on demand, against the externalized {@link #HARVESTER_CONFIG_FILE}, overriding
+     * {@code master-data-update-allowed}/{@code property-unassignment-allowed} for this run only.
+     */
+    private void runHarvester(List<String> exportablePermIds, boolean masterDataUpdateAllowed, boolean propertyUnassignmentAllowed)
+            throws Exception
     {
         new File("targets/openbis-sync").mkdirs();
         Files.deleteIfExists(new File("targets/openbis-sync/last-sync-timestamp.txt").toPath());
 
-        File generatedConfig = writeConfigWithExportablePermIds(exportablePermIds);
+        File generatedConfig = writeConfigWithExportablePermIds(exportablePermIds,
+                masterDataUpdateAllowed, propertyUnassignmentAllowed);
 
         HarvesterMaintenanceTask<?> task = new HarvesterMaintenanceTask<>();
         Properties properties = new Properties();
@@ -525,17 +703,22 @@ public class IntegrationOpenbisSyncTest
         task.execute();
     }
 
-    private File writeConfigWithExportablePermIds(List<String> exportablePermIds) throws IOException
+    private File writeConfigWithExportablePermIds(List<String> exportablePermIds, boolean masterDataUpdateAllowed,
+            boolean propertyUnassignmentAllowed) throws IOException
     {
         String permIdsLine = "exportable-perm-ids = " + String.join(", ", exportablePermIds);
         List<String> lines = new ArrayList<>();
         boolean replaced = false;
         for (String line : Files.readAllLines(Path.of(HARVESTER_CONFIG_FILE)))
         {
-            if (line.trim().startsWith("exportable-perm-ids"))
+            String trimmed = line.trim();
+            if (trimmed.startsWith("exportable-perm-ids"))
             {
                 lines.add(permIdsLine);
                 replaced = true;
+            } else if (trimmed.startsWith("master-data-update-allowed") || trimmed.startsWith("property-unassignment-allowed"))
+            {
+                // dropped; re-added below with the values requested for this run
             } else
             {
                 lines.add(line);
@@ -545,6 +728,8 @@ public class IntegrationOpenbisSyncTest
         {
             lines.add(permIdsLine);
         }
+        lines.add("master-data-update-allowed = " + masterDataUpdateAllowed);
+        lines.add("property-unassignment-allowed = " + propertyUnassignmentAllowed);
         File generatedConfig = new File("targets/openbis-sync/harvester-config.generated.txt");
         Files.write(generatedConfig.toPath(), lines);
         return generatedConfig;

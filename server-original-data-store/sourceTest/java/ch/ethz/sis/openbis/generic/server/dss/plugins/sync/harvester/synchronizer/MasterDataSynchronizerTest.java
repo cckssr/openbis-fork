@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchroniz
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -33,9 +34,18 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.ExternalDmsFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
@@ -304,6 +314,213 @@ public class MasterDataSynchronizerTest
         context.assertIsSatisfied();
     }
 
+    @Test(dataProvider = UPDATE_AND_PREFIX_PROVIDER)
+    public void testNonexistentInternalTypeGroup(boolean withUpdate, String prefix)
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(withUpdate);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(prefix));
+        builder.incomingTypeGroups(typeGroupCreation("A", true, null));
+        MasterData masterData = builder.prepare();
+
+        // When & Then
+        assertFailure(masterData, "There is no internal type group A.");
+        context.assertIsSatisfied();
+    }
+
+    @Test(dataProvider = UPDATE_AND_PREFIX_PROVIDER)
+    public void testNonexistentTypeGroup(boolean withUpdate, String prefix)
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(withUpdate);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(prefix));
+        TypeGroupCreation typeGroup = typeGroupCreation("A", false, null);
+        builder.incomingTypeGroups(typeGroup);
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareRegisterTypeGroup(typeGroup);
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        context.assertIsSatisfied();
+    }
+
+    @Test(dataProvider = UPDATE_AND_PREFIX_PROVIDER)
+    public void testTypeGroupManagedInternallyMismatch(boolean withUpdate, String prefix)
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(withUpdate);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(prefix));
+        builder.incomingTypeGroups(typeGroupCreation("A", true, null));
+        builder.existingTypeGroups(new TypeGroupBuilder("A").get());
+        MasterData masterData = builder.prepare();
+
+        // When & Then
+        assertFailure(masterData, "The type group A is managed internally on the source (true) "
+                + "but not on the target (false), or vice versa.");
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testExistingTypeGroupMetaDataUpdated()
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(true);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(null));
+        builder.existingTypeGroups(new TypeGroupBuilder("A").get());
+        TypeGroupCreation incoming = typeGroupCreation("A", false, Map.of("key", "value"));
+        builder.incomingTypeGroups(incoming);
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareUpdateTypeGroup(incoming, "incoming TypeGroupCreation[metaData={key=value}] "
+                + "differs from existing TypeGroup[metaData={}]");
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testExistingTypeGroupMetaDataUpdateNotAllowed()
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(false);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(null));
+        builder.existingTypeGroups(new TypeGroupBuilder("A").get());
+        builder.incomingTypeGroups(typeGroupCreation("A", false, Map.of("key", "value")));
+        MasterData masterData = builder.prepare();
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then (no register/update call expected)
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testExistingTypeGroupUnchanged()
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(true);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(null));
+        builder.existingTypeGroups(new TypeGroupBuilder("A").metaData(Map.of("key", "value")).get());
+        builder.incomingTypeGroups(typeGroupCreation("A", false, Map.of("key", "value")));
+        MasterData masterData = builder.prepare();
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then (no register/update call expected)
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testAssignMembersToNewlyRegisteredTypeGroup()
+    {
+        // Given
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(null));
+        TypeGroupCreation incoming = typeGroupCreation("A", false, null);
+        builder.incomingTypeGroups(incoming);
+        TypeGroupAssignmentCreation assignment = typeGroupAssignment("A", "T");
+        builder.incomingTypeGroupAssignments("A", assignment);
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareRegisterTypeGroup(incoming);
+        prepareAssignObjectTypesToTypeGroup(Collections.singletonList(assignment));
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testAssignNewMemberToExistingTypeGroup()
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(true);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(null));
+        builder.existingTypeGroups(new TypeGroupBuilder("A").members("EXISTING").get());
+        builder.incomingTypeGroups(typeGroupCreation("A", false, null));
+        TypeGroupAssignmentCreation existingAssignment = typeGroupAssignment("A", "EXISTING");
+        TypeGroupAssignmentCreation newAssignment = typeGroupAssignment("A", "NEW");
+        builder.incomingTypeGroupAssignments("A", existingAssignment, newAssignment);
+        MasterData masterData = builder.prepare();
+
+        // Expected actions: only the new member gets assigned
+        prepareAssignObjectTypesToTypeGroup(Collections.singletonList(newAssignment));
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testTypeGroupMembershipUnchangedIsNoOp()
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(true);
+        config.setPropertyUnassignmentAllowed(true);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(null));
+        builder.existingTypeGroups(new TypeGroupBuilder("A").members("T").get());
+        builder.incomingTypeGroups(typeGroupCreation("A", false, null));
+        builder.incomingTypeGroupAssignments("A", typeGroupAssignment("A", "T"));
+        MasterData masterData = builder.prepare();
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then (no assign/unassign call expected)
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testUnassignStaleMemberWhenAllowed()
+    {
+        // Given
+        config.setPropertyUnassignmentAllowed(true);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(null));
+        builder.existingTypeGroups(new TypeGroupBuilder("A").members("STALE").get());
+        builder.incomingTypeGroups(typeGroupCreation("A", false, null));
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareUnassignObjectTypeFromTypeGroup("A", "STALE");
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testStaleMemberKeptWhenUnassignmentNotAllowed()
+    {
+        // Given
+        config.setPropertyUnassignmentAllowed(false);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(null));
+        builder.existingTypeGroups(new TypeGroupBuilder("A").members("STALE").get());
+        builder.incomingTypeGroups(typeGroupCreation("A", false, null));
+        MasterData masterData = builder.prepare();
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then (no unassign call expected)
+        context.assertIsSatisfied();
+    }
+
     private void assertFailure(MasterData masterData, String... failureMessages)
     {
         try
@@ -377,6 +594,46 @@ public class MasterDataSynchronizerTest
             });
     }
 
+    private void prepareRegisterTypeGroup(TypeGroupCreation typeGroup)
+    {
+        context.checking(new Expectations()
+            {
+                {
+                    one(facade).registerTypeGroup(typeGroup);
+                }
+            });
+    }
+
+    private void prepareUpdateTypeGroup(TypeGroupCreation typeGroup, String diff)
+    {
+        context.checking(new Expectations()
+            {
+                {
+                    one(facade).updateTypeGroup(typeGroup, diff);
+                }
+            });
+    }
+
+    private void prepareAssignObjectTypesToTypeGroup(List<TypeGroupAssignmentCreation> assignments)
+    {
+        context.checking(new Expectations()
+            {
+                {
+                    one(facade).assignObjectTypesToTypeGroup(assignments);
+                }
+            });
+    }
+
+    private void prepareUnassignObjectTypeFromTypeGroup(String typeGroupCode, String sampleTypeCode)
+    {
+        context.checking(new Expectations()
+            {
+                {
+                    one(facade).unassignObjectTypeFromTypeGroup(typeGroupCode, sampleTypeCode);
+                }
+            });
+    }
+
     private final class TestFixtureBuilder
     {
         private final INameTranslator nameTranslator;
@@ -396,6 +653,12 @@ public class MasterDataSynchronizerTest
         private List<ExternalDms> existingExternalDmss = Collections.emptyList();
 
         private List<ExternalDms> incomingExternalDmss = Collections.emptyList();
+
+        private List<TypeGroup> existingTypeGroups = Collections.emptyList();
+
+        private List<TypeGroupCreation> incomingTypeGroups = Collections.emptyList();
+
+        private Map<String, List<TypeGroupAssignmentCreation>> incomingTypeGroupAssignments = Collections.emptyMap();
 
         private Function<? super NewVocabulary, ? extends String> vocabularyKeyMapper =
                 v -> v.getCode();
@@ -436,6 +699,25 @@ public class MasterDataSynchronizerTest
             return this;
         }
 
+        TestFixtureBuilder existingTypeGroups(TypeGroup... typeGroups)
+        {
+            existingTypeGroups = Arrays.asList(typeGroups);
+            return this;
+        }
+
+        TestFixtureBuilder incomingTypeGroups(TypeGroupCreation... typeGroups)
+        {
+            incomingTypeGroups = Arrays.asList(typeGroups);
+            incomingTypeGroups.forEach(t -> t.setCode(nameTranslator.translate(t.getCode())));
+            return this;
+        }
+
+        TestFixtureBuilder incomingTypeGroupAssignments(String typeGroupCode, TypeGroupAssignmentCreation... assignments)
+        {
+            incomingTypeGroupAssignments = Collections.singletonMap(typeGroupCode, Arrays.asList(assignments));
+            return this;
+        }
+
         MasterData prepare()
         {
             List<ExternalDmsPermId> existingExternalDmssIds =
@@ -455,6 +737,9 @@ public class MasterDataSynchronizerTest
                                 with(existingExternalDmssIds),
                                 with(any(ExternalDmsFetchOptions.class)));
                         will(returnValue(existingExternalDmssMap));
+                        allowing(v3api).searchTypeGroups(with(SESSION_TOKEN), with(any(TypeGroupSearchCriteria.class)),
+                                with(any(TypeGroupFetchOptions.class)));
+                        will(returnValue(new SearchResult<>(existingTypeGroups, existingTypeGroups.size())));
                         one(facade).printSummary();
                     }
                 });
@@ -463,6 +748,9 @@ public class MasterDataSynchronizerTest
                     Collectors.toMap(vocabularyKeyMapper, Function.identity())));
             masterData.setPropertyTypesToProcess(incomingPropertyTypes.stream().collect(
                     Collectors.toMap(propertyTypeKeyMapper, Function.identity())));
+            masterData.setTypeGroupsToProcess(incomingTypeGroups.stream().collect(
+                    Collectors.toMap(TypeGroupCreation::getCode, Function.identity())));
+            masterData.setTypeGroupAssignmentsToProcess(incomingTypeGroupAssignments);
             return masterData;
         }
     }
@@ -580,5 +868,69 @@ public class MasterDataSynchronizerTest
             return this;
         }
 
+    }
+
+    private static final class TypeGroupBuilder
+    {
+        private final TypeGroup typeGroup = new TypeGroup();
+
+        private final List<TypeGroupAssignment> assignments = new ArrayList<>();
+
+        TypeGroupBuilder(String code)
+        {
+            TypeGroupFetchOptions fetchOptions = new TypeGroupFetchOptions();
+            fetchOptions.withTypeGroupAssignments().withSampleType();
+            typeGroup.setFetchOptions(fetchOptions);
+            typeGroup.setCode(code);
+            typeGroup.setTypeGroupAssignments(assignments);
+        }
+
+        TypeGroup get()
+        {
+            return typeGroup;
+        }
+
+        TypeGroupBuilder managedInternally()
+        {
+            typeGroup.setManagedInternally(true);
+            return this;
+        }
+
+        TypeGroupBuilder metaData(Map<String, String> metaData)
+        {
+            typeGroup.setMetaData(metaData);
+            return this;
+        }
+
+        TypeGroupBuilder members(String... sampleTypeCodes)
+        {
+            for (String sampleTypeCode : sampleTypeCodes)
+            {
+                ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType sampleType =
+                        new ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType();
+                sampleType.setCode(sampleTypeCode);
+                TypeGroupAssignment assignment = new TypeGroupAssignment();
+                assignment.setSampleType(sampleType);
+                assignments.add(assignment);
+            }
+            return this;
+        }
+    }
+
+    private static TypeGroupCreation typeGroupCreation(String code, boolean managedInternally, Map<String, String> metaData)
+    {
+        TypeGroupCreation typeGroup = new TypeGroupCreation();
+        typeGroup.setCode(code);
+        typeGroup.setManagedInternally(managedInternally);
+        typeGroup.setMetaData(metaData);
+        return typeGroup;
+    }
+
+    private static TypeGroupAssignmentCreation typeGroupAssignment(String typeGroupCode, String sampleTypeCode)
+    {
+        TypeGroupAssignmentCreation assignment = new TypeGroupAssignmentCreation();
+        assignment.setTypeGroupId(new TypeGroupId(typeGroupCode));
+        assignment.setSampleTypeId(new EntityTypePermId(sampleTypeCode, ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE));
+        return assignment;
     }
 }

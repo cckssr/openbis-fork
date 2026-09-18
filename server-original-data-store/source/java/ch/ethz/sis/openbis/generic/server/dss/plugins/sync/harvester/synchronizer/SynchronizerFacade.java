@@ -51,6 +51,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.create.ExternalDmsCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.SummaryUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
@@ -108,11 +114,15 @@ public class SynchronizerFacade implements ISynchronizerFacade
 
     private Set<String> dataSetTypesToAdd = new TreeSet<String>();
 
+    private Set<String> typeGroupsToAdd = new TreeSet<String>();
+
     private Map<String, UpdateSummary> sampleTypesToUpdate = new TreeMap<>();
 
     private Map<String, UpdateSummary> experimentTypesToUpdate = new TreeMap<>();
 
     private Map<String, UpdateSummary> dataSetTypesToUpdate = new TreeMap<>();
+
+    private Map<String, UpdateSummary> typeGroupsToUpdate = new TreeMap<>();
 
     public SynchronizerFacade(String openBisServerUrl, String harvesterUser, String harvesterPassword, boolean dryRun, boolean verbose,
             Logger operationLog)
@@ -343,6 +353,56 @@ public class SynchronizerFacade implements ISynchronizerFacade
         if (!dryRun)
         {
             v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation));
+        }
+    }
+
+    @Override
+    public void registerTypeGroup(TypeGroupCreation typeGroup)
+    {
+        typeGroupsToAdd.add(typeGroup.getCode());
+        if (dryRun == false)
+        {
+            v3api.createTypeGroups(sessionToken, Collections.singletonList(typeGroup));
+        }
+    }
+
+    @Override
+    public void updateTypeGroup(TypeGroupCreation typeGroup, String diff)
+    {
+        getEntityTypeSummary(typeGroupsToUpdate, typeGroup.getCode()).update(diff);
+        TypeGroupUpdate update = new TypeGroupUpdate();
+        update.setTypeGroupId(new TypeGroupId(typeGroup.getCode()));
+        if (typeGroup.getMetaData() != null)
+        {
+            update.getMetaData().set(typeGroup.getMetaData());
+        }
+        if (!dryRun)
+        {
+            v3api.updateTypeGroups(sessionToken, Collections.singletonList(update));
+        }
+    }
+
+    @Override
+    public void assignObjectTypesToTypeGroup(List<TypeGroupAssignmentCreation> assignments)
+    {
+        if (dryRun == false)
+        {
+            v3api.createTypeGroupAssignments(sessionToken, assignments);
+        }
+    }
+
+    @Override
+    public void unassignObjectTypeFromTypeGroup(String typeGroupCode, String sampleTypeCode)
+    {
+        if (dryRun == false)
+        {
+            TypeGroupAssignmentId id = new TypeGroupAssignmentId(
+                    new EntityTypePermId(sampleTypeCode,
+                            ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE),
+                    new TypeGroupId(typeGroupCode));
+            TypeGroupAssignmentDeletionOptions options = new TypeGroupAssignmentDeletionOptions();
+            options.setReason("sync type group assignment removal");
+            v3api.deleteTypeGroupAssignments(sessionToken, Collections.singletonList(id), options);
         }
     }
 
@@ -584,6 +644,8 @@ public class SynchronizerFacade implements ISynchronizerFacade
             printUpdateSummary(sampleTypesToAdd, sampleTypesToUpdate, "sample types");
             SummaryUtils.printAddedSummary(operationLog, dataSetTypesToAdd, "data set types");
             printUpdateSummary(dataSetTypesToAdd, dataSetTypesToUpdate, "data set types");
+            SummaryUtils.printAddedSummary(operationLog, typeGroupsToAdd, "type groups");
+            printUpdateSummary(typeGroupsToAdd, typeGroupsToUpdate, "type groups");
         }
         SummaryUtils.printShortSummaryHeader(operationLog);
         SummaryUtils.printShortAddedSummary(operationLog, validationPluginsToAdd.size(), "validation plugins");
@@ -598,6 +660,8 @@ public class SynchronizerFacade implements ISynchronizerFacade
         printShortSummary(sampleTypesToAdd, sampleTypesToUpdate, "sample types", "property assignments");
         SummaryUtils.printShortAddedSummary(operationLog, dataSetTypesToAdd.size(), "data set types");
         printShortSummary(dataSetTypesToAdd, dataSetTypesToUpdate, "data set types", "property assignments");
+        SummaryUtils.printShortAddedSummary(operationLog, typeGroupsToAdd.size(), "type groups");
+        printShortSummary(typeGroupsToAdd, typeGroupsToUpdate, "type groups", "object type assignments");
         SummaryUtils.printShortSummaryFooter(operationLog);
     }
 

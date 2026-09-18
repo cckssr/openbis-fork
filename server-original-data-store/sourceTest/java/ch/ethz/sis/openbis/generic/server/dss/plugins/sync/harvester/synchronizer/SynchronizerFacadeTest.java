@@ -53,6 +53,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpda
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleTypeUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
@@ -189,6 +195,68 @@ public class SynchronizerFacadeTest
         context.assertIsSatisfied();
     }
 
+    @Test(dataProvider = "metadata")
+    public void typeGroupsUseV3WithOrWithoutMetadata(Map<String, String> metadata)
+    {
+        context.checking(new Expectations() {{
+            one(api).createTypeGroups(with("session"), with(any(List.class)));
+            will(capture());
+
+            one(api).updateTypeGroups(with("session"), with(any(List.class)));
+            will(capture());
+
+        }});
+        TypeGroupCreation typeGroup = typeGroup(metadata);
+        facade.registerTypeGroup(typeGroup);
+        facade.updateTypeGroup(typeGroup, "changed");
+        TypeGroupCreation creation = (TypeGroupCreation) writes.get(0);
+        assertEquals(creation.getCode(), "TG");
+        assertTrue(creation.isManagedInternally());
+        assertEquals(creation.getMetaData(), metadata);
+        TypeGroupUpdate update = (TypeGroupUpdate) writes.get(1);
+        assertEquals(update.getTypeGroupId(), new TypeGroupId("TG"));
+        assertMetadata(update, metadata);
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void typeGroupAssignmentsUseV3()
+    {
+        TypeGroupAssignmentCreation assignment = new TypeGroupAssignmentCreation();
+        assignment.setTypeGroupId(new TypeGroupId("TG"));
+        assignment.setSampleTypeId(new EntityTypePermId("T",
+                ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE));
+        List<TypeGroupAssignmentCreation> assignments = Collections.singletonList(assignment);
+
+        context.checking(new Expectations() {{
+            one(api).createTypeGroupAssignments(with("session"),
+                    with(assignments));
+
+            one(api).deleteTypeGroupAssignments(with("session"),
+                    with(any(List.class)),
+                    with(any(TypeGroupAssignmentDeletionOptions.class)));
+
+            will(capture());
+        }});
+        facade.assignObjectTypesToTypeGroup(assignments);
+        facade.unassignObjectTypeFromTypeGroup("TG", "T");
+
+        TypeGroupAssignmentId deleted = (TypeGroupAssignmentId) writes.get(0);
+        assertEquals(deleted, new TypeGroupAssignmentId(
+                new EntityTypePermId("T", ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE),
+                new TypeGroupId("TG")));
+        context.assertIsSatisfied();
+    }
+
+    private TypeGroupCreation typeGroup(Map<String, String> metadata)
+    {
+        TypeGroupCreation typeGroup = new TypeGroupCreation();
+        typeGroup.setCode("TG");
+        typeGroup.setManagedInternally(true);
+        typeGroup.setMetaData(metadata);
+        return typeGroup;
+    }
+
     private void assertMetadata(IMetaDataUpdateHolder update, Map<String, String> metadata)
     {
         assertEquals(update.getMetaData().getSet(), metadata == null ? Collections.emptyList() : Collections.singletonList(metadata));
@@ -298,6 +366,10 @@ public class SynchronizerFacadeTest
         dataSet.setCode("D");
         facade.registerDataSetType(dataSet);
         facade.updateDataSetType(dataSet, "changed");
+        facade.registerTypeGroup(typeGroup(Collections.emptyMap()));
+        facade.updateTypeGroup(typeGroup(Collections.emptyMap()), "changed");
+        facade.assignObjectTypesToTypeGroup(Collections.emptyList());
+        facade.unassignObjectTypeFromTypeGroup("TG", "T");
         for (EntityKind kind : new EntityKind[] { EntityKind.SAMPLE, EntityKind.EXPERIMENT, EntityKind.DATA_SET })
         {
             facade.assignPropertyType(incomingAssignment(kind));

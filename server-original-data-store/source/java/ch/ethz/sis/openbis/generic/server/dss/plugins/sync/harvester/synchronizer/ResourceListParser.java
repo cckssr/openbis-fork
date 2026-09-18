@@ -272,6 +272,9 @@ public class ResourceListParser
         masterData.setExternalDataManagementSystemsToProcess(mdParser.getExternalDataManagementSystems());
         masterData.setVocabularyNameMapper(mdParser.getVocabularyNameMapper());
         masterData.setPropertyTypeNameMapper(mdParser.getPropertyTypeNameMapper());
+        masterData.setTypeGroupsToProcess(mdParser.getTypeGroups());
+        masterData.setTypeGroupNameMapper(mdParser.getTypeGroupNameMapper());
+        masterData.setTypeGroupAssignmentsToProcess(mdParser.getTypeGroupAssignments());
     }
 
     private void parseMetaData(String uri, Date lastModificationDate, Node xdNode) throws XPathExpressionException

@@ -20,8 +20,6 @@ import static ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant.INTERN
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -97,6 +95,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writeExperimentTypes(context, writer, experimentTypes);
         writeDataSetTypes(context, writer, dataSetTypes);
         addExternalDataManagementSystems(context, writer, sessionToken, collectExternalDmsIds(dataSets));
+        new TypeGroupDeliverer(this.context).writeTypeGroups(context, writer);
         writer.writeEndElement();
         writer.writeEndElement();
     }
@@ -330,7 +329,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
             {
                 addAttribute(writer, "vocabulary", propertyType.getVocabulary(), v -> v.getCode());
             }
-            addMetaData(writer, propertyType.getMetaData());
+            DataSourceUtils.addMetaData(writer, propertyType.getMetaData());
             writer.writeEndElement();
         }
         writer.writeEndElement();
@@ -367,7 +366,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
             addAttribute(writer, "subcodeUnique", type.isSubcodeUnique());
             addAttribute(writer, "validationPlugin", type.getValidationPlugin(), p -> p.getName());
             addAttribute(writer, "modification-timestamp", type.getModificationDate(), h -> DataSourceUtils.convertToW3CDate(h));
-            addMetaData(writer, type.getMetaData());
+            DataSourceUtils.addMetaData(writer, type.getMetaData());
             addPropertyAssignments(writer, type.getPropertyAssignments());
             writer.writeEndElement();
         }
@@ -398,7 +397,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
             writeTypeElement(executionContext, writer, "xmd:collectionType", type);
             addAttribute(writer, "validationPlugin", type.getValidationPlugin(), p -> p.getName());
             addAttribute(writer, "modification-timestamp", type.getModificationDate(), h -> DataSourceUtils.convertToW3CDate(h));
-            addMetaData(writer, type.getMetaData());
+            DataSourceUtils.addMetaData(writer, type.getMetaData());
             addPropertyAssignments(writer, type.getPropertyAssignments());
             writer.writeEndElement();
         }
@@ -432,7 +431,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
             addAttribute(writer, "mainDataSetPattern", type.getMainDataSetPattern());
             addAttribute(writer, "validationPlugin", type.getValidationPlugin(), p -> p.getName());
             addAttribute(writer, "modification-timestamp", type.getModificationDate(), h -> DataSourceUtils.convertToW3CDate(h));
-            addMetaData(writer, type.getMetaData());
+            DataSourceUtils.addMetaData(writer, type.getMetaData());
             addPropertyAssignments(writer, type.getPropertyAssignments());
             writer.writeEndElement();
         }
@@ -467,23 +466,6 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeStartElement(elementType);
         addAttribute(writer, "code", type.getCode());
         addAttributeAndExtractFilePaths(executionContext, writer, "description", type.getDescription());
-    }
-
-    private void addMetaData(XMLStreamWriter writer, Map<String, String> metaData) throws XMLStreamException
-    {
-        // An empty element distinguishes an empty map from older sources that omit metadata.
-        writer.writeStartElement("xmd:metaData");
-        if (metaData != null)
-        {
-            for (Map.Entry<String, String> entry : new TreeMap<>(metaData).entrySet())
-            {
-                writer.writeStartElement("xmd:entry");
-                addAttribute(writer, "key", entry.getKey());
-                writer.writeCharacters(entry.getValue());
-                writer.writeEndElement();
-            }
-        }
-        writer.writeEndElement();
     }
 
     private void addPropertyAssignments(XMLStreamWriter writer, List<PropertyAssignment> propertyAssignments) throws XMLStreamException

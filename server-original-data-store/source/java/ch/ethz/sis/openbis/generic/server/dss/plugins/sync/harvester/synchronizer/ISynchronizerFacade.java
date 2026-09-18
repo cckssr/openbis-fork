@@ -20,6 +20,8 @@ import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.create.ExternalDmsCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
@@ -76,6 +78,14 @@ public interface ISynchronizerFacade
     void registerPropertyType(PropertyType type, Map<String, String> metaData);
 
     void updatePropertyType(PropertyType type, Map<String, String> metaData, String diff);
+
+    void registerTypeGroup(TypeGroupCreation typeGroup);
+
+    void updateTypeGroup(TypeGroupCreation typeGroup, String diff);
+
+    void assignObjectTypesToTypeGroup(List<TypeGroupAssignmentCreation> assignments);
+
+    void unassignObjectTypeFromTypeGroup(String typeGroupCode, String sampleTypeCode);
 
     public void printSummary();
 }
