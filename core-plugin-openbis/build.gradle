@@ -448,6 +448,7 @@ task copyOpenbisNgUiToCorePlugins(type: Copy, dependsOn: [deleteOpenbisNgUi, ':u
 
 zipCorePlugins.dependsOn copyOpenbisNgUiToCorePlugins
 zipCorePlugins.dependsOn deleteOpenbisElnLims
+zipCorePlugins.dependsOn ':ui-eln-lims:bundleJavascript'
 
 task generateJavadoc(type: Javadoc) {
     source = configurations.javadoc_sources.collect {

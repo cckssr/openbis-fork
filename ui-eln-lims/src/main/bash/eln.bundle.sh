@@ -1,4 +1,7 @@
 #!/bin/bash
 set -e
-./eln.bundle.js.sh
-./eln.bundle.lib.sh
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+"$SCRIPT_DIR/eln.bundle.js.sh"
+"$SCRIPT_DIR/eln.bundle.lib.sh"

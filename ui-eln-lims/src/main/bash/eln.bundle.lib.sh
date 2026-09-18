@@ -1,10 +1,12 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # 0. Define input folder
-INPUT_FOLDER="../../../src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/lib"
+INPUT_FOLDER="$SCRIPT_DIR/../../../src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/lib"
 
 # 1. Define the output file
-OUTPUT_FILE="../../../src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/eln.bundle.lib.js"
+OUTPUT_FILE="$SCRIPT_DIR/../../../src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/eln.bundle.lib.js"
 
 # 2. List your files in the exact order they need to load
 FILES=(
@@ -53,7 +55,7 @@ FILES=(
 )
 
 # 3. Bundle
-./bundle.sh "$OUTPUT_FILE" "${FILES[@]}"
+"$SCRIPT_DIR/bundle.sh" "$OUTPUT_FILE" "${FILES[@]}"
 
 # 4. Strip map files
 sed -i '/\/\/# sourceMappingURL=/d' $OUTPUT_FILE

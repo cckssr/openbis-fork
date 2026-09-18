@@ -31,6 +31,10 @@ tasks.register('versionUpdate') {
     file('src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/version.txt').write(System.getProperty("version"))
 }
 
+tasks.register('bundleJavascript', Exec){
+    commandLine 'bash', './src/main/bash/eln.bundle.sh'
+}
+
 clean.dependsOn 'versionUpdate'
 
 //

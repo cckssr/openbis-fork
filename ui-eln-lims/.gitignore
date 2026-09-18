@@ -1,1 +1,3 @@
 build
+/src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/eln.bundle.js
+/src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/eln.bundle.lib.js
