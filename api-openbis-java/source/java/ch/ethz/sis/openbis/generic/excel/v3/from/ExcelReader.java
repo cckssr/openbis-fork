@@ -239,9 +239,10 @@ public class ExcelReader
                                 files.put(key, vals);
 
                                 validateEntrySize(entry.getSize(), EMBEDDED_DOCUMENT_LIMIT);
+                                String contents = new String(fileInfo.getInputStream().readAllBytes());
                                 this.importValues.put(
                                         entryName.substring(FOLDER_NAME_NEW_DATA.length()),
-                                        new String(zip.readAllBytes()));
+                                        contents);
 
                             } else if (entryName.startsWith(FILE_SERVICES_FOLDER_NAME))
                             {
