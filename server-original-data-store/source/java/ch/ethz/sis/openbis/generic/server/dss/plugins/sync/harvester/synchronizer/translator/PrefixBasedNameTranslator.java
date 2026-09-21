@@ -56,7 +56,7 @@ public class PrefixBasedNameTranslator implements INameTranslator
         assert StringUtils.isBlank(name) == false : "Prefix translation can only be done for non-null values";
         if (name.startsWith(INTERNAL_NAMESPACE_PREFIX))
         {
-            return translateInternal(name.substring(INTERNAL_NAMESPACE_PREFIX.length()));
+            return name;
         }
         else
         {
@@ -69,7 +69,7 @@ public class PrefixBasedNameTranslator implements INameTranslator
     {
         if (name.startsWith(INTERNAL_NAMESPACE_PREFIX))
         {
-            return translateBackInternal(name.substring(INTERNAL_NAMESPACE_PREFIX.length()));
+            return name;
         }
         return translateBackInternal(name);
     }

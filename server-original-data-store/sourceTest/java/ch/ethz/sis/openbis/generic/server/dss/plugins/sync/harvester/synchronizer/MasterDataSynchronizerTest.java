@@ -297,6 +297,26 @@ public class MasterDataSynchronizerTest
         context.assertIsSatisfied();
     }
 
+    @Test
+    public void testInternalNamespacePropertyTypeCodeIsNotPrefixed()
+    {
+        // Given
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator("SRC"));
+        PropertyTypeBuilder propertyType = new PropertyTypeBuilder("$STORAGE_POSITION").registrator("admin");
+        builder.incomingPropertyTypes(propertyType.get());
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareRegisterPropertyType(propertyType.get());
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        assertEquals(propertyType.get().getCode(), "$STORAGE_POSITION");
+        context.assertIsSatisfied();
+    }
+
     @Test(dataProvider = UPDATE_AND_PREFIX_PROVIDER)
     public void testInternalPropertyTypeOfDifferentDataType(boolean withUpdate, String prefix)
     {

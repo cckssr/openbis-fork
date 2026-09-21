@@ -103,13 +103,26 @@ public class MasterDataParserSchemaFeaturesTest
         parse(multiValue, unique, metadata);
     }
 
+    @Test
+    public void testInternalNamespacePropertyTypeCodeIsNotPrefixed() throws Exception
+    {
+        MasterDataParser parser = parse("", "", "", "$STORAGE_POSITION");
+        assertTrue(parser.getPropertyTypes().containsKey("$STORAGE_POSITION"));
+        assertFalse(parser.getPropertyTypes().containsKey("SRC_STORAGE_POSITION"));
+    }
+
     private MasterDataParser parse(String multiValue, String unique, String metadata) throws Exception
     {
-        String assignment = "<xmd:propertyAssignments><xmd:propertyAssignment propertyTypeCode='P' ordinal='1' "
+        return parse(multiValue, unique, metadata, "P");
+    }
+
+    private MasterDataParser parse(String multiValue, String unique, String metadata, String propertyTypeCode) throws Exception
+    {
+        String assignment = "<xmd:propertyAssignments><xmd:propertyAssignment propertyTypeCode='" + propertyTypeCode + "' ordinal='1' "
                 + unique + "/></xmd:propertyAssignments>";
         String xml = "<urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9' xmlns:xmd='urn:xmd'>"
                 + "<url><loc>master</loc><xmd:masterData><xmd:propertyTypes>"
-                + "<xmd:propertyType code='P' dataType='VARCHAR' managedInternally='false' registrator='user' "
+                + "<xmd:propertyType code='" + propertyTypeCode + "' dataType='VARCHAR' managedInternally='false' registrator='user' "
                 + multiValue + ">" + metadata + "</xmd:propertyType></xmd:propertyTypes>"
                 + "<xmd:objectTypes><xmd:objectType code='T'>" + metadata + assignment
                 + "</xmd:objectType></xmd:objectTypes>"

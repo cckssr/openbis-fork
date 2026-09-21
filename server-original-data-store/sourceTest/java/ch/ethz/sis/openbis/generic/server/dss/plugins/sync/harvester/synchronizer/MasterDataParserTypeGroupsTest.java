@@ -75,6 +75,17 @@ public class MasterDataParserTypeGroupsTest
         assertEquals(typeGroup.isManagedInternally(), true);
     }
 
+    @Test
+    public void testInternalNamespaceTypeGroupCodeIsNotPrefixed() throws Exception
+    {
+        String typeGroups = "<xmd:typeGroups><xmd:typeGroup code='$SETTINGS' managedInternally='true' "
+                + "registrator='system'/></xmd:typeGroups>";
+        MasterDataParser parser = parse("<xmd:masterData>" + typeGroups + "</xmd:masterData>");
+
+        TypeGroupCreation typeGroup = parser.getTypeGroups().get("$SETTINGS");
+        assertEquals(typeGroup.getCode(), "$SETTINGS");
+    }
+
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testRejectsDuplicateTypeGroupCode() throws Exception
     {
