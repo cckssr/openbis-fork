@@ -528,11 +528,14 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
         if response.body() == u'':
             error_message = "HTTP status: %s" % str(status)
         else:
-            body = json.loads(response.body())
-            if 'message' in body:
-                error_message = body['message']
-            else:
-                error_message = json.dumps(body, indent=4)
+            try:
+                body = json.loads(response.body())
+                if 'message' in body:
+                    error_message = body['message']
+                else:
+                    error_message = json.dumps(body, indent=4)
+            except:
+                error_message =  "HTTP status: %s\n%s" % str(status), str(response.body())
         return {
             "error": error_message
         }
