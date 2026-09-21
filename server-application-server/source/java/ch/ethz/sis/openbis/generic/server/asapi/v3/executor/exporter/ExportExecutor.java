@@ -569,7 +569,7 @@ public class ExportExecutor implements IExportExecutor
             try
             {
 //                final long chunkLimit = 1024 * 10; // 10 Kb
-                final long chunkLimit = 1024 * 1024 * 10; // 10 Mb
+                final long chunkLimit = 1024 * 1024 * 2; // 2 Mb (note: 10Mb causes OOM in AFS for big exports)
 
                 for (Map.Entry<ICodeHolder, ch.ethz.sis.afsapi.dto.File[]> singleEntry : entityFileMap.entrySet())
                 {
