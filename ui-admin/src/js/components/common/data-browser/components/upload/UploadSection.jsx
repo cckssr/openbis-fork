@@ -214,7 +214,9 @@ class UploadSection extends React.Component {
           selectionButtonProps={this.props.selectionButtonProps}
           title={messages.get(messages.FILE_EXISTS)}
           content={messages.get(
-            messages.CONFIRMATION_FILE_NAME_CONFLICT,
+            this.state.allowSkip
+              ? messages.CONFIRMATION_FILE_NAME_CONFLICT
+              : messages.CONFIRMATION_FILE_NAME_REPLACE_CONFLICT,
             uploadFileExistsDialogFile?.name
           )}
         />
