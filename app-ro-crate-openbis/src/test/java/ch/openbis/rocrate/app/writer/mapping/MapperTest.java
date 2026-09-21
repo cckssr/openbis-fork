@@ -252,7 +252,7 @@ public class MapperTest extends TestCase
         assertEquals("openBIS:hasNAME", result.getSchema().getProperties().get(0).getId());
         MetadataEntry metaDataEntry = result.getMetaDataEntries().get(0);
         assertTrue(metaDataEntry.getValues().containsKey("openBIS:hasNAME"));
-        assertTrue(result.getMappingInfo().getRdfsToObjects().get("ENTRY1")
+        assertTrue(result.getMappingInfo().getRdfsToObjects().get("openBIS:ENTRY1")
                 .contains(sampleType));
 
     }

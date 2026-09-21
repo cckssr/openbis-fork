@@ -437,7 +437,8 @@ public class SchemaFacade implements ISchemaFacade
                                                 .stream().findFirst().orElse(null)))
                                 .collect(Collectors.toList());
                 String comment =
-                        RoCrateValueUtil.parseMultiValued(abstractEntity, RDFS_COMMENT).getFirst();
+                        RoCrateValueUtil.parseMultiValued(abstractEntity, RDFS_COMMENT).stream()
+                                .findFirst().orElse("");
                 IVocabularyType vocabularyType =
                         new VocabularyType(abstractEntity.getId(), comment, terms);
                 vocabularyTypes.put(vocabularyType.getId(), vocabularyType);

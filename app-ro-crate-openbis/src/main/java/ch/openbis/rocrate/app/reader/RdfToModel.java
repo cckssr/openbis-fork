@@ -151,7 +151,7 @@ public class RdfToModel
         Map<String, Set<DataType>> baseCodeToPossibleDataTypes = new LinkedHashMap<>();
 
         handlePropertyTypes(typeProperties, baseCodeToPossibleDataTypes, propertyTypeMappings,
-                codeToType);
+                codeToType, schemaFacade);
         handleIntersectionTypes(entries, schema, entityTypeToRdfIdentifier, codeToType);
         Map<String, Sample> externalIdentifierToSample = new LinkedHashMap<>();
 
@@ -352,7 +352,7 @@ public class RdfToModel
     private static void handlePropertyTypes(List<IPropertyType> typeProperties,
             Map<String, Set<DataType>> baseCodeToPossibleDataTypes,
             Map<Pair<String, DataType>, PropertyTypeMapping> propertyTypeMappings,
-            CodeToType codeToType)
+            CodeToType codeToType, SchemaFacade schemaFacade)
     {
         for (IPropertyType a : typeProperties)
         {
@@ -361,7 +361,7 @@ public class RdfToModel
                 continue;
             }
 
-            Set<DataType> dataTypes = matchDataTypes(a);
+            Set<DataType> dataTypes = matchDataTypes(a, schemaFacade);
             boolean addSuffixes = dataTypes.size() > 1;
             String baseCode = openBisifyCode(deRdfIdentifier(a.getId()));
             baseCodeToPossibleDataTypes.put(baseCode, dataTypes);
@@ -1121,7 +1121,7 @@ public class RdfToModel
                 Experiment experiment = new Experiment();
                 ExperimentType experimentType = identifierToCollectionType.get(
                         entry.getTypes().stream()
-                                .filter(x -> !x.equalsIgnoreCase(GRAPH_ID_Collection)).findFirst()
+                                .filter(x -> !x.equals(GRAPH_ID_Collection)).findFirst()
                                 .orElse(GRAPH_ID_Collection));
                 Map<String, Serializable> properties = new LinkedHashMap<>();
                 experiment.setProperties(properties);
@@ -1438,14 +1438,15 @@ public class RdfToModel
 
     }
 
-    private static Set<DataType> matchDataTypes(IPropertyType propertyType)
+    private static Set<DataType> matchDataTypes(IPropertyType propertyType,
+            SchemaFacade schemaFacade)
     {
-        return propertyType.getRange().stream().map(RdfToModel::matchDataType)
+        return propertyType.getRange().stream().map(x -> RdfToModel.matchDataType(x, schemaFacade))
                 .collect(Collectors.toSet());
 
     }
 
-    private static DataType matchDataType(String rangeId)
+    private static DataType matchDataType(String rangeId, SchemaFacade schemaFacade)
     {
 
         if (rangeId.equals(LiteralType.STRING.getTypeName()))
@@ -1476,6 +1477,12 @@ public class RdfToModel
         {
             return DataType.XML;
         }
+        if (schemaFacade.getVocabularyTypes().stream().anyMatch(x -> x.getId().equals(rangeId)))
+        {
+            return DataType.CONTROLLEDVOCABULARY;
+        }
+
+
 
         return DataType.SAMPLE;
 
@@ -1705,7 +1712,7 @@ public class RdfToModel
 
     private static String openBisifyCode(String code)
     {
-        return code.replaceAll(":", "_");
+        return code.replaceAll("openBIS:", "").replaceAll(":", "_");
     }
 
     private static String openBisifyCollectionTypeCode(String code)

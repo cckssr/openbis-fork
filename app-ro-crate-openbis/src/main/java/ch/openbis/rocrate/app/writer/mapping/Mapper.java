@@ -91,7 +91,7 @@ public class Mapper
         {
             Type myClass = new Type();
             IEntityType value = schemaEntry.getValue();
-            String rdfsID = value.getCode();
+            String rdfsID = "openBIS:" + value.getCode();
             myClass.setId(rdfsID);
             List<IEntityType> types =
                     reverseMapping.getOrDefault(rdfsID, new ArrayList<IEntityType>());
@@ -204,7 +204,8 @@ public class Mapper
             Stream<IType> iTypeStream = a.getValue().stream()
                     .filter(x -> x.getLeft().getPropertyType().getDataType() == DataType.SAMPLE)
                     .filter(x -> x.getLeft().getPropertyType().getSampleType() != null)
-                    .map(x -> classes.get(x.getLeft().getPropertyType().getSampleType().getCode()));
+                    .map(x -> classes.get(
+                            "openBIS:" + x.getLeft().getPropertyType().getSampleType().getCode()));
 
             iTypeStream
                     .forEach(rdfsProperty::addType);
