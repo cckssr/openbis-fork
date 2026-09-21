@@ -323,14 +323,14 @@ public final class ExportJob implements IAsyncJob
                                     cratePath);
                     File zipOut = resultZipPath.toFile();
                     Path roCrateFolderPath = SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
-                            Path.of("ro-crate-metadata"));
+                            Path.of("ro-crate-metadata", jobId.toString()));
 
                     LOG.debug(String.format("Converted export to RO-Crate, about to store result in: %s", roCrateFolderPath));
                     Writer writer = new Writer();
                     writer.write(openBisModel, roCrateFolderPath);
 
                     Path roCrateJsonPath = SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
-                            Path.of("ro-crate-metadata", "ro-crate-metadata.json"));
+                            Path.of("ro-crate-metadata", jobId.toString(), "ro-crate-metadata.json"));
                     pathsForDeletion.add(roCrateJsonPath);
                     File roCrateFile = roCrateJsonPath.toFile();
 

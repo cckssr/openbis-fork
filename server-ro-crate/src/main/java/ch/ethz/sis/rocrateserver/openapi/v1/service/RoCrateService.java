@@ -28,6 +28,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import lombok.SneakyThrows;
 import org.jboss.resteasy.specimpl.ResponseBuilderImpl;
 
@@ -530,13 +531,28 @@ public class RoCrateService
                 java.nio.file.Path path = ((ExportJob) job).getResult();
 
                 String fileName = path.getFileName().toString();
+                String exportType = ((ExportJob) job).getExportType();
 
-                responseBuilder = Response.ok(Files.readAllBytes(path),
-                        ((ExportJob) job).getExportType());
-                responseBuilder.header("Content-Disposition",  "attachment; filename=\""+ fileName +"\"");
-                responseBuilder.type(((ExportJob) job).getExportType());
+                StreamingOutput stream = output -> {
+                    try (InputStream input = Files.newInputStream(path)) {
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
 
-                return responseBuilder.build();
+                        while ((bytesRead = input.read(buffer)) != -1)
+                        {
+                            output.write(buffer, 0, bytesRead);
+                        }
+                    }
+                };
+
+                return Response.ok(stream)
+                        .type(exportType)
+                        .header(
+                                "Content-Disposition",
+                                "attachment; filename=\"" + fileName + "\""
+                        )
+                        .header("Content-Length", Files.size(path))
+                        .build();
             } else
             {
                 ErrorResponse errorResponse =
