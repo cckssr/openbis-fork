@@ -1,7 +1,12 @@
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
 
+import ch.ethz.sis.shared.log.classic.core.LogCategory as LogCategory
+import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
+
 from java.net import URL
 import json
+
+OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
 chatBotLlmServerUrl = CommonServiceProvider.tryToGetProperty("admin.as.chat-bot-api.chat-bot-llm-server-url", "http://localhost:8080/api/v1/query")
 
@@ -16,8 +21,11 @@ def process(context, parameters):
 
 
 def getAsk(context, parameters):
+
     message = parameters.get("query")
-    code, response = http_post(chatBotLlmServerUrl, json_data=json.dumps({
+    sessionToken = parameters.get("sessionToken")
+    OPERATION_LOG.info("Asking chabot %s question: %s" % (chatBotLlmServerUrl, message))
+    code, response = http_post(chatBotLlmServerUrl, sessionToken, json_data=json.dumps({
         "question": message,
         "openbis_version": "7.x"
     }))
@@ -25,7 +33,7 @@ def getAsk(context, parameters):
         "answer" : response,
     }
 
-def http_post(url, json_data):
+def http_post(url, sessionToken, json_data):
 
     from java.net import URL
     from java.io import BufferedReader, InputStreamReader
@@ -35,6 +43,7 @@ def http_post(url, json_data):
     connection.setDoOutput(True)
     connection.setRequestProperty("Content-Type", "application/json")
     connection.setRequestProperty("Accept", "application/json")
+    connection.setRequestProperty("sessionToken", sessionToken)
     connection.setConnectTimeout(10000)
     connection.setReadTimeout(130000)
 
@@ -44,9 +53,18 @@ def http_post(url, json_data):
 
     response_code = connection.getResponseCode()
 
-    reader = BufferedReader(
-        InputStreamReader(connection.getInputStream(), "UTF-8")
-    )
+    OPERATION_LOG.info("Chabot response code: %s" % (response_code))
+    print("Chabot response code: %s" % response_code)
+
+
+    if response_code == 200:
+        reader = BufferedReader(
+            InputStreamReader(connection.getInputStream(), "UTF-8")
+        )
+    else:
+        reader = BufferedReader(
+            InputStreamReader(connection.getErrorStream(), "UTF-8")
+        )
 
     lines = []
     line = reader.readLine()
@@ -60,5 +78,10 @@ def http_post(url, json_data):
 
     response = json.loads("\n".join(lines))
 
+    if response_code == 200:
+        answer = response["answer"]
+    else:
+        answer = response["detail"]
 
-    return response_code, response["answer"]
+
+    return response_code, answer

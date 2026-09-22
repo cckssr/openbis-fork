@@ -130,6 +130,47 @@ class App extends React.Component {
     )
   }
 
+  async openEntity(entityId) {
+
+    let criteria = new openbis.SampleSearchCriteria()
+    if(entityId.startsWith("/")) {
+      criteria.withIdentifier().thatEquals(entityId)
+    } else {
+      criteria.withPermId().thatEquals(entityId)
+    }
+    let fo = new openbis.SampleFetchOptions()
+    const sampleResults = await openbis.searchSamples(criteria, fo)
+
+    if(sampleResults.getObjects().length > 0) {
+      let sample = sampleResults.getObjects()[0];
+      AppController.getInstance().objectOpen(pages.DATABASE, objectType.OBJECT, sample.permId.permId)
+    } else {
+      let criteria = new openbis.DataSetSearchCriteria();
+      criteria.withPermId().thatEquals(entityId);
+      let fo = new openbis.DataSetFetchOptions();
+      const dataSetResults = await openbis.searchDataSets(criteria, fo);
+      if(dataSetResults.getObjects().length > 0) {
+        AppController.getInstance().objectOpen(pages.DATABASE, objectType.DATA_SET, entityId)
+      } else {
+        let criteria = new openbis.ExperimentSearchCriteria()
+        if(entityId.startsWith("/")) {
+          criteria.withIdentifier().thatEquals(entityId)
+        } else {
+          criteria.withPermId().thatEquals(entityId)
+        }
+        let fo = new openbis.ExperimentFetchOptions();
+        const experimentResults = await openbis.searchExperiments(criteria, fo);
+        if(experimentResults.getObjects().length > 0) {
+          let experiment = experimentResults.getObjects()[0];
+          AppController.getInstance().objectOpen(pages.DATABASE, objectType.COLLECTION, experiment.permId.permId)
+        } else {
+
+        }
+      }
+    }
+
+  }
+
   async sendMessage(message, sessionId) {
     const serviceId = new openbis.CustomASServiceCode(ids.CHATBOT_SERVICE)
 
@@ -137,6 +178,8 @@ class App extends React.Component {
     serviceOptions.withParameter('method', 'ask')
     serviceOptions.withParameter('query', message)
     serviceOptions.withParameter('session_id', sessionId)
+    const sessionToken = AppController.getInstance().getSessionToken()
+    serviceOptions.withParameter('sessionToken', sessionToken)
 
     return await openbis.executeService(serviceId, serviceOptions)
   }
@@ -170,6 +213,7 @@ class App extends React.Component {
             menuStyles={menuStyles}
             showChatbot={true}
             sendMessageCallback={this.sendMessage}
+            openEntityCallback={this.openEntity}
           />
           {_.map(pageToComponent, (PageComponent, page) => {
             let visible = AppController.getInstance().getCurrentPage() === page

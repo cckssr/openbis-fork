@@ -9,32 +9,53 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 const ChatbotConfig = {
   sessionStorageKey: 'openbis-chatbot-session-id',
   ui: {
-    title: 'Chat Assistant',
+    title: 'ChatBIS',
     placeholder: 'Ask me anything about openBIS...',
     welcomeMessage: 'Hello! I\'m your chat bot assistant. How can I help you today?'
   }
 };
 
+function getIdsFromResponse(text) {
+  const identifierRegexp = /(?:\/[A-Z_-\d]+){2,5}/g
+  let ids = text.match(identifierRegexp);
+  if (!ids) {
+    ids = [];
+  }
+  const permIdRegexp = /\d{17}-\d+/g
+  let permIds = text.match(permIdRegexp);
+  if ( !permIds) {
+    permIds = [];
+  }
+  ids = ids.concat(permIds);
+  return ids;
+}
+
 function renderMarkdown(text) {
-  return text
-    // Headers
-    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-    // Bold
-    .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-    .replace(/__(.*?)__/gim, '<strong>$1</strong>')
-    // Italic
-    .replace(/\*(.*)\*/gim, '<em>$1</em>')
-    .replace(/_(.*?)_/gim, '<em>$1</em>')
-    // Code blocks
-    .replace(/```([\s\S]*?)```/gim, '<pre><code>$1</code></pre>')
-    // Inline code
-    .replace(/`([^`]*)`/gim, '<code>$1</code>')
-    // Links
-    .replace(/\[([^\]]*)\]\(([^\)]*)\)/gim, '<a href="$2" target="_blank">$1</a>')
-    // Line breaks
-    .replace(/\n/gim, '<br>');
+  let processedText =  text
+      // Headers
+      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+      // Bold
+      .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+      .replace(/__(.*?)__/gim, '<strong>$1</strong>')
+      // Italic
+      // .replace(/\*(.*)\*/gim, '<em>$1</em>')
+      // .replace(/_(.*?)_/gim, '<em>$1</em>')
+      // Code blocks
+      .replace(/```([\s\S]*?)```/gim, '<pre><code>$1</code></pre>')
+      // Inline code
+      .replace(/`([^`]*)`/gim, '<code>$1</code>')
+      // Links
+      .replace(/\[([^\]]*)\]\(([^\)]*)\)/gim, '<a href="$2" target="_blank">$1</a>')
+      // Line breaks
+      .replace(/\n/gim, '<br>');
+
+  let ids = getIdsFromResponse(text);
+  for(let id of ids) {
+    processedText = processedText.replace(id, '<a href="#" class="action-link" data-entity-id='+id+'>'+id+'</a>')
+  }
+  return processedText;
 }
 
 const ChatbotContainer = styled(Box)(({ theme }) => ({
@@ -107,6 +128,14 @@ const MessageContent = styled('div')(({ role, theme }) => ({
   fontSize: 14,
   lineHeight: 1.4,
   wordWrap: 'break-word',
+
+  '& .action-link': {
+    color: theme.palette.primary.main,
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    display: 'contents'
+  },
+
 }));
 
 const LoadingDots = styled('div')(() => ({
@@ -129,7 +158,7 @@ const Dot = styled('span')(({ theme }) => ({
   margin: '0 2px',
 }));
 
-export default function ChatBotAssistant({ open, setOpen, theme, sendMessageCallback }) {
+export default function ChatBotAssistant({ open, setOpen, theme, sendMessageCallback, openEntityCallback }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -164,6 +193,21 @@ export default function ChatBotAssistant({ open, setOpen, theme, sendMessageCall
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleMessageClick = (event) => {
+    const link = event.target.closest('.action-link');
+
+    if (!link) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const entityId = link.dataset.entityId;
+
+    // Perform your action here
+    openEntityCallback(entityId);
   };
 
 
@@ -235,6 +279,7 @@ export default function ChatBotAssistant({ open, setOpen, theme, sendMessageCall
             <MessageContent
               role={msg.role}
               theme={theme}
+              onClick={handleMessageClick}
               dangerouslySetInnerHTML={{ __html: msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content.replace(/\n/g, '<br>') }}
             />
           </MessageDiv>

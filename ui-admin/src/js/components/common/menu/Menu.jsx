@@ -242,7 +242,9 @@ class Menu extends React.PureComponent {
       <QuestionAnswerIcon fontSize='medium' sx={{ color: 'white' }} />
       <ChatBotAssistant open={this.state.chatbotOpen} setOpen={this.setChatbotOpen}
         theme={this.props.theme}
-        sendMessageCallback={this.props.sendMessageCallback} />
+        sendMessageCallback={this.props.sendMessageCallback}
+        openEntityCallback={this.props.openEntityCallback}
+      />
     </IconButton>)
   }
 
