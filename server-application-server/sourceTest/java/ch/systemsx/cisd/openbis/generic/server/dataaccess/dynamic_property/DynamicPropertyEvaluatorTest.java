@@ -168,14 +168,14 @@ public class DynamicPropertyEvaluatorTest extends AbstractBOTest
         final String expectedDp1ErrorValue =
                 expectedErrorMessage("Integer value '" + expectedDp1Value
                         + "' has improper format.");
-        assertEquals(expectedDp1ErrorValue, dp1Error.getValue());
+        assertEquals(expectedDp1ErrorValue, getErrorWithoutUuid(dp1Error.getValue()));
         assertEquals(properties.size() + "", dp2.getValue());
         final String expectedDp3ErrorValue =
                 expectedErrorMessage("Error occurred in line 1 of the script when evaluating '"
                         + s3
                         + "': AttributeError: 'ch.systemsx.cisd.openbis.generic.server.dataaccess'"
                         + " object has no attribute 'getCode'");
-        assertEquals(expectedDp3ErrorValue, dp3Error.getValue());
+        assertEquals(expectedDp3ErrorValue, getErrorWithoutUuid(dp3Error.getValue()));
     }
 
     @Test
@@ -231,7 +231,7 @@ public class DynamicPropertyEvaluatorTest extends AbstractBOTest
                 expectedErrorMessage("Vocabulary value 'FAKE_TERM' of property 'DPVOCABULARYERROR' is not valid. "
                         + "It must exist in '" + vocabulary.getCode()
                         + "' controlled vocabulary [T1, T2, T3]");
-        assertEquals(expectedDpVocabularyErrorValue, dpVocabularyError.getValue());
+        assertEquals(expectedDpVocabularyErrorValue, getErrorWithoutUuid(dpVocabularyError.getValue()));
         assertEquals(null, dpVocabularyError.getVocabularyTerm());
     }
 
@@ -314,6 +314,10 @@ public class DynamicPropertyEvaluatorTest extends AbstractBOTest
         return String.format("%sERROR: %s", BasicConstant.ERROR_PROPERTY_PREFIX, message);
     }
 
+    private static String getErrorWithoutUuid(String message){
+        return message.substring(0, message.lastIndexOf("(") - 1);
+    }
+
     private static void assertCyclicDependencyErrorMessage(String actualMessage, EntityPropertyPE... properties)
     {
         Collection<String> possibleExpectedMessages = new HashSet<String>();
@@ -336,7 +340,7 @@ public class DynamicPropertyEvaluatorTest extends AbstractBOTest
                     "cycle of dependencies found between dynamic properties: %s", path.toString())));
         }
 
-        AssertionUtil.assertCollectionContains(possibleExpectedMessages, actualMessage);
+        AssertionUtil.assertCollectionContains(possibleExpectedMessages, getErrorWithoutUuid(actualMessage));
     }
 
     private static SamplePE createSample(String code, Set<SamplePropertyPE> properties)

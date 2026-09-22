@@ -190,7 +190,7 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
                         throw new IllegalArgumentException(
                                 etpt.getEntityType().getEntityKind().toString());
                 }
-                prop.setValue(BasicConstant.DYNAMIC_PROPERTY_PLACEHOLDER_VALUE);
+                prop.setValue(BasicConstant.getDynamicPropertyPlaceholderValue());
                 prop.setEntityTypePropertyType(etpt);
                 prop.setRegistrator(etpt.getRegistrator());
                 prop.setAuthor(etpt.getRegistrator());
@@ -344,7 +344,7 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
     {
         String errorMsg = ERROR_PREFIX + error;
         operationLog.info(errorMsg);
-        return BasicConstant.ERROR_PROPERTY_PREFIX + errorMsg;
+        return BasicConstant.getDynamicPropertyErrorValue(errorMsg);
     }
 
     private static class EntityPropertiesConverterDelegatorFacade

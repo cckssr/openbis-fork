@@ -16,14 +16,15 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 class PlaceholderPropertyCreator implements IPropertyPlaceholderCreator
 {
@@ -39,7 +40,7 @@ class PlaceholderPropertyCreator implements IPropertyPlaceholderCreator
             Set<String> dynamicProperties)
     {
         addPlaceholders(definedProperties, dynamicProperties,
-                BasicConstant.DYNAMIC_PROPERTY_PLACEHOLDER_VALUE);
+                BasicConstant::getDynamicPropertyPlaceholderValue);
     }
 
     /**
@@ -51,7 +52,7 @@ class PlaceholderPropertyCreator implements IPropertyPlaceholderCreator
             Set<String> managedProperties)
     {
         addPlaceholders(definedProperties, managedProperties,
-                BasicConstant.MANAGED_PROPERTY_PLACEHOLDER_VALUE);
+                () -> BasicConstant.MANAGED_PROPERTY_PLACEHOLDER_VALUE);
     }
 
     /**
@@ -59,7 +60,7 @@ class PlaceholderPropertyCreator implements IPropertyPlaceholderCreator
      * <var>definedProperties</var> if they don't exist yet.
      */
     private void addPlaceholders(Set<IEntityProperty> definedProperties,
-            Set<String> placeholderProperties, String placeholderValue)
+            Set<String> placeholderProperties, Supplier<String> placeholderValue)
     {
         for (String p : placeholderProperties)
         {
@@ -68,7 +69,7 @@ class PlaceholderPropertyCreator implements IPropertyPlaceholderCreator
             {
                 definedProperties.forEach(operationLog::info);
                 final IEntityProperty entityProperty = new EntityProperty();
-                entityProperty.setValue(placeholderValue);
+                entityProperty.setValue(placeholderValue.get());
                 PropertyType propertyType = new PropertyType();
                 propertyType.setCode(p);
                 entityProperty.setPropertyType(propertyType);

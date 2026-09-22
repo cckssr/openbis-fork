@@ -15,6 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.basic;
 
+import java.util.UUID;
+
 /**
  * Definition of basic constants. Can be used by server and GWT client.
  * 
@@ -137,6 +139,14 @@ public class BasicConstant
 
     private BasicConstant()
     {
+    }
+
+    public static String getDynamicPropertyPlaceholderValue(){
+        return DYNAMIC_PROPERTY_PLACEHOLDER_VALUE + " (" + UUID.randomUUID() + ")";
+    }
+
+    public static String getDynamicPropertyErrorValue(String error){
+        return ERROR_PROPERTY_PREFIX + error + " (" + UUID.randomUUID() + ")";
     }
 
 }

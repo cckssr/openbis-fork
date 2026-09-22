@@ -16,22 +16,22 @@
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.ScrollableResults;
 import org.springframework.dao.DataAccessException;
 
-import ch.rinn.restrictions.Private;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.rinn.restrictions.Private;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.IRelationshipService;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.util.DataSetTypeWithoutExperimentChecker;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.EntityPropertiesConverter;
@@ -53,7 +53,7 @@ import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInfor
 
 /**
  * The unique {@link IEntityTypePropertyTypeBO} implementation.
- * 
+ *
  * @author Izabela Adamczyk
  */
 public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
@@ -200,7 +200,7 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
         {
             List<Long> entityIds = getAllEntityIds(entityType);
             addPropertyWithDefaultValue(entityType, propertyType,
-                    BasicConstant.DYNAMIC_PROPERTY_PLACEHOLDER_VALUE, entityIds, null);
+                    BasicConstant::getDynamicPropertyPlaceholderValue, entityIds, null);
         } else if (newAssignment.isManaged())
         {
             List<Long> entityIds = getAllEntityIds(entityType);
@@ -285,6 +285,51 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
                     entityPropertyTypeDAO.createProperties(property, entityIds);
                 }
                 entityPropertyTypeDAO.updateEntityModificationTimestamps(entityIds);
+            }
+
+            if (operationLog.isDebugEnabled())
+            {
+                operationLog.debug(getMemoryUsageMessage());
+            }
+        }
+    }
+
+    private void addPropertyWithDefaultValue(EntityTypePE entityType, PropertyTypePE propertyType,
+            Supplier<String> defaultValueSupplier, List<Long> entityIds, String errorMsgTemplate)
+    {
+        IEntityPropertyTypeDAO entityPropertyTypeDAO = getEntityPropertyTypeDAO(entityKind);
+        final int size = entityIds.size();
+
+        if (size > 0)
+        {
+            if (operationLog.isDebugEnabled())
+            {
+                operationLog.debug(getMemoryUsageMessage());
+            }
+
+            PersonPE registrator = findPerson();
+
+            for (Long entityId : entityIds) {
+                String defaultValue = defaultValueSupplier.get();
+
+                if (StringUtils.isEmpty(defaultValue))
+                {
+                    throw new UserFailureException(String.format(errorMsgTemplate, size,
+                            entityKind.getLabel(), createPlural(size), entityType.getCode()));
+                }
+
+                Serializable validatedValue = propertiesConverter.tryCreateValidatedPropertyValue(propertyType, assignment, defaultValue);
+
+                if (validatedValue != null)
+                {
+                    final List<EntityPropertyPE> properties =
+                            propertiesConverter.createValidatedProperty(propertyType, assignment,
+                                    registrator, validatedValue);
+                    for (EntityPropertyPE property : properties) {
+                        entityPropertyTypeDAO.createProperties(property, List.of(entityId));
+                    }
+                    entityPropertyTypeDAO.updateEntityModificationTimestamps(List.of(entityId));
+                }
             }
 
             if (operationLog.isDebugEnabled())
@@ -469,7 +514,7 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
 
     /**
      * shift specified entity type etpts by specified increment starting from etpt with specified ordinal
-     * 
+     *
      * @param entityType
      */
     private void increaseOrdinals(EntityTypePE entityType, Long startOrdinal, int increment)
