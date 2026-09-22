@@ -33,6 +33,7 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
 
+import java.time.ZoneId;
 import java.util.*;
 
 public class MapperTest extends TestCase
@@ -49,7 +50,8 @@ public class MapperTest extends TestCase
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
                         Map.of(), Map.of(), Map.of());
-        Mapper mapper = new Mapper();
+        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        Mapper mapper = new Mapper(timeZone);
         MapResult result = mapper.transform(openBisModel);
         assertEquals(3, result.getSchema().getClasses().size());
         assertEquals(result.getSchema().getProperties().size(), 3);
@@ -99,7 +101,8 @@ public class MapperTest extends TestCase
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
                         Map.of(), Map.of(), Map.of());
-        Mapper mapper = new Mapper();
+        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        Mapper mapper = new Mapper(timeZone);
         MapResult result = mapper.transform(openBisModel);
 
         assertEquals(4, result.getSchema().getClasses().size());
@@ -155,7 +158,8 @@ public class MapperTest extends TestCase
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
                         Map.of(), Map.of(), Map.of());
-        Mapper mapper = new Mapper();
+        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        Mapper mapper = new Mapper(timeZone);
         MapResult result = mapper.transform(openBisModel);
 
         assertEquals(4, result.getSchema().getClasses().size());
@@ -245,7 +249,8 @@ public class MapperTest extends TestCase
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
                         Map.of(), Map.of(), Map.of());
-        Mapper mapper = new Mapper();
+        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        Mapper mapper = new Mapper(timeZone);
         MapResult result = mapper.transform(openBisModel);
 
         assertEquals(4, result.getSchema().getClasses().size());
@@ -274,7 +279,8 @@ public class MapperTest extends TestCase
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
                         Map.of(), Map.of(), Map.of());
-        Mapper mapper = new Mapper();
+        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        Mapper mapper = new Mapper(timeZone);
         MapResult result = mapper.transform(openBisModel);
         MetadataEntry entry = result.getMetaDataEntries().get(0);
         assertEquals("SPACE", entry.getId());
@@ -302,7 +308,8 @@ public class MapperTest extends TestCase
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
                         Map.of(), Map.of(), Map.of());
-        Mapper mapper = new Mapper();
+        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        Mapper mapper = new Mapper(timeZone);
         MapResult result = mapper.transform(openBisModel);
         MetadataEntry entry = result.getMetaDataEntries().get(0);
         assertEquals("/SPACE/PROJECT", entry.getId());
@@ -433,7 +440,8 @@ public class MapperTest extends TestCase
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
                         Map.of(), files, imageFiles);
-        Mapper mapper = new Mapper();
+        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        Mapper mapper = new Mapper(timeZone);
         MapResult result = mapper.transform(openBisModel);
 
         assertEquals(5, result.getSchema().getClasses().size());

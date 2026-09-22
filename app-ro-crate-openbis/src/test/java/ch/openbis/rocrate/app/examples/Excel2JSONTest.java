@@ -13,6 +13,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 public class Excel2JSONTest {
@@ -28,7 +30,8 @@ public class Excel2JSONTest {
         Path path = Paths.get(INPUT);
         OpenBisModel excelModel = ExcelReader.convert(ExcelReader.Format.EXCEL, path);
         // https://sissource.ethz.ch/sispub/ro-crate/-/tree/main/interoperability/0.1.x/lib?ref_type=heads
-        Mapper mapper = new Mapper();
+        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        Mapper mapper = new Mapper(timeZone);
         MapResult rocrateModel = mapper.transform(excelModel); // <- Our model using only classes by Ro-Crate Profile Official Java library
 
         MetadataEntry metadataEntry = rocrateModel.getMetaDataEntries().stream()

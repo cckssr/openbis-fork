@@ -23,6 +23,7 @@ import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.writer.mapping.helper.RoCrateVocabularyHelper;
+import ch.openbis.rocrate.app.writer.mapping.helper.ValueMapper;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
@@ -36,9 +37,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,6 +45,15 @@ import static ch.openbis.rocrate.app.writer.mapping.helper.RoCrateVocabularyHelp
 
 public class Mapper
 {
+    private final TimeZone timeZone;
+
+    private final ValueMapper valueMapper;
+
+    public Mapper(TimeZone timeZone)
+    {
+        this.timeZone = timeZone;
+        this.valueMapper = new ValueMapper(timeZone);
+    }
 
     public static final String CANONICAL_OPENBIS_DATE_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss Z";
 
@@ -83,8 +90,6 @@ public class Mapper
             IType type = getProjectType();
             classes.put(type.getId(), getProjectType());
         }
-
-
 
         for (Map.Entry<EntityTypePermId, IEntityType> schemaEntry : openBisModel.getEntityTypes()
                 .entrySet())
@@ -193,7 +198,6 @@ public class Mapper
 
             }
 
-
             a.getValue().stream().map(x -> x.getLeft().getPropertyType().getDataType())
                     .filter(x -> x != DataType.SAMPLE)
                     .filter(x -> x != DataType.CONTROLLEDVOCABULARY)
@@ -227,7 +231,6 @@ public class Mapper
 
             }
 
-
             List<String> semanticAnnotations = a.getValue().stream().map(x -> x.getLeft())
                     .map(x -> x.getPropertyType())
                     .filter(x -> x.getSemanticAnnotations() != null)
@@ -243,8 +246,9 @@ public class Mapper
         Map<IObjectId, MetadataEntry> idToMetadataEntryMap = new HashMap<>();
         for (Map.Entry<SpacePermId, Space> space : openBisModel.getSpaces().entrySet())
         {
-            MetadataEntry metadataEntry = new MetadataEntry(space.getKey().getPermId(), Set.of(Constants.GRAPH_ID_SPACE),
-                    new HashMap<>(), new LinkedHashMap<>());
+            MetadataEntry metadataEntry =
+                    new MetadataEntry(space.getKey().getPermId(), Set.of(Constants.GRAPH_ID_SPACE),
+                            new HashMap<>(), new LinkedHashMap<>());
             idToMetadataEntryMap.put(space.getKey(), metadataEntry);
         }
         openBisModel.getProjects().entrySet().forEach(project -> {
@@ -313,7 +317,7 @@ public class Mapper
                     if (!referenceTypeNames.contains(a.getKey()))
                     {
                         String[] vals = extractSerializableList(a.getValue()).stream()
-                                .map(x -> mapValue(x, dataType)).map(x -> x.toString())
+                                .map(x -> valueMapper.mapValue(x, dataType)).map(x -> x.toString())
                                 .toArray(String[]::new);
 
                         props.put(propName, vals);
@@ -321,7 +325,7 @@ public class Mapper
                     {
 
                         references.put(propName, extractSerializableList(a.getValue()).stream()
-                                .map(x -> mapValue(x, dataType)).collect(
+                                .map(x -> valueMapper.mapValue(x, dataType)).collect(
                                         Collectors.toList()));
 
                     }
@@ -365,8 +369,9 @@ public class Mapper
                     String propName = openBisPropertiesToRdfsProperties.get(a.getKey());
                     props.put(propName, a.getValue());
                 }
-                MetadataEntry metadataEntry = new MetadataEntry(dataSet.getCode(), Set.of(type), props,
-                        new LinkedHashMap<>());
+                MetadataEntry metadataEntry =
+                        new MetadataEntry(dataSet.getCode(), Set.of(type), props,
+                                new LinkedHashMap<>());
                 idToMetadataEntryMap.put(dataSet.getPermId(), metadataEntry);
 
             }
@@ -398,7 +403,7 @@ public class Mapper
                     if (!referenceTypeNames.contains(a.getKey()))
                     {
                         String[] vals = extractSerializableList(a.getValue()).stream()
-                                .map(x -> mapValue(x, dataType)).map(x -> x.toString())
+                                .map(x -> valueMapper.mapValue(x, dataType)).map(x -> x.toString())
                                 .toArray(String[]::new);
 
                         props.put(propName, vals);
@@ -408,7 +413,7 @@ public class Mapper
                         if (dataType == DataType.SAMPLE)
                         {
                             references.put(propName, extractSerializableList(a.getValue()).stream()
-                                    .map(x -> mapValue(x, dataType)).collect(
+                                    .map(x -> valueMapper.mapValue(x, dataType)).collect(
                                             Collectors.toList()));
 
                         }
@@ -435,9 +440,10 @@ public class Mapper
 
                 }
 
-                MetadataEntry metadataEntry = new MetadataEntry(experiment.getIdentifier().toString(), Set.of(type),
-                        props,
-                        references);
+                MetadataEntry metadataEntry =
+                        new MetadataEntry(experiment.getIdentifier().toString(), Set.of(type),
+                                props,
+                                references);
                 idToMetadataEntryMap.put(experiment.getIdentifier(), metadataEntry);
             }
 
@@ -485,7 +491,8 @@ public class Mapper
             Set<String> identifiersToWrite = new LinkedHashSet<>();
 
             Stream<IFileInfo> fileInfoStream = Stream.concat(entityIdToFiles.getValue().stream(),
-                    openBisModel.getImageFiles().getOrDefault(entityIdToFiles.getKey(), new ArrayList<>())
+                    openBisModel.getImageFiles()
+                            .getOrDefault(entityIdToFiles.getKey(), new ArrayList<>())
                             .stream());
             for (IFileInfo b : fileInfoStream.collect(Collectors.toList()))
             {
@@ -493,7 +500,8 @@ public class Mapper
                 UUID uuid = UUID.randomUUID();
                 Path path = Path.of("/tmp/ro-crate/" + uuid);
                 Files.createDirectories(Path.of("/tmp/ro-crate/"));
-                try (InputStream input = b.getInputStream()) {
+                try (InputStream input = b.getInputStream())
+                {
                     Files.copy(input, path, StandardCopyOption.REPLACE_EXISTING);
                 }
                 MapResult.RoCrateFile roCrateFile =
@@ -503,16 +511,16 @@ public class Mapper
             }
 
             MetadataEntry metadataEntry = idToMetadataEntryMap.get(entityIdToFiles.getKey());
-            if(metadataEntry == null && entityIdToFiles.getKey() instanceof SampleIdentifier) {
+            if (metadataEntry == null && entityIdToFiles.getKey() instanceof SampleIdentifier)
+            {
                 // workaround until we remove experiments
-                metadataEntry = idToMetadataEntryMap.get(new ExperimentIdentifier(entityIdToFiles.getKey().toString()));
+                metadataEntry = idToMetadataEntryMap.get(
+                        new ExperimentIdentifier(entityIdToFiles.getKey().toString()));
             }
             metadataEntry.getReferences()
                     .put(Constants.PROPERTY_ID_FILES, identifiersToWrite.stream().toList());
 
         }
-
-
 
         List<MetadataEntry> metaDataEntries = new ArrayList<>(idToMetadataEntryMap.values());
 
@@ -522,7 +530,8 @@ public class Mapper
                 new MappingInfo(reverseMapping, rdfsPropertiesUsedIn), metaDataEntries, files);
     }
 
-    private static String escape(String value) {
+    private static String escape(String value)
+    {
         return URLEncoder.encode(value, StandardCharsets.UTF_8)
                 .replace("+", "%20")
                 .replace("%2F", "/")
@@ -532,26 +541,6 @@ public class Mapper
                 .replace("%28", "(")
                 .replace("%29", ")");
     }
-
-    private String mapValue(String val, DataType dataType)
-    {
-        if (dataType == DataType.DATE || dataType == DataType.TIMESTAMP)
-        {
-
-            DateTimeFormatter dateTimeFormatter =
-                    DateTimeFormatter.ofPattern(CANONICAL_OPENBIS_DATE_FORMAT_PATTERN);
-            TemporalAccessor parsed = dateTimeFormatter.parse(val);
-            Instant i = Instant.from(parsed);
-            Date d = Date.from(i);
-            String format = DateTimeFormatter.ISO_DATE_TIME.format(parsed);
-            return format;
-
-        }
-
-        return val;
-
-    }
-
 
 
     private List<String> extractSerializableList(Serializable a)
@@ -564,8 +553,6 @@ public class Mapper
         return List.of(a.toString());
 
     }
-
-
 
     IDataType mapOpenBisToXsdDataTypes(String openBisType)
     {

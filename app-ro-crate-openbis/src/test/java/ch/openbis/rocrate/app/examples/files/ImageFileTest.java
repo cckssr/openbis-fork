@@ -20,10 +20,8 @@ import org.junit.Test;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.ZoneId;
+import java.util.*;
 
 public class ImageFileTest
 {
@@ -43,7 +41,8 @@ public class ImageFileTest
         Path path = Paths.get(INPUT_OPENBIS_XLSX_ZIP);
         OpenBisModel excelModel = ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, path,
                 ExcelReader.FileMode.DUMMY);
-        Mapper mapper = new Mapper();
+        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        Mapper mapper = new Mapper(timeZone);
         MapResult rocrateModel = mapper.transform(
                 excelModel);
         Assert.assertEquals(1, excelModel.getImageFiles().size());

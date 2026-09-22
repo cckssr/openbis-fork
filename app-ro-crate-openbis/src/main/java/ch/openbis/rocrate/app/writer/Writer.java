@@ -14,16 +14,47 @@ import edu.kit.datamanager.ro_crate.writer.ZipWriter;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static ch.openbis.rocrate.app.Constants.EQUIVALENCE_PARENT;
 
 public class Writer
 {
 
+    public static class WriterArgs
+    {
+        private final TimeZone timeZone;
+
+        public WriterArgs(TimeZone timeZone)
+        {
+            this.timeZone = timeZone;
+        }
+
+        public static WriterArgs defaultArgs()
+        {
+            TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+            return new WriterArgs(timeZone);
+        }
+    }
+
+
     private static final String TYPE = "@type";
+
+    public final WriterArgs writerArgs;
+
+    public Writer()
+    {
+        this.writerArgs = WriterArgs.defaultArgs();
+    }
+
+    public Writer(WriterArgs writerArgs)
+    {
+        this.writerArgs = writerArgs;
+    }
 
     public void write(OpenBisModel openBisModel, Path outPath) throws IOException, Exception
     {
@@ -35,7 +66,8 @@ public class Writer
         );
 
         addSystemSchema(schemaFacade);
-        Mapper mapper = new Mapper();
+        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        Mapper mapper = new Mapper(timeZone);
         MapResult rdfsRepresentation =
                 mapper.transform(openBisModel);
         addSchema(schemaFacade, rdfsRepresentation);
