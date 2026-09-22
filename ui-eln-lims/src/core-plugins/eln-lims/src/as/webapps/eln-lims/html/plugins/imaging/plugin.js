@@ -19,7 +19,53 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             "SHOW_ON_NAV" : true,
             "ENABLE_STORAGE" : false,
             extraToolbarDropdown : function(mode, sample) {
-                return {
+                return [{
+                    label:"Generate imaging config",
+                    title:"Generate imaging config",
+                    action : function() {
+                        Util.blockUINoMessage();
+                        var _this = this;
+                        require(["imaging/dto/ImagingDataSetConfig",
+                                "imaging/dto/ImagingInitContainer",
+                                "util/Json",
+                                "as/dto/sample/update/SampleUpdate",
+                                "as/dto/sample/id/SamplePermId"],
+                            function (ImagingDataSetConfig,
+                                      ImagingInitContainer,
+                                      utilJson, SampleUpdate, SamplePermId
+                            ) {
+                                let initContainer = new ImagingInitContainer();
+                                initContainer.permId = sample.permId;
+                                initContainer.type = "init";
+
+                                mainController.serverFacade.customASService(initContainer, function(result) {
+
+                                    if(result.error) {
+                                        Util.showError("Failed to generate new config: " + result.error, function() {}, true);
+                                    } else {
+                                        const update = new SampleUpdate();
+                                        update.setSampleId(new SamplePermId(sample.permId));
+                                        update.setProperty('IMAGING_DATA_CONFIG', JSON.stringify(result.config, (key,value) => {
+                                            if (key === "@id") return undefined;
+                                            return value;
+                                        }));
+                                        // update.setProperty('IMAGING_DATA_CONFIG', result.config);
+                                        mainController.openbisV3.updateSamples([update]).done(function(x) {
+                                            Util.showSuccess("Config has been generated", function () { Util.unblockUI(); });
+                                            mainController.refreshView();
+                                        }).fail(function(error) {
+                                            Util.showError(error.message, Util.unblockUI, true);
+                                        });
+                                    }
+                                    // Util.unblockUI();
+                                }, "imaging", null, false);
+
+                            });
+
+                    }
+
+                },
+                    {
                     label:"Update imaging config",
                     title:"Update imaging config",
                     action : function() {
@@ -101,7 +147,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         });
 
                     }
-                }
+                }]
             }
         },
 
@@ -111,7 +157,51 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             "SHOW" : false,
             "SHOW_ON_NAV" : true,
             extraToolbarDropdown : function(mode, dataset) {
-                return {
+                return [{
+                    label:"Generate imaging config",
+                    title:"Generate imaging config",
+                    action : function() {
+                        Util.blockUINoMessage();
+                        var _this = this;
+                        require(["imaging/dto/ImagingDataSetConfig",
+                                "imaging/dto/ImagingInitContainer",
+                                "util/Json",
+                                "as/dto/dataset/update/DataSetUpdate",
+                                "as/dto/dataset/id/DataSetPermId"],
+                            function (ImagingDataSetConfig,
+                                      ImagingInitContainer,
+                                      utilJson, DataSetUpdate, DataSetPermId
+                            ) {
+                                let initContainer = new ImagingInitContainer();
+                                initContainer.permId = dataset.permId.permId;
+                                initContainer.type = "init";
+                                mainController.serverFacade.customASService(initContainer, function(result) {
+                                    if(result.error) {
+                                        Util.showError("Failed to generate new config: " + result.error, function() {}, true);
+                                    } else {
+                                        const update = new DataSetUpdate();
+                                        update.setDataSetId(new DataSetPermId(dataset.permId.permId));
+                                        update.setProperty('IMAGING_DATA_CONFIG', JSON.stringify(result.config, (key,value) => {
+                                            if (key === "@id") return undefined;
+                                            return value;
+                                        }));
+                                        // update.setProperty('IMAGING_DATA_CONFIG', result.config);
+                                        mainController.openbisV3.updateDataSets([update]).done(function(x) {
+                                            Util.showSuccess("Config has been generated", function () { Util.unblockUI(); });
+                                            mainController.refreshView();
+                                        }).fail(function(error) {
+                                            Util.showError(error.message, Util.unblockUI, true);
+                                        });
+                                    }
+                                    // Util.unblockUI();
+                                }, "imaging", null, false);
+
+                            });
+
+                    }
+
+                },
+                    {
                     label:"Update imaging config",
                     title:"Update imaging config",
                     action : function() {
@@ -193,7 +283,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         });
 
                     }
-                }
+                }]
             }
         }
     },
