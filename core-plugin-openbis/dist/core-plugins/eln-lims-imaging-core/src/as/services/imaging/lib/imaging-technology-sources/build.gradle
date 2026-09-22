@@ -60,9 +60,4 @@ tasks.register('releaseImagingTechnology', Copy) {
     dependsOn jar
     from("${project.buildDir}/libs/${imagingTechnologyName}")
     into ".."
-    doLast {
-//        delete "${project.buildDir}/${imagingTechnologyName}"
-//        delete "${project.buildDir}"
-//        delete
-    }
 }

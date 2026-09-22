@@ -1,4 +1,4 @@
-#   Copyright ETH 2023 Zürich, Scientific IT Services
+#   Copyright ETH 2023-2026 Zürich, Scientific IT Services
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -32,71 +32,95 @@ import spiepy
 import matplotlib.pyplot as plt
 # %matplotlib inline
 
+from nanonis_imaging_config import create_sxm_config
 
-print("SYS.ARGV:" + str(sys.argv))
-file = sys.argv[1]
-format = sys.argv[2]
-image_config = json.loads(sys.argv[3])
-image_metadata = json.loads(sys.argv[4])
-preview_config = json.loads(sys.argv[5])
-preview_metadata = json.loads(sys.argv[6])
-filter_config = json.loads(sys.argv[7])
+method = sys.argv[1]
 
 
-# folder_dir = os.path.join(file, 'original')
-folder_dir = file
-files = list(filter(lambda x: x.endswith(".sxm"), os.listdir(folder_dir)))
+def find_sxm_file(directory):
+    for root, dirs, files1 in os.walk(directory):
+        for filename in files1:
+            if filename.endswith(".sxm"):
+                return os.path.join(root, filename)
 
-file_path = os.path.join(folder_dir, files[0])
-# file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
+    return None
+
+if method.lower() == 'config':
+    folder_dir = sys.argv[2]
+
+    file_path = find_sxm_file(folder_dir)
+
+    if file_path:
+        print("Found:", file_path)
+        images, metadata = create_sxm_config(file_path)
+
+        print(f'{json.dumps(images)}')
+        print(f'{json.dumps(metadata)}')
+    else:
+        raise ValueError("No .sxm file found")
 
 
-def sxm_mode(sxm_file_path, format, parameters, filter_config, print_out=True):
+elif method.lower() == 'preview':
 
-    colormap_scaling = False
-    # 'figure' is default parameter for matplotlib dpi param
-    resolution = 'figure'
-    filter = "NONE"
-    other_params = {}
+    file = sys.argv[2]
+    format = sys.argv[3]
+    image_config = json.loads(sys.argv[4])
+    image_metadata = json.loads(sys.argv[5])
+    preview_config = json.loads(sys.argv[6])
+    preview_metadata = json.loads(sys.argv[7])
+    filter_config = json.loads(sys.argv[8])
 
-    print(f"filter_config:{filter_config}")
+    folder_dir = file
 
-    for param_key in parameters.keys():
+    file_path = find_sxm_file(folder_dir)
+    if file_path:
+        def sxm_mode(sxm_file_path, format, parameters, filter_config, print_out=True):
 
-        key = param_key.lower()
-        if key == 'channel':
-            channel = parameters[param_key]
-        elif key == 'x-axis':
-            x_axis = [float(x) for x in parameters[param_key]]
-        elif key == 'y-axis':
-            y_axis = [float(x) for x in parameters[param_key]]
-        elif key == 'color-scale':
-            color_scale = [float(x) for x in parameters[param_key]]
-        elif key == 'colormap':
-            colormap = parameters[param_key]
-        elif key == 'scaling':
-            scaling = parameters[param_key]
-        elif key == 'colormap_scaling':
-            colormap_scaling = parameters[param_key].upper() == "TRUE"
-        elif key == 'resolution':
-            resolution = parameters[param_key].upper()
-            if resolution == "ORIGINAL":
-                resolution = 'figure'
-            elif resolution.endswith('DPI'):
-                resolution = float(resolution[:-3])
-            else:
-                resolution = float(resolution)
-        elif key == 'filter': # TODO remove this once filtering UI is done
-            filter = parameters[param_key].upper() if parameters[param_key] is not None else "NONE"
-        else:
-            other_params[param_key] = parameters[param_key]
+            colormap_scaling = False
+            # 'figure' is default parameter for matplotlib dpi param
+            resolution = 'figure'
+            filter = "NONE"
+            other_params = {}
 
-    preview, img = get_sxm_image(sxm_file_path, format, channel, x_axis, y_axis, scaling, color_scale, colormap,
-                            colormap_scaling, resolution, filter, other_params, filter_config)
-    if print_out:
-        print(f'{json.dumps(preview)}')
+            print(f"filter_config:{filter_config}")
 
-    return img
+            for param_key in parameters.keys():
 
-# print(f"PREVIEW_CONF: {json.dumps(preview_config)}")
-sxm_mode(file_path, format, preview_config, filter_config)
+                key = param_key.lower()
+                if key == 'channel':
+                    channel = parameters[param_key]
+                elif key == 'x-axis':
+                    x_axis = [float(x) for x in parameters[param_key]]
+                elif key == 'y-axis':
+                    y_axis = [float(x) for x in parameters[param_key]]
+                elif key == 'color-scale':
+                    color_scale = [float(x) for x in parameters[param_key]]
+                elif key == 'colormap':
+                    colormap = parameters[param_key]
+                elif key == 'scaling':
+                    scaling = parameters[param_key]
+                elif key == 'colormap_scaling':
+                    colormap_scaling = parameters[param_key].upper() == "TRUE"
+                elif key == 'resolution':
+                    resolution = parameters[param_key].upper()
+                    if resolution == "ORIGINAL":
+                        resolution = 'figure'
+                    elif resolution.endswith('DPI'):
+                        resolution = float(resolution[:-3])
+                    else:
+                        resolution = float(resolution)
+                elif key == 'filter': # TODO remove this once filtering UI is done
+                    filter = parameters[param_key].upper() if parameters[param_key] is not None else "NONE"
+                else:
+                    other_params[param_key] = parameters[param_key]
+
+            preview, img = get_sxm_image(sxm_file_path, format, channel, x_axis, y_axis, scaling, color_scale, colormap,
+                                    colormap_scaling, resolution, filter, other_params, filter_config)
+            if print_out:
+                print(f'{json.dumps(preview)}')
+
+            return img
+
+        sxm_mode(file_path, format, preview_config, filter_config)
+    else:
+        raise ValueError("No .sxm file found")

@@ -21,6 +21,7 @@ import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.service.CustomDSSServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPropertyConfig;
 import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.ImagingServiceContext;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.helper.IDssServiceScriptRunner;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.helper.ScriptRunnerFactory;
@@ -43,6 +44,11 @@ public class ImagingDataSetJythonAdaptor implements IImagingDataSetAdaptor
             throw new UserFailureException("There is no script defined for this adaptor!");
         }
     }
+
+    public void createConfig(ImagingServiceContext context, File rootFile, ImagingDataSetPropertyConfig config) {
+        throw new RuntimeException("Not yet implemented!");
+    }
+
     @Override
     public Map<String, Serializable> process(ImagingServiceContext context, File rootFile, String format,
             Map<String, Serializable> imageConfig,

@@ -20,6 +20,7 @@ package ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPropertyConfig;
 import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.ImagingServiceContext;
 import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.Util;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.GenericObjectMapper;
@@ -55,9 +56,9 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
             Map<String, Serializable> previewMetadata,
             List<ImagingDataSetFilter> filterConfig)
     {
-        operationLog.info(String.format("Running adaptor with venv: '%s' and script '%s'", pythonPath, scriptPath));
+        operationLog.info(String.format("Running adaptor in venv: '%s' and using script '%s'", pythonPath, scriptPath));
         ProcessBuilder processBuilder = new ProcessBuilder(pythonPath,
-                scriptPath, rootFile.getAbsolutePath(), format, convertMapToJson(imageConfig),
+                scriptPath, "preview", rootFile.getAbsolutePath(), format, convertMapToJson(imageConfig),
                 convertMapToJson(imageMetadata), convertMapToJson(previewConfig), convertMapToJson(previewMetadata),
                 convertFilterConfig(filterConfig));
         processBuilder.redirectErrorStream(false);
@@ -88,6 +89,51 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
         logOutput(fullOutput);
         String[] result = fullOutput.split("\n");
         return convertJsonToMap(result[result.length-1]);
+    }
+
+    public void createConfig(ImagingServiceContext context, File rootFile, ImagingDataSetPropertyConfig config) {
+
+        operationLog.info(String.format("Running config creation with adaptor in venv: '%s' and using script '%s'", pythonPath, scriptPath));
+        ProcessBuilder processBuilder = new ProcessBuilder(pythonPath,
+                scriptPath, "config", rootFile.getAbsolutePath());
+        processBuilder.redirectErrorStream(false);
+
+        String fullOutput;
+        try
+        {
+            Process process = processBuilder.start();
+            fullOutput =
+                    new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            int exitCode = process.waitFor();
+            if (exitCode != 0)
+            {
+                String error =
+                        new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+                logOutput(fullOutput);
+                throw new UserFailureException("Script evaluation failed: " + error);
+            }
+        } catch (IOException | InterruptedException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        if (fullOutput.trim().isEmpty())
+        {
+            throw new UserFailureException("Script produced no results!");
+        }
+        logOutput(fullOutput);
+        String[] result = fullOutput.split("\n");
+
+        List<String> imageList = Util.readConfig(result[result.length-2], List.class);
+        List<ImagingDataSetImage> images = new ArrayList<>();
+        for(String imageString : imageList) {
+            ImagingDataSetImage image = Util.readConfig(imageString, ImagingDataSetImage.class);
+            images.add(image);
+        }
+        config.setImages(images);
+        Map<String, Serializable> metadata = Util.readConfig(result[result.length-1], Map.class);
+
+        config.setMetadata(metadata);
     }
 
     @Override

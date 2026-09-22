@@ -37,9 +37,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.UpdateSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.plugin.listener.IOperationListener;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.*;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.GenericObjectMapper;
@@ -135,13 +135,14 @@ public class ImagingDataSetInterceptor implements IOperationListener
         return propertyValue;
     }
 
-    private ImagingDataSetImage getUserDefinedDefaultImage()
+    private ImagingDataSetImage getDefaultEmptyImage(String adaptor)
     {
         ImagingDataSetImage image = new ImagingDataSetImage();
         ImagingDataSetConfig config = new ImagingDataSetConfig();
         config.setInputs(Arrays.asList());
         config.setResolutions(Arrays.asList("original"));
         config.setPlayable(false);
+        config.setAdaptor(adaptor);
 
         ImagingDataSetControl include = new ImagingDataSetControl();
         include.setLabel("include");
@@ -171,6 +172,42 @@ public class ImagingDataSetInterceptor implements IOperationListener
         return image;
     }
 
+    private Vocabulary getAdaptorVocabulary(IApplicationServerApi api, String sessionToken) {
+        VocabularySearchCriteria criteria = new VocabularySearchCriteria();
+        criteria.withCode().thatEquals("IMAGING_ADAPTOR");
+
+        VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
+        fetchOptions.withTerms();
+
+        List<Vocabulary> result = api.searchVocabularies(sessionToken, criteria, fetchOptions).getObjects();
+
+        if(result.isEmpty()) {
+            return null;
+        } else {
+            return result.get(0);
+        }
+    }
+
+    private String getAdaptorFromProperty(IApplicationServerApi api, String sessionToken, IPropertiesHolder holder)
+    {
+        String adaptorCode = (String) holder.getProperty("IMAGING_ADAPTOR");
+        if(adaptorCode == null) {
+            return null;
+        }
+        String result = null;
+        Vocabulary vocabulary = getAdaptorVocabulary(api, sessionToken);
+        if(vocabulary != null && vocabulary.getTerms() != null) {
+            for(VocabularyTerm term : vocabulary.getTerms()) {
+                if(term.getCode().equals(adaptorCode)) {
+                    result = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor." + term.getLabel();
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
 
     @Override
     public void beforeOperation(IApplicationServerApi api, String sessionToken,
@@ -190,7 +227,8 @@ public class ImagingDataSetInterceptor implements IOperationListener
                             ImagingDataSetPropertyConfig config =
                                     new ImagingDataSetPropertyConfig();
                             config.setMetadata(Map.of("GENERATE", "true"));
-                            config.setImages(Arrays.asList(getUserDefinedDefaultImage()));
+                            String adaptor = getAdaptorFromProperty(api, sessionToken, creation);
+                            config.setImages(Arrays.asList(getDefaultEmptyImage(null)));
                             Map<String, String> metaData = new HashMap<>();
                             metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
                             creation.setMetaData(metaData);
@@ -226,14 +264,8 @@ public class ImagingDataSetInterceptor implements IOperationListener
                         creation.setControlledVocabularyProperty(DEFAULT_DATASET_VIEW_PROPERTY,
                                 DEFAULT_VIEWER_VALUE);
                     }
-
                 }
-
-
             }
-
-
-
         }
         else if(operation instanceof UpdateDataSetsOperation updateDataSetsOperation) {
 
@@ -277,7 +309,8 @@ public class ImagingDataSetInterceptor implements IOperationListener
                             ImagingDataSetPropertyConfig config =
                                     new ImagingDataSetPropertyConfig();
                             config.setMetadata(Map.of("GENERATE", "false"));
-                            config.setImages(Arrays.asList(getUserDefinedDefaultImage()));
+                            String adaptor = getAdaptorFromProperty(api, sessionToken, creation);
+                            config.setImages(Arrays.asList(getDefaultEmptyImage(adaptor)));
                             Map<String, String> metaData = new HashMap<>();
                             metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
                             creation.setMetaData(metaData);

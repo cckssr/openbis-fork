@@ -9,75 +9,111 @@ import os
 import sys
 import datetime
 
-file = sys.argv[1]
-format = sys.argv[2]
-image_config = json.loads(sys.argv[3])
-image_metadata = json.loads(sys.argv[4])
-preview_config = json.loads(sys.argv[5])
-preview_metadata = json.loads(sys.argv[6])
-filter_config = json.loads(sys.argv[7])
+from pybis import ImagingDataSetConfig, ImagingDataSetImage, ImagingDataSetPropertyConfig
 
-print(file)
-print(format)
-print(image_config)
-print(image_metadata)
-print(preview_config)
-print(preview_metadata)
-print(filter_config)
+method = sys.argv[1]
 
-# folder_dir = os.path.join(file, 'original')
-folder_dir = file
-file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
+if method.lower() == 'config':
+    file = sys.argv[2]
+    folder_dir = file
+    files = os.listdir(folder_dir)
+    data_file = None
+    if len(files) == 1 and files[0] == "original":
+        file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
+        data_file = os.path.join(file_path, os.listdir(file_path)[0])
+    else:
+        for f in os.listdir(folder_dir):
+            if "sxm" in f or "dat" in f:
+                data_file = os.path.join(folder_dir, f)
+                break
+    if data_file is None:
+        raise ValueError("Missing config file!")
 
-def get_upper_case_dict(params):
-    output = {}
-    for k,v in params.items():
-        output[k.upper()] = v
-    return output
+    with open(data_file, "rb") as configFile:
+        content = configFile.read()
+        config = ImagingDataSetPropertyConfig.from_dict(json.loads(content))
 
-def generate_random_image(height, width, filter_config):
-    imarray = (numpy.random.rand(int(height/64),int(width/64),3) * 255)
-    im = Image.fromarray(imarray.astype('uint8')).convert('RGBA')
-    im = im.resize((height,width), resample=Image.BOX)
+        images = [x.to_json() for x in config.images]
+        metadata = config.metadata
 
-    if filter_config is not None and len(filter_config) > 0:
-        im2 = Image.fromarray(imarray.astype('uint8')).convert('RGB')
-        im2 = im2.resize((height,width), resample=Image.BOX)
-        array = numpy.asarray(im2)
-        for f in filter_config:
-            filter_name = list(f.keys())[0]
-            filter_parameters = get_upper_case_dict(f[filter_name])
-            if filter_name.upper() == "GAUSSIAN":
-                sigma = int(filter_parameters['SIGMA'])
-                truncate = float(filter_parameters['TRUNCATE'])
-                array = skimage.filters.gaussian(array, sigma=sigma, truncate=truncate, preserve_range=True, channel_axis=2)
+        # config = ImagingDataSetConfig(adaptor='adaptor', version=1.0, resolutions=[], playable=False)
+        # image = ImagingDataSetImage(config=config)
+        # images = [image.to_json()]
+        # metaData = { 'key': 'value' }
 
-        im = Image.fromarray(array.astype('uint8')).convert('RGBA')
+        print(f'{json.dumps(images)}')
+        print(f'{json.dumps(metadata)}')
+
+elif method.lower() == 'preview':
+    file = sys.argv[2]
+    format = sys.argv[3]
+    image_config = json.loads(sys.argv[4])
+    image_metadata = json.loads(sys.argv[5])
+    preview_config = json.loads(sys.argv[6])
+    preview_metadata = json.loads(sys.argv[7])
+    filter_config = json.loads(sys.argv[8])
+
+    print(file)
+    print(format)
+    print(image_config)
+    print(image_metadata)
+    print(preview_config)
+    print(preview_metadata)
+    print(filter_config)
+
+    # folder_dir = os.path.join(file, 'original')
+    folder_dir = file
+    file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
+
+    def get_upper_case_dict(params):
+        output = {}
+        for k,v in params.items():
+            output[k.upper()] = v
+        return output
+
+    def generate_random_image(height, width, filter_config):
+        imarray = (numpy.random.rand(int(height/64),int(width/64),3) * 255)
+        im = Image.fromarray(imarray.astype('uint8')).convert('RGBA')
         im = im.resize((height,width), resample=Image.BOX)
 
+        if filter_config is not None and len(filter_config) > 0:
+            im2 = Image.fromarray(imarray.astype('uint8')).convert('RGB')
+            im2 = im2.resize((height,width), resample=Image.BOX)
+            array = numpy.asarray(im2)
+            for f in filter_config:
+                filter_name = list(f.keys())[0]
+                filter_parameters = get_upper_case_dict(f[filter_name])
+                if filter_name.upper() == "GAUSSIAN":
+                    sigma = int(filter_parameters['SIGMA'])
+                    truncate = float(filter_parameters['TRUNCATE'])
+                    array = skimage.filters.gaussian(array, sigma=sigma, truncate=truncate, preserve_range=True, channel_axis=2)
 
-    draw = ImageDraw.Draw(im)
-    draw.text((5,5), sys.version, fill='black')
-    draw.text((5, 20), sys.executable, fill='white')
-    img_byte_arr = io.BytesIO()
-    im.save(img_byte_arr, format=format)
-    img_byte_arr = img_byte_arr.getvalue()
-    encoded = base64.b64encode(img_byte_arr)
-    preview = {'bytes': encoded.decode('utf-8'), 'width': int(width), 'height': int(height)}
-    preview['python version'] = sys.version
-    preview['python path'] = sys.executable
-    now = datetime.datetime.now().strftime("%c")
-    preview['comment'] = 'This preview has been generated by adapter on: %s' % now
-    print(f'{json.dumps(preview)}')
-    return preview
+            im = Image.fromarray(array.astype('uint8')).convert('RGBA')
+            im = im.resize((height,width), resample=Image.BOX)
 
 
-params = preview_config
-print(params)
-x = float(params['X-axis'][0])
-y = float(params['Y-axis'][0])
-if x < 64 or x > 640:
-    x = 640
-if y < 64 or y > 640:
-    y = 640
-generate_random_image(int(x), int(y), filter_config)
+        draw = ImageDraw.Draw(im)
+        draw.text((5,5), sys.version, fill='black')
+        draw.text((5, 20), sys.executable, fill='white')
+        img_byte_arr = io.BytesIO()
+        im.save(img_byte_arr, format=format)
+        img_byte_arr = img_byte_arr.getvalue()
+        encoded = base64.b64encode(img_byte_arr)
+        preview = {'bytes': encoded.decode('utf-8'), 'width': int(width), 'height': int(height)}
+        preview['python version'] = sys.version
+        preview['python path'] = sys.executable
+        now = datetime.datetime.now().strftime("%c")
+        preview['comment'] = 'This preview has been generated by adapter on: %s' % now
+        print(f'{json.dumps(preview)}')
+        return preview
+
+
+    params = preview_config
+    print(params)
+    x = float(params['X-axis'][0])
+    y = float(params['Y-axis'][0])
+    if x < 64 or x > 640:
+        x = 640
+    if y < 64 or y > 640:
+        y = 640
+    generate_random_image(int(x), int(y), filter_config)

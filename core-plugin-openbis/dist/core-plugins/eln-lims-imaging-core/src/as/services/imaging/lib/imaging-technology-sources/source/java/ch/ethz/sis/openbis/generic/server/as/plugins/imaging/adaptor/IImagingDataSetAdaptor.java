@@ -17,9 +17,7 @@
 
 package ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor;
 
-import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
-import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
-import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.*;
 import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.ImagingServiceContext;
 
 import java.io.File;
@@ -38,5 +36,7 @@ public interface IImagingDataSetAdaptor
 
     void computePreview(ImagingServiceContext context, File rootFile,
             ImagingDataSetImage image, ImagingDataSetPreview preview);
+
+    void createConfig(ImagingServiceContext context, File rootFile, ImagingDataSetPropertyConfig config);
 
 }

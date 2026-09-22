@@ -88,10 +88,12 @@ else:
 for file in files:
     file_path = os.path.join(data_folder, file)
     f = open(file_path, 'r')
+    name = os.path.basename(file_path)
+    config = f.read()
     data_set = None
     if client is not None and client.is_session_valid():
         props = {
-            'imaging_data_config': f.read(),
+            'imaging_data_config': config,
             'default_object_view': 'IMAGING_DATASET_VIEWER',
         }
         data_set = o.new_sample('IMAGING_DATA',
@@ -102,9 +104,10 @@ for file in files:
         data_set.save()
         text = "hello world!".encode("utf-8")
         client.write(data_set.permId, '/test_file.txt', 0, len(text), text)
+        client.write(data_set.permId, '/' + name, 0, len(config), config.encode("utf-8"))
     else:
         props = {
-            'imaging_data_config': f.read(),
+            'imaging_data_config': config,
             'default_dataset_view': 'IMAGING_DATASET_VIEWER',
         }
         data_set = o.new_dataset('IMAGING_DATA',

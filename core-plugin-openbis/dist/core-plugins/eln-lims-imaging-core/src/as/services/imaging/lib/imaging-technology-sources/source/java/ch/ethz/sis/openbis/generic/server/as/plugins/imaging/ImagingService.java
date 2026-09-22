@@ -112,8 +112,7 @@ public class ImagingService implements ICustomASServiceExecutor
                 return processMultiExportFlow(sessionToken, (ImagingMultiExportContainer) data);
             } else if (data.getType().equalsIgnoreCase("init"))
             {
-                //TODO
-//              throw new UserFailureException("Unknown request type!");
+                return processInitFlow(sessionToken, (ImagingInitContainer) data);
             } else
             {
                 throw new UserFailureException("Unknown request type!");
@@ -237,6 +236,51 @@ public class ImagingService implements ICustomASServiceExecutor
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private ImagingInitContainer processInitFlow(String sessionToken, ImagingInitContainer data) throws IOException {
+        IPropertiesHolder entity = getData(sessionToken, data.getPermId());
+        String jsonConfig = entity.getJsonProperty(IMAGING_CONFIG_PROPERTY_NAME);
+
+        ImagingDataSetPropertyConfig config =
+                Util.readConfig(jsonConfig, ImagingDataSetPropertyConfig.class);
+        data.setConfig(config);
+        ImagingDataSetImage image = config.getImages().get(0);
+
+        IImagingDataSetAdaptor adaptor = getAdaptor(image);
+        File rootFile = null;
+
+        if(entity instanceof Sample sample)
+        {
+            Map<IDataSetId, DataSet> map =
+                    getDataSets(sessionToken, List.of(sample.getPermId().getPermId()));
+            if (map.isEmpty())
+            {
+                //No dataset = no files -> nothing to do
+                return data;
+            }
+            DataSet dataSet = map.get(new DataSetPermId(sample.getPermId().getPermId()));
+            File computedRoot = getRootFile(dataSet, false);
+            if (!computedRoot.exists())
+            {
+                File sessionWorkspaceDirectory = getRootFile(sessionToken, sample);
+                afs.downloadEntityFiles(sample.getPermId().getPermId(),
+                        sessionWorkspaceDirectory.toPath());
+                rootFile = sessionWorkspaceDirectory;
+            } else
+            {
+                rootFile = computedRoot;
+            }
+        } else if(entity instanceof DataSet dataSet) {
+            rootFile = getRootFile(dataSet, true);
+        }
+
+        ImagingServiceContext context =
+                new ImagingServiceContext(sessionToken, getApplicationServerApi(),
+                        getDataStoreServerApi());
+
+        adaptor.createConfig(context, rootFile, config);
+        return data;
     }
 
 
@@ -764,6 +808,8 @@ public class ImagingService implements ICustomASServiceExecutor
         {
             case "preview":
                 return Util.readConfig(json, ImagingPreviewContainer.class);
+            case "init":
+                return Util.readConfig(json, ImagingInitContainer.class);
             case "export":
                 return Util.readConfig(json, ImagingExportContainer.class);
             case "multi-export":
