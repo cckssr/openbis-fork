@@ -173,13 +173,16 @@ public class MasterDataDelivererTest
         permIdsByKind.put(ExportableKind.TYPE_GROUP, List.of("TG_A"));
 
         TypeGroupId typeGroupId = new TypeGroupId("TG_A");
+        TypeGroupFetchOptions typeGroupFetchOptions = new TypeGroupFetchOptions();
+        typeGroupFetchOptions.withTypeGroupAssignments().withSampleType();
         TypeGroup typeGroup = new TypeGroup();
-        typeGroup.setFetchOptions(new TypeGroupFetchOptions());
+        typeGroup.setFetchOptions(typeGroupFetchOptions);
         typeGroup.setCode("TG_A");
         typeGroup.setManagedInternally(false);
         typeGroup.setRegistrationDate(new Date());
         typeGroup.setModificationDate(new Date());
         typeGroup.setMetaData(Collections.emptyMap());
+        typeGroup.setTypeGroupAssignments(Collections.emptyList());
 
         mockery.checking(new Expectations()
         {
