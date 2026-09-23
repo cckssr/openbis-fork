@@ -18,7 +18,8 @@ import java.util.stream.Stream;
 
 public class SampleHelper
 {
-    public enum Attribute { // implements IAttribute {
+    public enum Attribute
+    { // implements IAttribute {
         $("$", false),
         Identifier("Identifier", false),
         Code("Code", false),
@@ -33,7 +34,8 @@ public class SampleHelper
 
         private final boolean mandatory;
 
-        Attribute(String headerName, boolean mandatory) {
+        Attribute(String headerName, boolean mandatory)
+        {
             this.headerName = headerName;
             this.mandatory = mandatory;
         }
@@ -121,13 +123,15 @@ public class SampleHelper
             OpenBisModel openBisModel, PropertyTypeIndexInfo propertyTypeIndexInfo)
     {
 
+        List<RowWriteResult.LongCell> longCells = new ArrayList<>();
+
         String projectId =
                 Optional.ofNullable(sampleObject.getProject()).map(x -> x.getIdentifier())
                         .map(x -> x.getIdentifier()).orElse(null);
         Row propertyRowValues = sheet.createRow(rowNum);
         //propertyRowValues.createCell(0).setCellValue(""); // $
-        propertyRowValues.createCell(1)
-                .setCellValue(sampleObject.getIdentifier().getIdentifier()); // Identifier
+        CellWriter.writeCell(propertyRowValues.createCell(1),
+                sampleObject.getIdentifier().getIdentifier()); // Identifier
         propertyRowValues.createCell(2).setCellValue(sampleObject.getCode()); // Code
         propertyRowValues.createCell(3).setCellValue(
                 Optional.ofNullable(sampleObject.getSpace()).map(x -> x.getCode())
@@ -136,14 +140,17 @@ public class SampleHelper
         propertyRowValues.createCell(5).setCellValue(
                 Optional.ofNullable(sampleObject.getExperiment()).map(x -> x.getIdentifier())
                         .map(x -> x.toString()).orElse(null)); // Experiment
-        propertyRowValues.createCell(6)
-                .setCellValue(sampleObject.getParents().stream().map(x -> x.getIdentifier()).
-                        map(x -> x.getIdentifier())
-                        .collect(Collectors.joining(","))); // Parents
-        propertyRowValues.createCell(7)
-                .setCellValue(sampleObject.getChildren().stream().map(x -> x.getIdentifier()).
-                        map(x -> x.getIdentifier())
-                        .collect(Collectors.joining(","))); // Children
+        String serializedParents = sampleObject.getParents().stream().map(x -> x.getIdentifier()).
+                map(x -> x.getIdentifier())
+                .collect(Collectors.joining(","));
+        CellWriter.writeCell(propertyRowValues.createCell(6),
+                serializedParents).ifPresent(longCells::add);
+
+        String serializedChildren = sampleObject.getChildren().stream().map(x -> x.getIdentifier()).
+                map(x -> x.getIdentifier())
+                .collect(Collectors.joining(","));
+        CellWriter.writeCell(propertyRowValues.createCell(7),
+                serializedChildren).ifPresent(longCells::add);
 
         int idxName = propertyTypeIndexInfo.findIndex("Name");
         if (idxName != -1)
@@ -160,7 +167,6 @@ public class SampleHelper
                 .collect(Collectors.toList());
 
         sampleObject.getType().getPropertyAssignments();
-        List<RowWriteResult.LongCell> longCells = new ArrayList<>();
 
         for (Map.Entry<String, Serializable> property : sampleObject.getProperties().entrySet())
         {
@@ -179,7 +185,6 @@ public class SampleHelper
 
                 }
 
-
                 CellWriter.writeCell(propertyRowValues.createCell(idx),
                         val).ifPresent(longCells::add);
             }
@@ -187,6 +192,5 @@ public class SampleHelper
         }
         return new RowWriteResult(rowNum, longCells);  // Move to the next row for future entries
     }
-
 
 }

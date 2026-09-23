@@ -277,7 +277,7 @@ public class ExcelWriter
 
     }
 
-    private void createSpaceProjExpSheet(Workbook workbook, CellStyle headerStyle,
+    private List<RowWriteResult> createSpaceProjExpSheet(Workbook workbook, CellStyle headerStyle,
             OpenBisModel openBisModel)
     {
         Sheet sheet = workbook.createSheet(
@@ -308,6 +308,7 @@ public class ExcelWriter
             }
 
         }
+        return rowWriteResults;
     }
 
     private List<RowWriteResult> createObjectsSheet(Workbook workbook, CellStyle headerStyle,
