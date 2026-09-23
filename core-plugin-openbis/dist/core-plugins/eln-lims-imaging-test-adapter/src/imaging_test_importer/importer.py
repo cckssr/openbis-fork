@@ -1,4 +1,4 @@
-#   Copyright ETH 2023 - 2025 Zürich, Scientific IT Services
+#   Copyright ETH 2023 - 2026 Zürich, Scientific IT Services
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-# Hacky way to import imaging script
 import sys
 import os
 
@@ -95,9 +94,9 @@ for file in files:
         props = {
             'imaging_data_config': config,
             'default_object_view': 'IMAGING_DATASET_VIEWER',
+            'imaging_adaptor': 'TEST_ADAPTOR'
         }
         data_set = o.new_sample('IMAGING_DATA',
-                                # experiment='/IMAGING/NANONIS/NANONIS_EXP_1',
                                 experiment='/IMAGING/TEST/TEST_COLLECTION',
                                 props=props
                                 )
@@ -105,17 +104,18 @@ for file in files:
         text = "hello world!".encode("utf-8")
         client.write(data_set.permId, '/test_file.txt', 0, len(text), text)
         client.write(data_set.permId, '/' + name, 0, len(config), config.encode("utf-8"))
-    else:
-        props = {
-            'imaging_data_config': config,
-            'default_dataset_view': 'IMAGING_DATASET_VIEWER',
-        }
-        data_set = o.new_dataset('IMAGING_DATA',
-                                 experiment='/IMAGING/TEST/TEST_COLLECTION',
-                                 sample='/IMAGING/TEST/TEMPLATE-TEST',
-                                 files=file_path,
-                                 props=props)
-        data_set.save()
+
+    props = {
+        'imaging_data_config': config,
+        'default_dataset_view': 'IMAGING_DATASET_VIEWER',
+        'imaging_adaptor': 'TEST_ADAPTOR'
+    }
+    data_set = o.new_dataset('IMAGING_DATA',
+                             experiment='/IMAGING/TEST/TEST_COLLECTION',
+                             sample='/IMAGING/TEST/TEMPLATE-TEST',
+                             files=file_path,
+                             props=props)
+    data_set.save()
     print(f'Created dataset: {data_set.permId}')
 
 # export_image(o, 'permId', 0, 'path_to_download')

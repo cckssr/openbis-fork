@@ -219,6 +219,9 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
         experiment=experiment,
         sample=sample,
         files=[file_path],
+        other_properties={
+            'imaging_adaptor': 'SXM_ADAPTOR'
+        }
     )
 
 def reorder_dat_channels(channels, header):
@@ -545,7 +548,11 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
         config=imaging_property_config,
         experiment=experiment,
         sample=sample,
-        files=[d.path for d in data])
+        files=[d.path for d in data],
+        other_properties={
+            'imaging_adaptor': 'DAT_ADAPTOR'
+        }
+    )
 
 
 def create_preview(openbis, perm_id, config, preview_format="png", image_index=0, filterConfig=[], tags=[]):

@@ -154,7 +154,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
     },
     dataSetTypeDefinitionsExtension : {
         "IMAGING_DATA" : {
-            "SHOW" : false,
+            "SHOW" : true,
             "SHOW_ON_NAV" : true,
             extraToolbarDropdown : function(mode, dataset) {
                 return [{
