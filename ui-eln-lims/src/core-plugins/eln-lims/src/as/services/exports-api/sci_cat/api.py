@@ -536,7 +536,7 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
                 else:
                     error_message = json.dumps(body, indent=4)
             except ValueError as e:
-                error_message =  "HTTP status: %s\n%s" % str(status), str(response_body)
+                error_message =  "HTTP status: %s\n%s" % (str(status), str(response_body))
         return {
             "error": error_message
         }
