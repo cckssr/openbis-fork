@@ -26,6 +26,36 @@ const timeToString = (time) => {
     return new Date(time).toLocaleString()
   }
 
+const sizeToString = (bytes) => {
+    if (!bytes) {
+      return null
+    }
+
+    if (typeof bytes == 'string') {
+      bytes = parseInt(bytes)
+    }
+
+    let size
+    let unit
+    const kbytes = bytes / 1024.0
+    const mbytes = kbytes / 1024.0
+    const gbytes = mbytes / 1024.0
+    if (gbytes > 1.0) {
+      size = gbytes
+      unit = 'GB'
+    } else if (mbytes > 1.0) {
+      size = mbytes
+      unit = 'MB'
+    } else if (kbytes > 1.0) {
+      size = kbytes
+      unit = 'kB'
+    } else {
+      size = bytes
+      unit = 'bytes'
+    }
+    return size.toFixed(1) + '\xa0' + unit
+  }
+
 const isArchived = (dataSet) => {
   if (dataSet !== null && dataSet.getPhysicalData() !== null) {
     let archivingStatus = dataSet.getPhysicalData().getStatus()
@@ -51,4 +81,4 @@ const isFrozen = (dataSet) => {
   return false
 }
 
-  export { getFileNameFromPath, isUserAbortedError, isArchived, isFrozen, timeToString };
+  export { getFileNameFromPath, isUserAbortedError, isArchived, isFrozen, timeToString, sizeToString };

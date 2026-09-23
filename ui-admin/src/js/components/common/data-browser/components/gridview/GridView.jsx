@@ -37,18 +37,19 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 const styles = theme => ({
  // Outer container that wraps header and grid items.
   container: {
-    width: '100%',
     display: 'block',
-    color: theme.palette.text.primary, 
-  },  
+    color: theme.palette.text.primary,
+  },
   header: {
     width: '100%',
     marginBottom: theme.spacing(1),
-    color: theme.palette.text.primary, 
+    color: theme.palette.text.primary,
   },
   gridWrapper: {
+    flexGrow: 1,
+    flex: 1,
+    minWidth: 0,
     overflowX: 'auto',
-    width: '100%',
   },
   // Grid items container using CSS grid.
   gridItems: {
@@ -120,9 +121,17 @@ class GridView extends React.Component {
     handleClickContainer() {
       this.controller.handleRowSelect(null)
     }
-  
+
     handleClickTable(event) {
       event.stopPropagation()
+    }
+
+    // GridViewItem only exposes a single onSelect(row) callback (used both for
+    // the multiselect highlight and, here, for reporting the single selection
+    // used by the info panel), so a plain click needs to drive both.
+    handleItemSelect(row) {
+      this.controller.handleRowSelect(row)
+      this.controller.handleRowMultiselect(row)
     }
 
   handleClick(event, file) {
@@ -247,7 +256,7 @@ class GridView extends React.Component {
                   multiselected={multiselectedRows && multiselectedRows[row.id]}
                   row={row}                
                   onDoubleClick={this.controller.handleRowDoubleClick}
-                  onSelect={this.controller.handleRowMultiselect}                
+                  onSelect={this.handleItemSelect}
                 />
               })}
             </Grid>

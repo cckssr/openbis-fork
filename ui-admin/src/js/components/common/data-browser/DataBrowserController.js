@@ -18,16 +18,18 @@ import ComponentController from '@src/js/components/common/ComponentController.j
 import autoBind from 'auto-bind'
 import RetryCaller from '@src/js/components/common/data-browser/RetryCaller.js';
 import { getFileNameFromPath } from '@src/js/components/common/data-browser/DataBrowserUtils.js';
+import SftpPathBuilder from '@src/js/components/common/data-browser/components/sftp/SftpPathBuilder.js';
 
 
 export default class DataBrowserController extends ComponentController {
 
-  constructor(owner, extOpenbis) {
+  constructor(owner, extOpenbis, kind) {
     super()
     autoBind(this)
 
     this.openbis = extOpenbis;
     this.owner = owner
+    this.kind = kind
     this.gridController = null
     this.path = ''
     this.fileNames = []
@@ -507,6 +509,55 @@ export default class DataBrowserController extends ComponentController {
       let samples = await this.openbis.getSamples([sampleId], sampleFetchOptions);
       return samples[sampleId];
     }
+  }
+
+  // Fetches this.owner with the parent-chain relations (space/project/experiment)
+  // that SftpPathBuilder needs to walk up when building an SFTP link.
+  _withSampleParentChainForSftp(sampleFetchOptions) {
+    sampleFetchOptions.withSpace()
+    sampleFetchOptions.withProject().withSpace()
+    sampleFetchOptions.withExperiment().withProject().withSpace()
+    return sampleFetchOptions
+  }
+
+  _withExperimentParentChainForSftp(experimentFetchOptions) {
+    experimentFetchOptions.withProject().withSpace()
+    return experimentFetchOptions
+  }
+
+  async getOwnerEntityForSftp(kind) {
+    // objKind is spelled inconsistently by callers (ui-admin's objectType.js uses 'dataSet',
+    // ELN-LIMS's hand-built props use 'dataset', both use plain 'object'/'collection'), so
+    // normalize case before matching instead of relying on one canonical spelling.
+    switch ((kind || '').toLowerCase()) {
+      case 'collection': {
+        const experimentId = new this.openbis.ExperimentPermId(this.owner)
+        const fetchOptions = this._withExperimentParentChainForSftp(new this.openbis.ExperimentFetchOptions())
+        const experiments = await this.openbis.getExperiments([experimentId], fetchOptions)
+        return experiments[experimentId] ? experiments[experimentId] : null
+      }
+      case 'object': {
+        const sampleId = new this.openbis.SamplePermId(this.owner)
+        const fetchOptions = this._withSampleParentChainForSftp(new this.openbis.SampleFetchOptions())
+        const samples = await this.openbis.getSamples([sampleId], fetchOptions)
+        return samples[sampleId] ? samples[sampleId] : null
+      }
+      case 'dataset': {
+        const dataSetId = new this.openbis.DataSetPermId(this.owner)
+        const fetchOptions = new this.openbis.DataSetFetchOptions()
+        this._withSampleParentChainForSftp(fetchOptions.withSample())
+        this._withExperimentParentChainForSftp(fetchOptions.withExperiment())
+        const dataSets = await this.openbis.getDataSets([dataSetId], fetchOptions)
+        return dataSets[dataSetId] ? dataSets[dataSetId] : null
+      }
+      default:
+        return null
+    }
+  }
+
+  async getSftpUrl(host, port, afsPath) {
+    const entity = await this.getOwnerEntityForSftp(this.kind)
+    return SftpPathBuilder.buildSftpUrl({ host, port, kind: this.kind, entity, afsPath })
   }
 
 }

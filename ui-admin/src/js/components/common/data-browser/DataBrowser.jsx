@@ -21,7 +21,7 @@ import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx'
 import FileExistsDialog from '@src/js/components/common/dialog/FileExistsDialog.jsx'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import LinearLoadingDialog from '@src/js/components/common/loading/LinearLoadingDialog.jsx';
-import {isUserAbortedError, isArchived, isFrozen, timeToString} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
+import {isUserAbortedError, isArchived, isFrozen, timeToString, sizeToString} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
 import mimeTypeMap from './mimeTypes';
 import eventBus from "@src/js/components/common/data-browser/eventBus.js";
 
@@ -96,13 +96,14 @@ class DataBrowser extends React.Component {
     super(props, context)
     autoBind(this)
 
-    const { 
+    const {
             controller,
             id,
             extOpenbis,
+            objKind,
              } = this.props
 
-    this.controller = controller || new DataBrowserController(id, extOpenbis)
+    this.controller = controller || new DataBrowserController(id, extOpenbis, objKind)
     this.controller.attach(this)
     this.dragDepth = 0;
 
@@ -300,35 +301,6 @@ class DataBrowser extends React.Component {
     await this.controller.gridController.load()
   }
 
-  sizeToString(bytes) {
-    if (!bytes) {
-      return null
-    }
-
-    if (typeof bytes == 'string') {
-      bytes = parseInt(bytes)
-    }
-
-    let size
-    let unit
-    const kbytes = bytes / 1024.0
-    const mbytes = kbytes / 1024.0
-    const gbytes = mbytes / 1024.0
-    if (gbytes > 1.0) {
-      size = gbytes
-      unit = 'GB'
-    } else if (mbytes > 1.0) {
-      size = mbytes
-      unit = 'MB'
-    } else if (kbytes > 1.0) {
-      size = kbytes
-      unit = 'kB'
-    } else {
-      size = bytes
-      unit = 'bytes'
-    }
-    return size.toFixed(1) + '\xa0' + unit
-  }
 
   async fetchSpaceStatus() {
     try {
@@ -569,6 +541,7 @@ class DataBrowser extends React.Component {
           )}
           {viewType === 'grid' && (
             <GridView
+              classes={{ gridWrapper: withoutToolbar ? classes.gridWithoutToolbar : classes.grid }}
               clickable={true}
               selectable={true}
               multiselectable={true}
@@ -594,6 +567,7 @@ class DataBrowser extends React.Component {
             <InfoPanel
               selectedFile={selectedFile}
               configuration={fileTypeConfig}
+              controller={this.controller}
             />
           )}
         </div>
@@ -716,7 +690,7 @@ class DataBrowser extends React.Component {
         label: messages.get(messages.SIZE),
         sortable: true,
         visible: true,
-        getValue: ({ row }) => this.sizeToString(row.size)
+        getValue: ({ row }) => sizeToString(row.size)
       },
       {
         name: 'modified',
