@@ -522,20 +522,21 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
     response = client.send(request, HttpResponse.BodyHandlers.ofString())
 
     status = response.statusCode()
-    print("UPLOAD_RESPONSE", status, response.body())
-    OPERATION_LOG.info("SciCat status: %s upload response: %s" % (status, response.body()))
+    response_body = response.body()
+    print("UPLOAD_RESPONSE", status, response_body)
+    OPERATION_LOG.info("SciCat status: %s upload response: %s" % (status, response_body))
     if status >= 300:
-        if response.body() == u'':
+        if response_body == u'':
             error_message = "HTTP status: %s" % str(status)
         else:
             try:
-                body = json.loads(response.body())
+                body = json.loads(response_body)
                 if 'message' in body:
                     error_message = body['message']
                 else:
                     error_message = json.dumps(body, indent=4)
-            except:
-                error_message =  "HTTP status: %s\n%s" % str(status), str(response.body())
+            except ValueError as e:
+                error_message =  "HTTP status: %s\n%s" % str(status), str(response_body)
         return {
             "error": error_message
         }
