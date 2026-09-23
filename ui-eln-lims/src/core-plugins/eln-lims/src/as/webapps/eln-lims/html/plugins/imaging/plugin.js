@@ -153,6 +153,11 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
 
     },
     dataSetTypeDefinitionsExtension : {
+        "USER_DEFINED_IMAGING_DATA": {
+            // disabling this dataset type to deprecate it
+            "SHOW" : false,
+            "SHOW_ON_NAV" : false,
+        },
         "IMAGING_DATA" : {
             "SHOW" : true,
             "SHOW_ON_NAV" : true,
