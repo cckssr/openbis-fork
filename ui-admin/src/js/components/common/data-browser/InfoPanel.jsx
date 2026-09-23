@@ -33,8 +33,6 @@ import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
 import {timeToString, sizeToString} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
 
-const SFTP_SERVER_PORT = 2222
-
 const styles = theme => ({
   container: {
     position: 'sticky',
@@ -123,7 +121,7 @@ class InfoPanel extends React.Component {
 
     try {
       const host = window.location.hostname
-      const url = await controller.getSftpUrl(host, SFTP_SERVER_PORT, selectedFile.path)
+      const url = await controller.getSftpUrl(host, selectedFile.path)
       this.setState({ sftpUrl: url, sftpLoading: false })
     } catch (error) {
       this.setState({ sftpUrl: null, sftpLoading: false })
