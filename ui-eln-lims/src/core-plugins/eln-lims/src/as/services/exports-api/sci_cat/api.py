@@ -175,13 +175,6 @@ def exportSciCat_withEmail(context, params, date):
 
     group_params = params.get('exportData')['groups']
 
-    if len(group_params) > 0:
-        print("Groups detected: ", str(group_params))
-        OPERATION_LOG.info("Groups detected: %s" % str(group_params))
-    else:
-        print("No group detected.")
-        OPERATION_LOG.info("No group detected.")
-
     collectorIds = collectExportIds(v3, sessionToken, params.get('exportData'))
 
     publicationProps = params.get('exportData')["publicationProps"]
@@ -189,21 +182,37 @@ def exportSciCat_withEmail(context, params, date):
     OPERATION_LOG.info("Received publication properties:" + str(publicationProps))
 
     publicationPermIds = dict()
-    for group in group_params:
-        groupPrefix = ""
-        if not group == "GENERAL":
-            groupPrefix = group + "_"
-        publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds, groupPrefix)
+    if len(group_params) > 0:
+        print("Groups detected: ", str(group_params))
+        OPERATION_LOG.info("Groups detected: %s" % str(group_params))
+        for group in group_params:
+            groupPrefix = ""
+            if not group == "GENERAL":
+                groupPrefix = group + "_"
+            publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds, groupPrefix)
+            OPERATION_LOG.info("Publication creation result: " + str(publicationResult))
+            if publicationResult["error"] is not None:
+                errorStr = str(publicationResult["error"])
+                sendMailFailure(mailClient, userEmail, "SciCat export failed during creation of publication with exception:\n" + errorStr)
+                removePublications(sessionToken, v3, publicationPermIds, "During creation of publication samples: " + errorStr)
+                return
+
+            publicationPermId = publicationResult["result"]
+            OPERATION_LOG.info("PUBLICATION_PERMID: %s" % publicationPermId)
+            publicationPermIds[group] = publicationPermId
+    else:
+        print("No group detected.")
+        OPERATION_LOG.info("No group detected.")
+        publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds, "")
         OPERATION_LOG.info("Publication creation result: " + str(publicationResult))
         if publicationResult["error"] is not None:
             errorStr = str(publicationResult["error"])
             sendMailFailure(mailClient, userEmail, "SciCat export failed during creation of publication with exception:\n" + errorStr)
             removePublications(sessionToken, v3, publicationPermIds, "During creation of publication samples: " + errorStr)
             return
-
         publicationPermId = publicationResult["result"]
         OPERATION_LOG.info("PUBLICATION_PERMID: %s" % publicationPermId)
-        publicationPermIds[group] = publicationPermId
+        publicationPermIds["GENERAL"] = publicationPermId
 
     exportData = params.get("exportData")
     nodeExportList = exportData['nodeExportList']
@@ -263,7 +272,6 @@ def exportSciCat_withEmail(context, params, date):
         for key in body.keys():
             value = str(body[key])
             if key.startswith("/"):
-                pass
                 publishedDatasetLink = sciCatDetailUrl + URLEncoder.encode(value, "UTF-8")
                 links += "\t" + key + " -> " + publishedDatasetLink + "\n"
                 if key.startswith('/PUBLICATIONS/PUBLIC_REPOSITORIES'):
