@@ -87,6 +87,7 @@ public class GetServerInformationOperationExecutor
                 Long.toString(personalAccessTokenConfig.getPersonalAccessTokensValidityWarningPeriod()));
         info.put("openbis-version", BuildAndEnvironmentInfo.INSTANCE.getVersion());
         info.put("api-version", server.getMajorVersion() + "." + server.getMinorVersion());
+        info.put("admin.sftp-port", configurer.getPropertyValue("admin.sftp-port"));
 
         if(isInstanceAdmin(context)) {
             long currentTimeMillis = System.currentTimeMillis();

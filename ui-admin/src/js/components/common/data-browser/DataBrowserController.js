@@ -557,12 +557,12 @@ export default class DataBrowserController extends ComponentController {
     }
   }
 
-  // Port comes from the eln-lims core plugin (as/miscellaneous/sftp/plugin.properties),
-  // exposed through the server public information; 2222 if the server doesn't provide it.
+  // Port comes from the admin webapp core plugin (as/webapps/admin/plugin.properties),
+  // exposed through the server information; 2222 if the server doesn't provide it.
   async getSftpPort() {
     if (!this.sftpPort) {
-      const info = await this.openbis.getServerPublicInformation()
-      this.sftpPort = (info && info['server-public-information.sftp-port']) || DEFAULT_SFTP_PORT
+      const info = await this.openbis.getServerInformation()
+      this.sftpPort = (info && info['admin.sftp-port']) || DEFAULT_SFTP_PORT
     }
     return this.sftpPort
   }
