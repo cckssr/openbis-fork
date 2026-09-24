@@ -792,7 +792,7 @@ class TestPropertyPresence:
                 fixture.props["STATUS"]: NotSet(),
                 fixture.props["CONC"]: Gt(25.0),
             }
-        ) == {"S09"}
+        ) == {"S09", "S10"}
 
 
 # ---------------------------------------------------------------------------
