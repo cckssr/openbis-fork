@@ -518,12 +518,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_harvester.setDummyAuthentication()
         openbis_harvester.setDataStoreServerProperty("host-address", "https://localhost")
         self._applyOpenbisInstanceTemplate(openbis_harvester, 'harvester')
-        afsUrl = self._setUpAfsServer(openbis_harvester, HARVESTER_AFS_PORT, HARVESTER_STORAGE_UUID)
-        # The harvester's own DSS also loads the openbis-sync plugin (enableCorePlugin below), so
-        # it needs afs-local-url too: without it, DataSourceRequestHandler would fall back to
-        # afs-url, which is fine here since both point at the same localhost port, but leaving it
-        # unset would be silently relying on that coincidence instead of stating it explicitly.
-        openbis_harvester.setDataStoreServerProperty("afs-local-url", afsUrl)
+        self._setUpAfsServer(openbis_harvester, HARVESTER_AFS_PORT, HARVESTER_STORAGE_UUID)
         openbis_harvester.asProperties['max-number-of-sessions-per-user'] = '0'
         openbis_harvester.asProperties['code-plugins.allowed-editing-users'] = '.*'
         openbis_harvester.dssProperties['database.kind'] = openbis_harvester.databaseKind
@@ -550,10 +545,16 @@ class TestCase(systemtest.testcase.TestCase):
     def _setUpAfsServer(self, openbis, port, storageUuid):
         """
         Points this instance's AFS server at its own port and wires the DSS's openbis-sync
-        plugin (afs-url) to it. Each test instance runs its own AFS server on localhost, so
-        data_source and harvester must not share the default port - otherwise the second one
-        to start fails to bind it and re-sync delivery of AFS-backed data fails with
+        plugin (afs-url and afs-local-url) to it. Each test instance runs its own AFS server on
+        localhost, so data_source and harvester must not share the default port - otherwise the
+        second one to start fails to bind it and re-sync delivery of AFS-backed data fails with
         ConnectException. Returns the resulting AFS URL.
+
+        afs-local-url must be set as well as afs-url: DataSourceRequestHandler connects to its
+        AFS server via afs-local-url and only falls back to afs-url when it is blank, but the
+        packaged DSS service.properties ships it as http://localhost:8085/afs-server. Left as is,
+        the data_source DSS dials 8085, gets ConnectException while delivering experiment/sample
+        AFS data, and the harvester sees the truncated re-sync response as an EOFException.
 
         Also repoints the AFS server's own openBISUrl at this instance's AS: the packaged
         default (http://localhost:8888) only matches a single-instance deployment, and this
@@ -590,6 +591,7 @@ class TestCase(systemtest.testcase.TestCase):
         afsProperties['storageUuid'] = storageUuid
         util.writeProperties(afsPropertiesFile, afsProperties)
         openbis.setDataStoreServerProperty("afs-url", afsUrl)
+        openbis.setDataStoreServerProperty("afs-local-url", afsUrl)
         return afsUrl
 
     def _applyOpenbisInstanceTemplate(self, openbis, templateFolder):

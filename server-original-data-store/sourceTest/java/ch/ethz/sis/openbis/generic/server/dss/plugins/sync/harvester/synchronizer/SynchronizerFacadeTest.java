@@ -130,6 +130,7 @@ public class SynchronizerFacadeTest
         facade.updatePropertyType(type, metadata, "changed");
         PropertyTypeCreation creation = (PropertyTypeCreation) writes.get(0);
         assertEquals(creation.getCode(), "P");
+        assertEquals(creation.getDescription(), "Description");
         assertTrue(creation.isMultiValue());
         assertEquals(creation.getMetaData(), metadata);
         assertEquals(creation.getSchema(), "schema");
@@ -348,12 +349,56 @@ public class SynchronizerFacadeTest
         context.assertIsSatisfied();
     }
 
+    @DataProvider
+    public Object[][] emptyDescriptionAndMetadata()
+    {
+        List<Object[]> result = new ArrayList<>();
+        for (String description : Arrays.asList(null, ""))
+        {
+            for (Object[] metadata : metadata())
+            {
+                result.add(new Object[] { description, metadata[0] });
+            }
+        }
+        return result.toArray(new Object[0][]);
+    }
+
+    @Test(dataProvider = "emptyDescriptionAndMetadata")
+    public void propertyTypesWithEmptyDescriptionUseLegacyApiAndV3OnlyForMetadata(String description,
+            Map<String, String> metadata)
+    {
+        PropertyType type = propertyType();
+        type.setDescription(description);
+        boolean hasMetadata = metadata != null && metadata.isEmpty() == false;
+        context.checking(new Expectations() {{
+            one(common).registerPropertyType("session", type);
+            one(common).updatePropertyType("session", type);
+            exactly(hasMetadata ? 2 : 0).of(api).updatePropertyTypes(with("session"), with(any(List.class)));
+            will(capture());
+        }});
+        facade.registerPropertyType(type, metadata);
+        facade.updatePropertyType(type, metadata, "changed");
+        for (Object write : writes)
+        {
+            PropertyTypeUpdate update = (PropertyTypeUpdate) write;
+            assertEquals(update.getTypeId(), new PropertyTypePermId("P"));
+            assertFalse(update.getDescription().isModified());
+            assertFalse(update.getLabel().isModified());
+            assertMetadata(update, metadata);
+        }
+        context.assertIsSatisfied();
+    }
+
     @Test
     public void dryRunDoesNotReadOrWriteV3()
     {
         facade = newFacade(true);
         facade.registerPropertyType(propertyType(), Map.of("key", "value"));
         facade.updatePropertyType(propertyType(), Collections.emptyMap(), "changed");
+        PropertyType withoutDescription = propertyType();
+        withoutDescription.setDescription("");
+        facade.registerPropertyType(withoutDescription, Map.of("key", "value"));
+        facade.updatePropertyType(withoutDescription, Map.of("key", "value"), "changed");
         SampleType sample = new SampleType();
         sample.setCode("S");
         facade.registerSampleType(sample);
@@ -438,6 +483,7 @@ public class SynchronizerFacadeTest
         PropertyType type = new PropertyType();
         type.setCode("P");
         type.setLabel("Property");
+        type.setDescription("Description");
         DataType dataType = new DataType();
         dataType.setCode(DataTypeCode.VARCHAR);
         type.setDataType(dataType);

@@ -29,6 +29,8 @@ import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.util.Collections;
 import java.util.function.Consumer;
+
+import org.apache.commons.lang3.StringUtils;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
@@ -310,6 +312,19 @@ public class SynchronizerFacade implements ISynchronizerFacade
     public void updatePropertyType(PropertyType type, Map<String, String> metaData, String diff)
     {
         propertyTypesToUpdate.put(type.getCode(), diff);
+        if (hasEmptyDescription(type))
+        {
+            // V3 rejects an empty description (UpdatePropertyTypeExecutor) but the data source may legitimately
+            // have one, e.g. from the Jython master data API which defaults it to "". Use the legacy call, as the
+            // pre-V3 harvester did, so the description is copied as is. It relies on the id and modification date
+            // set by MasterDataSynchronizer and cannot carry meta data, which is updated through V3 afterwards.
+            if (!dryRun)
+            {
+                commonServer.updatePropertyType(sessionToken, type);
+                updatePropertyTypeMetaData(type, metaData);
+            }
+            return;
+        }
         PropertyTypeUpdate update = new PropertyTypeUpdate();
         update.setTypeId(new PropertyTypePermId(type.getCode()));
         update.setLabel(type.getLabel());
@@ -331,6 +346,16 @@ public class SynchronizerFacade implements ISynchronizerFacade
     public void registerPropertyType(PropertyType type, Map<String, String> metaData)
     {
         propertyTypesToAdd.add(type.getCode());
+        if (hasEmptyDescription(type))
+        {
+            // V3 rejects an empty description (CreatePropertyTypeExecutor), see updatePropertyType()
+            if (!dryRun)
+            {
+                commonServer.registerPropertyType(sessionToken, type);
+                updatePropertyTypeMetaData(type, metaData);
+            }
+            return;
+        }
         PropertyTypeCreation creation = new PropertyTypeCreation();
         creation.setCode(type.getCode());
         creation.setLabel(type.getLabel());
@@ -354,6 +379,24 @@ public class SynchronizerFacade implements ISynchronizerFacade
         {
             v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation));
         }
+    }
+
+    private static boolean hasEmptyDescription(PropertyType type)
+    {
+        return StringUtils.isEmpty(type.getDescription());
+    }
+
+    private void updatePropertyTypeMetaData(PropertyType type, Map<String, String> metaData)
+    {
+        if (metaData == null || metaData.isEmpty())
+        {
+            return;
+        }
+        // only meta data is set, so the V3 description check does not apply
+        PropertyTypeUpdate update = new PropertyTypeUpdate();
+        update.setTypeId(new PropertyTypePermId(type.getCode()));
+        update.getMetaData().set(metaData);
+        v3api.updatePropertyTypes(sessionToken, Collections.singletonList(update));
     }
 
     @Override
