@@ -522,6 +522,17 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
         return tryGetSession(sessionToken);
     }
 
+    public SessionContextDTO tryAuthenticateAsUser(final String userId) {
+        final PersonPE person =
+                daoFactory.getPersonDAO().tryFindPersonByUserId(userId);
+        if (person == null)
+        {
+            return null;
+        }
+        return tryToAuthenticate(sessionManager.tryToOpenSession(userId,
+                new AuthenticatedPersonBasedPrincipalProvider(person)));
+    }
+
     @Override
     public SessionContextDTO tryAuthenticateAnonymously()
     {

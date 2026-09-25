@@ -584,6 +584,12 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    public String loginAsUser(String userId)
+    {
+        return tryAuthenticateAsUser(userId).getSessionToken();
+    }
+
+    @Override
     public void registerUser(String sessionToken)
     {
         tryToAuthenticate(sessionToken);

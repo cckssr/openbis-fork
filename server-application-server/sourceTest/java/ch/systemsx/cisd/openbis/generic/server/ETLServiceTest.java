@@ -21,21 +21,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import ch.systemsx.cisd.authentication.IPrincipalProvider;
 import ch.systemsx.cisd.openbis.generic.SamplePENoDAO;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jmock.Expectations;
-import org.jmock.api.Invocation;
-import org.jmock.lib.action.CustomAction;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -44,7 +41,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOpt
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.IOperationsExecutor;
 import ch.rinn.restrictions.Friend;
-import ch.systemsx.cisd.authentication.ISessionManager;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.openbis.generic.server.business.IDataStoreServiceFactory;
@@ -131,6 +127,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.ManagedPropertyEvaluatorFactory;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
+
 /**
  * @author Franz-Josef Elmer
  */
@@ -177,8 +175,6 @@ public class ETLServiceTest extends AbstractServerTestCase
 
     private IServiceConversationServerManagerLocal conversationServer;
 
-    private ISessionManager<Session> sessionManagerForEntityOperations;
-
     private DataSetRegistrationCache dataSetRegistrationCache;
 
     private IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory;
@@ -190,6 +186,8 @@ public class ETLServiceTest extends AbstractServerTestCase
     private PersonPE sessionPerson;
 
     private IDataStoreDataSourceManager dataSourceManager;
+
+    private IApplicationServerInternalApi api;
 
     @Override
     @BeforeMethod
@@ -205,14 +203,12 @@ public class ETLServiceTest extends AbstractServerTestCase
         dataSourceManager = context.mock(IDataStoreDataSourceManager.class);
         conversationClient = context.mock(IServiceConversationClientManagerLocal.class);
         conversationServer = context.mock(IServiceConversationServerManagerLocal.class);
-        sessionManagerForEntityOperations =
-                context.mock(ISessionManager.class, "sessionManagerForEntityOperations");
         sessionPerson = new PersonPE();
         session.setPerson(sessionPerson);
         managedPropertyEvaluatorFactory = new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool());
         operationsExecutor = context.mock(IOperationsExecutor.class);
         operationLimiter = new ConcurrentOperationLimiter(new ConcurrentOperationLimiterConfig(new Properties()));
-
+        api = context.mock(IApplicationServerInternalApi.class);
         prepareDataSetRegistrationCache();
     }
 
@@ -1135,15 +1131,24 @@ public class ETLServiceTest extends AbstractServerTestCase
         context.checking(new Expectations()
             {
                 {
-                    allowing(sessionManagerForEntityOperations).tryToOpenSession(
-                            USER_FOR_ENTITY_OPERATIONS, "dummy password");
+
+//                    allowing(daoFactory).getPersonDAO
+//
+//
+//                    allowing(personDAO).tryFindPersonByUserId(USER_FOR_ENTITY_OPERATIONS);
+//                    will(returnValue(new PersonPE()));
+                    allowing(api).loginAsUser(with(equal(USER_FOR_ENTITY_OPERATIONS)));
                     String sessionToken = "session-token-eo";
                     will(returnValue(sessionToken));
 
-                    allowing(sessionManagerForEntityOperations).getSession(sessionToken);
+                    allowing(sessionManager).getSession(sessionToken);
                     will(returnValue(userSession));
 
-                    one(sessionManagerForEntityOperations).closeSession(sessionToken);
+//                    allowing(sessionManager).tryToOpenSession(
+//                            with(equal(USER_FOR_ENTITY_OPERATIONS)), with(any(IPrincipalProvider.class)));
+//
+//                    will(returnValue(sessionToken));
+                    one(sessionManager).closeSession(sessionToken);
 
                     one(entityOperationChecker).assertSpaceCreationAllowed(userSession,
                             Arrays.asList(newSpace));
@@ -1490,7 +1495,8 @@ public class ETLServiceTest extends AbstractServerTestCase
                 new ServiceForDataStoreServer(authenticationService, sessionManager, daoFactory,
                         propertiesBatchManager, boFactory, dssfactory, null,
                         entityOperationChecker, dataStoreServiceRegistrator, dataSourceManager,
-                        sessionManagerForEntityOperations, managedPropertyEvaluatorFactory, operationsExecutor, operationLimiter);
+                        managedPropertyEvaluatorFactory, operationsExecutor, operationLimiter);
+        etlService.setApi(api);
         etlService.setConversationClient(conversationClient);
         etlService.setConversationServer(conversationServer);
         etlService.setDisplaySettingsProvider(new DisplaySettingsProvider());

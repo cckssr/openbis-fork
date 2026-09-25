@@ -315,6 +315,8 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
         return null;
     }
 
+
+
     @Override
     public String loginAs(String userId, String password, String asUser)
     {
@@ -322,6 +324,12 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override public String loginAsSystem()
+    {
+        return null;
+    }
+
+    @Override
+    public String loginAsUser(String userId)
     {
         return null;
     }

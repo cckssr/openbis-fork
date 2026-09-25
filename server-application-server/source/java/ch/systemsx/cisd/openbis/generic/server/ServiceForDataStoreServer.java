@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import jakarta.servlet.http.HttpServletRequest;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,10 +62,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.IOperation
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.ListSampleTechIdByIdentifier;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.utils.ExceptionUtils;
 import ch.rinn.restrictions.Private;
-import ch.systemsx.cisd.authentication.DefaultSessionManager;
-import ch.systemsx.cisd.authentication.DummyAuthenticationService;
 import ch.systemsx.cisd.authentication.IAuthenticationService;
-import ch.systemsx.cisd.authentication.ISessionManager;
 import ch.systemsx.cisd.common.api.retry.RetryCaller;
 import ch.systemsx.cisd.common.api.retry.config.DefaultRetryConfiguration;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
@@ -73,8 +70,6 @@ import ch.systemsx.cisd.common.exceptions.InvalidAuthenticationException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
-import ch.systemsx.cisd.common.servlet.IRequestContextProvider;
-import ch.systemsx.cisd.common.servlet.RequestContextProviderAdapter;
 import ch.systemsx.cisd.openbis.common.conversation.context.ServiceConversationsThreadContext;
 import ch.systemsx.cisd.openbis.common.conversation.progress.IServiceConversationProgressListener;
 import ch.systemsx.cisd.openbis.common.spring.IInvocationLoggerContext;
@@ -160,7 +155,6 @@ import ch.systemsx.cisd.openbis.generic.shared.IDataStoreService;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.IServiceForDataStoreServer;
-import ch.systemsx.cisd.openbis.generic.shared.LogMessagePrefixGenerator;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSetFetchOption;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchableEntityKind;
@@ -321,11 +315,11 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
 
     private final IETLEntityOperationChecker entityOperationChecker;
 
-    private final ISessionManager<Session> sessionManagerForEntityOperation;
-
     private final IDataStoreServiceRegistrator dataStoreServiceRegistrator;
 
     private final IDataStoreDataSourceManager dataSourceManager;
+
+    private IApplicationServerInternalApi api;
 
     private IServiceConversationClientManagerLocal conversationClient;
 
@@ -352,18 +346,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
     {
         this(authenticationService, sessionManager, daoFactory, null, boFactory, dssFactory,
                 trustedOriginDomainProvider, entityOperationChecker, dataStoreServiceRegistrator,
-                dataSourceManager, new DefaultSessionManager<Session>(new SessionFactory(),
-                        new LogMessagePrefixGenerator(), new DummyAuthenticationService(),
-                        new RequestContextProviderAdapter(new IRequestContextProvider()
-                        {
-                            @Override
-                            public HttpServletRequest getHttpServletRequest()
-                            {
-                                return null;
-                            }
-                        }),
-                        30),
-                managedPropertyEvaluatorFactory, null, null);
+                dataSourceManager, managedPropertyEvaluatorFactory, null, null);
     }
 
     ServiceForDataStoreServer(IAuthenticationService authenticationService,
@@ -374,7 +357,6 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
             IETLEntityOperationChecker entityOperationChecker,
             IDataStoreServiceRegistrator dataStoreServiceRegistrator,
             IDataStoreDataSourceManager dataSourceManager,
-            ISessionManager<Session> sessionManagerForEntityOperation,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, IOperationsExecutor operationsExecutor,
             IConcurrentOperationLimiter operationLimiter)
     {
@@ -385,10 +367,17 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         this.entityOperationChecker = entityOperationChecker;
         this.dataStoreServiceRegistrator = dataStoreServiceRegistrator;
         this.dataSourceManager = dataSourceManager;
-        this.sessionManagerForEntityOperation = sessionManagerForEntityOperation;
         this.managedPropertyEvaluatorFactory = managedPropertyEvaluatorFactory;
         this.operationsExecutor = operationsExecutor;
         this.operationLimiter = operationLimiter;
+    }
+
+    /**
+     * Method for tests
+     * @param api
+     */
+    void setApi(IApplicationServerInternalApi api) {
+        this.api = api;
     }
 
     @Override
@@ -1832,12 +1821,11 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
             Session sessionForEntityOperation = session;
             if (authorize)
             {
-                sessionTokenForEntityOperation =
-                        sessionManagerForEntityOperation.tryToOpenSession(userId, "dummy password");
-                sessionForEntityOperation =
-                        sessionManagerForEntityOperation.getSession(sessionTokenForEntityOperation);
-                injectPerson(sessionForEntityOperation, userId);
-                sessionForEntityOperation.setCreatorPerson(session.tryGetPerson());
+                if(this.api == null) {
+                    this.api = CommonServiceProvider.getApplicationServerApi();
+                }
+                sessionTokenForEntityOperation = api.loginAsUser(userId);
+                sessionForEntityOperation = getSession(sessionTokenForEntityOperation);
             }
 
             long spacesCreated =
@@ -1911,7 +1899,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
             EntityOperationsInProgress.getInstance().removeRegistrationPending(registrationId);
             if (sessionTokenForEntityOperation != null)
             {
-                sessionManagerForEntityOperation.closeSession(sessionTokenForEntityOperation);
+                sessionManager.closeSession(sessionTokenForEntityOperation);
             }
             try
             {
