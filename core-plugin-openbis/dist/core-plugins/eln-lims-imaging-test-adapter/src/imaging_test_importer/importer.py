@@ -93,8 +93,7 @@ for file in files:
     if client is not None and client.is_session_valid():
         props = {
             'imaging_data_config': config,
-            'default_object_view': 'IMAGING_DATASET_VIEWER',
-            'imaging_adaptor': 'TEST_ADAPTOR'
+            'default_object_view': 'IMAGING_DATASET_VIEWER'
         }
         data_set = o.new_sample('IMAGING_DATA',
                                 experiment='/IMAGING/TEST/TEST_COLLECTION',
@@ -107,8 +106,7 @@ for file in files:
 
     props = {
         'imaging_data_config': config,
-        'default_dataset_view': 'IMAGING_DATASET_VIEWER',
-        'imaging_adaptor': 'TEST_ADAPTOR'
+        'default_dataset_view': 'IMAGING_DATASET_VIEWER'
     }
     data_set = o.new_dataset('IMAGING_DATA',
                              experiment='/IMAGING/TEST/TEST_COLLECTION',

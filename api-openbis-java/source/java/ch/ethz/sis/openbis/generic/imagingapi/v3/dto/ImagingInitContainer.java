@@ -9,6 +9,10 @@ public class ImagingInitContainer extends ImagingDataContainer
 {
     @JsonProperty
     private String permId;
+
+    @JsonProperty
+    private String adaptor;
+
     @JsonProperty
     private ImagingDataSetPropertyConfig config = null;
 
@@ -20,6 +24,16 @@ public class ImagingInitContainer extends ImagingDataContainer
 
     public void setPermId(String permId) {
         this.permId = permId;
+    }
+
+    @JsonIgnore
+    public String getAdaptor()
+    {
+        return adaptor;
+    }
+
+    public void setAdaptor(String adaptor) {
+        this.adaptor = adaptor;
     }
 
     @JsonIgnore

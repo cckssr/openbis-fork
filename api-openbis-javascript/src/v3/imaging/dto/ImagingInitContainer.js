@@ -5,6 +5,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         prototype['@type'] = 'imaging.dto.ImagingInitContainer';
         constructor.serialVersionUID = 1;
         prototype.permId = null;
+        prototype.adaptor = null;
         prototype.type = null;
         prototype.error = null;
         prototype.config = null;
@@ -14,6 +15,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         };
         prototype.setPermId = function(permId) {
             this.permId = permId;
+        };
+        prototype.getAdaptor = function() {
+            return this.adaptor;
+        };
+        prototype.setAdaptor = function(adaptor) {
+            this.adaptor = adaptor;
         };
         prototype.getType = function() {
             return this.type;

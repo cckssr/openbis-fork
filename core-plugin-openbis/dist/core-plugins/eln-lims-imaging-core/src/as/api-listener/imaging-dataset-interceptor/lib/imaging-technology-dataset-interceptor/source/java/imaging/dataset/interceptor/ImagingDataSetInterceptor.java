@@ -172,41 +172,41 @@ public class ImagingDataSetInterceptor implements IOperationListener
         return image;
     }
 
-    private Vocabulary getAdaptorVocabulary(IApplicationServerApi api, String sessionToken) {
-        VocabularySearchCriteria criteria = new VocabularySearchCriteria();
-        criteria.withCode().thatEquals("IMAGING_ADAPTOR");
-
-        VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
-        fetchOptions.withTerms();
-
-        List<Vocabulary> result = api.searchVocabularies(sessionToken, criteria, fetchOptions).getObjects();
-
-        if(result.isEmpty()) {
-            return null;
-        } else {
-            return result.get(0);
-        }
-    }
-
-    private String getAdaptorFromProperty(IApplicationServerApi api, String sessionToken, IPropertiesHolder holder)
-    {
-        String adaptorCode = (String) holder.getProperty("IMAGING_ADAPTOR");
-        if(adaptorCode == null) {
-            return null;
-        }
-        String result = null;
-        Vocabulary vocabulary = getAdaptorVocabulary(api, sessionToken);
-        if(vocabulary != null && vocabulary.getTerms() != null) {
-            for(VocabularyTerm term : vocabulary.getTerms()) {
-                if(term.getCode().equals(adaptorCode)) {
-                    result = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor." + term.getLabel();
-                    break;
-                }
-            }
-        }
-
-        return result;
-    }
+//    private Vocabulary getAdaptorVocabulary(IApplicationServerApi api, String sessionToken) {
+//        VocabularySearchCriteria criteria = new VocabularySearchCriteria();
+//        criteria.withCode().thatEquals("IMAGING_ADAPTOR");
+//
+//        VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
+//        fetchOptions.withTerms();
+//
+//        List<Vocabulary> result = api.searchVocabularies(sessionToken, criteria, fetchOptions).getObjects();
+//
+//        if(result.isEmpty()) {
+//            return null;
+//        } else {
+//            return result.get(0);
+//        }
+//    }
+//
+//    private String getAdaptorFromProperty(IApplicationServerApi api, String sessionToken, IPropertiesHolder holder)
+//    {
+//        String adaptorCode = (String) holder.getProperty("IMAGING_ADAPTOR");
+//        if(adaptorCode == null) {
+//            return null;
+//        }
+//        String result = null;
+//        Vocabulary vocabulary = getAdaptorVocabulary(api, sessionToken);
+//        if(vocabulary != null && vocabulary.getTerms() != null) {
+//            for(VocabularyTerm term : vocabulary.getTerms()) {
+//                if(term.getCode().equals(adaptorCode)) {
+//                    result = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor." + term.getLabel();
+//                    break;
+//                }
+//            }
+//        }
+//
+//        return result;
+//    }
 
 
     @Override
@@ -227,7 +227,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
                             ImagingDataSetPropertyConfig config =
                                     new ImagingDataSetPropertyConfig();
                             config.setMetadata(Map.of("GENERATE", "true"));
-                            String adaptor = getAdaptorFromProperty(api, sessionToken, creation);
+//                            String adaptor = getAdaptorFromProperty(api, sessionToken, creation);
                             config.setImages(Arrays.asList(getDefaultEmptyImage(null)));
                             Map<String, String> metaData = new HashMap<>();
                             metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
@@ -239,7 +239,19 @@ public class ImagingDataSetInterceptor implements IOperationListener
                         }
                         else
                         {
-                            throw new UserFailureException(String.format("Property %s must not be empty!", IMAGING_CONFIG_PROPERTY_NAME));
+                            operationLog.info("Missing imaging config. Generating a default config.");
+                            ImagingDataSetPropertyConfig config =
+                                    new ImagingDataSetPropertyConfig();
+                            config.setMetadata(Map.of("GENERATE", "false"));
+//                            String adaptor = getAdaptorFromProperty(api, sessionToken, creation);
+                            config.setImages(Arrays.asList(getDefaultEmptyImage(null)));
+                            Map<String, String> metaData = new HashMap<>();
+                            metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
+                            creation.setMetaData(metaData);
+                            creation.setProperty(DEFAULT_DATASET_VIEW_PROPERTY, DEFAULT_VIEWER_VALUE);
+
+                            String property = convertConfigToJson(config);
+                            creation.setJsonProperty(IMAGING_CONFIG_PROPERTY_NAME, property);
                         }
                     } else {
                         ImagingDataSetPropertyConfig config = readConfig(propertyConfig);
@@ -309,8 +321,8 @@ public class ImagingDataSetInterceptor implements IOperationListener
                             ImagingDataSetPropertyConfig config =
                                     new ImagingDataSetPropertyConfig();
                             config.setMetadata(Map.of("GENERATE", "false"));
-                            String adaptor = getAdaptorFromProperty(api, sessionToken, creation);
-                            config.setImages(Arrays.asList(getDefaultEmptyImage(adaptor)));
+//                            String adaptor = getAdaptorFromProperty(api, sessionToken, creation);
+                            config.setImages(Arrays.asList(getDefaultEmptyImage(null)));
                             Map<String, String> metaData = new HashMap<>();
                             metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
                             creation.setMetaData(metaData);

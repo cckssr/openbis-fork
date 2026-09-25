@@ -125,9 +125,8 @@ public class ImagingService implements ICustomASServiceExecutor
         return data;
     }
 
-    private IImagingDataSetAdaptor getAdaptor(ImagingDataSetImage image)
+    private IImagingDataSetAdaptor getAdaptor(final String adaptorName)
     {
-        final String adaptorName = image.getConfig().getAdaptor();
         if (adaptorName == null || adaptorName.trim().isEmpty())
         {
             throw new UserFailureException("Adaptor name is missing from the config!");
@@ -241,13 +240,11 @@ public class ImagingService implements ICustomASServiceExecutor
     private ImagingInitContainer processInitFlow(String sessionToken, ImagingInitContainer data) throws IOException {
         IPropertiesHolder entity = getData(sessionToken, data.getPermId());
         String jsonConfig = entity.getJsonProperty(IMAGING_CONFIG_PROPERTY_NAME);
-
         ImagingDataSetPropertyConfig config =
                 Util.readConfig(jsonConfig, ImagingDataSetPropertyConfig.class);
         data.setConfig(config);
-        ImagingDataSetImage image = config.getImages().get(0);
 
-        IImagingDataSetAdaptor adaptor = getAdaptor(image);
+        IImagingDataSetAdaptor adaptor = getAdaptor(data.getAdaptor());
         File rootFile = null;
 
         if(entity instanceof Sample sample)
@@ -373,7 +370,7 @@ public class ImagingService implements ICustomASServiceExecutor
                 }
 
             }
-            IImagingDataSetAdaptor adaptor = getAdaptor(image);
+            IImagingDataSetAdaptor adaptor = getAdaptor(image.getConfig().getAdaptor());
             String format = data.getPreview().getFormat();
 
             if (format == null || format.trim().isEmpty())
@@ -477,7 +474,7 @@ public class ImagingService implements ICustomASServiceExecutor
                 ImagingServiceContext context =
                         new ImagingServiceContext(sessionToken, getApplicationServerApi(),
                                 getDataStoreServerApi());
-                IImagingDataSetAdaptor adaptor = getAdaptor(image);
+                IImagingDataSetAdaptor adaptor = getAdaptor(image.getConfig().getAdaptor());
                 archiveImage(context, adaptor, image, index, exportConfig, rootFile, "", archiver,
                         dataSet.getPermId().getPermId());
             } else if (exportType == ImagingExportIncludeOptions.RAW_DATA)
@@ -588,7 +585,7 @@ public class ImagingService implements ICustomASServiceExecutor
                         ImagingServiceContext context =
                                 new ImagingServiceContext(sessionToken, getApplicationServerApi(),
                                         getDataStoreServerApi());
-                        IImagingDataSetAdaptor adaptor = getAdaptor(image);
+                        IImagingDataSetAdaptor adaptor = getAdaptor(image.getConfig().getAdaptor());
                         archivePreview(context, adaptor, image, imageIndex, previewIndex,
                                 exportConfig, rootFile, export.getPermId(), archiver,
                                 permId);
