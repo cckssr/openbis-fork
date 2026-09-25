@@ -62,7 +62,7 @@ module.exports = {
       Buffer: ['buffer', 'Buffer']
     }),
     new Webpack.ProvidePlugin({
-      process: 'process/browser'
+      process: 'process/browser.js'
     }),
     new CopyWebpackPlugin({
       patterns: [{ from: 'src/resources' }]

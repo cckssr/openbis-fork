@@ -22,8 +22,9 @@ module.exports = {
     '<rootDir>/srcTest/js',
     '<rootDir>/srcV3',
     '<rootDir>/srcDss',
-    '<rootDir>/node_modules'
+    'node_modules'
   ],
+  modulePaths: ['<rootDir>/node_modules'],
   moduleNameMapper: {
     jquery: '<rootDir>/srcV3/lib/jquery/js/jquery.js',
     moment: '<rootDir>/srcV3/lib/moment/js/moment.js',

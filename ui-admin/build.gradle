@@ -14,11 +14,20 @@ node {
     download = true
     version = libs.versions.node.runtime.get()
     workDir = file("${projectDir}/node/nodejs")
-    //nodeModulesDir = file("${projectDir}")
 }
 
 task cleanBuild(type: Delete) {
     delete 'build'
+}
+
+npmInstall {
+    dependsOn 'npmCi'
+    enabled = false
+}
+
+task npmCi(type: NpmTask) {
+    dependsOn 'npmSetup'
+    args = ['ci']
 }
 
 task copyCorePlugins(type: Copy) {
