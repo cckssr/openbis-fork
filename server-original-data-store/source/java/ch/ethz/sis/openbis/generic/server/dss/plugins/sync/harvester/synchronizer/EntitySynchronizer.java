@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -216,10 +217,6 @@ public class EntitySynchronizer
         {
             updateTimestampsAndUsers(data);
         }
-        if (config.keepOriginalFrozenFlags())
-        {
-            updateFrozenFlags(data);
-        }
 
         synchronizedResourceListData = data;
         return data.getResourceListTimestamp();
@@ -232,6 +229,68 @@ public class EntitySynchronizer
             throw new IllegalStateException("AFS synchronization requires completed entity synchronization");
         }
         synchronizeAfsData(synchronizedResourceListData);
+        if (config.keepOriginalFrozenFlags())
+        {
+            updateFrozenFlags(synchronizedResourceListData);
+        }
+        updateImmutableDataTimestamps(synchronizedResourceListData);
+    }
+
+    private void updateImmutableDataTimestamps(ResourceListParserData data)
+    {
+        Monitor monitor = new Monitor("Update immutable data timestamps", operationLog);
+        List<ImmutableDataTimestamp> experimentTimestamps = collectImmutableDataTimestamps(data.getExperimentsToProcess().values());
+        List<ImmutableDataTimestamp> sampleTimestamps = collectImmutableDataTimestamps(data.getSamplesToProcess().values());
+        if (config.isDryRun() == false)
+        {
+            DataSource dataSource = ServiceProvider.getDataSourceProvider().getDataSource("openbis-db");
+            IHarvesterQuery query = QueryTool.getQuery(dataSource, IHarvesterQuery.class);
+            updateImmutableDataTimestampsInBatches(experimentTimestamps, "experiment", query::updateExperimentImmutableDataTimestamps);
+            updateImmutableDataTimestampsInBatches(sampleTimestamps, "sample", query::updateSampleImmutableDataTimestamps);
+        }
+        SummaryUtils.printShortSummaryHeader(operationLog);
+        SummaryUtils.printShortUpdatedSummary(operationLog, experimentTimestamps.size(), "experiments with immutable data");
+        SummaryUtils.printShortUpdatedSummary(operationLog, sampleTimestamps.size(), "samples with immutable data");
+        SummaryUtils.printShortSummaryFooter(operationLog);
+        monitor.log();
+    }
+
+    private static void updateImmutableDataTimestampsInBatches(List<ImmutableDataTimestamp> timestamps, String entityName,
+            Consumer<List<ImmutableDataTimestamp>> update)
+    {
+        BatchOperationExecutor.executeInBatches(new IBatchOperation<ImmutableDataTimestamp>()
+            {
+                @Override
+                public List<ImmutableDataTimestamp> getAllEntities()
+                {
+                    return timestamps;
+                }
+
+                @Override
+                public void execute(List<ImmutableDataTimestamp> batch)
+                {
+                    update.accept(batch);
+                }
+
+                @Override
+                public String getEntityName()
+                {
+                    return entityName;
+                }
+
+                @Override
+                public String getOperationName()
+                {
+                    return "update immutable data timestamps";
+                }
+            });
+    }
+
+    static List<ImmutableDataTimestamp> collectImmutableDataTimestamps(Collection<? extends IncomingEntity<?>> entities)
+    {
+        return entities.stream().filter(entity -> entity.getImmutableDataDate() != null)
+                .map(entity -> new ImmutableDataTimestamp(entity.getPermID(), entity.getImmutableDataDate()))
+                .collect(Collectors.toList());
     }
 
     private void updateTimestampsAndUsers(ResourceListParserData data)

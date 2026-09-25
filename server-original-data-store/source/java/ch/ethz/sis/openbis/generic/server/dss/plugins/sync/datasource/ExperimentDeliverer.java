@@ -63,6 +63,7 @@ public class ExperimentDeliverer extends AbstractEntityWithPermIdDeliverer
             addAttributeIfSet(writer, "frozen", experiment.isFrozen());
             addAttributeIfSet(writer, "frozenForSamples", experiment.isFrozenForSamples());
             addAttributeIfSet(writer, "frozenForDataSets", experiment.isFrozenForDataSets());
+            addImmutableDataDate(writer, experiment.getImmutableDataDate());
             addModifier(writer, experiment);
             addProject(writer, experiment.getProject());
             addRegistrationDate(writer, experiment);

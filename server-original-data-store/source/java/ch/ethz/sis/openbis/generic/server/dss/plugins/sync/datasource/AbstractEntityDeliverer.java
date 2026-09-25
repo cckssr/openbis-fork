@@ -201,6 +201,11 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
         addAttribute(writer, "registration-timestamp", dateHolder.getRegistrationDate(), h -> DataSourceUtils.convertToW3CDate(h));
     }
 
+    protected void addImmutableDataDate(XMLStreamWriter writer, Date immutableDataDate) throws XMLStreamException
+    {
+        addAttribute(writer, "immutable-data-timestamp", immutableDataDate, d -> DataSourceUtils.convertToW3CDate(d));
+    }
+
     protected void addAttributeAndExtractFilePaths(DeliveryExecutionContext context, XMLStreamWriter writer, String attributeName, String value) throws XMLStreamException
     {
         addAttribute(writer, attributeName, value, v -> v);

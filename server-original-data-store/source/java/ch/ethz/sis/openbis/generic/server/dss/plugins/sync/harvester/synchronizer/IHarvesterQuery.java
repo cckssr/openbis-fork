@@ -76,4 +76,12 @@ public interface IHarvesterQuery extends BaseQuery
             + "frozen_for_conts = ?{1.frozenForContainers}, frozen_for_children = ?{1.frozenForChildren}, "
             + "frozen_for_parents = ?{1.frozenForParents} where code = ?{1.permId}", batchUpdate = true)
     public void updateDataSetFrozenFlags(List<FrozenFlags> frozenFlags);
+
+    @Update(sql = "update experiments_all set immutable_data_timestamp = ?{1.immutableDataTimestamp} where perm_id = ?{1.permId}",
+            batchUpdate = true)
+    public void updateExperimentImmutableDataTimestamps(List<ImmutableDataTimestamp> timestamps);
+
+    @Update(sql = "update samples_all set immutable_data_timestamp = ?{1.immutableDataTimestamp} where perm_id = ?{1.permId}",
+            batchUpdate = true)
+    public void updateSampleImmutableDataTimestamps(List<ImmutableDataTimestamp> timestamps);
 }

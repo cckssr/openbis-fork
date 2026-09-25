@@ -42,6 +42,8 @@ public class IncomingEntity<T> extends AbstractTimestampsAndUserHolder
 
     private List<IncomingAfsFile> afsFileSnapshots = new ArrayList<IncomingAfsFile>();
 
+    private Date immutableDataDate;
+
     public List<Connection> getConnections()
     {
         return connections;
@@ -126,6 +128,16 @@ public class IncomingEntity<T> extends AbstractTimestampsAndUserHolder
     public void setAfsFileSnapshots(List<IncomingAfsFile> afsFileSnapshots)
     {
         this.afsFileSnapshots = afsFileSnapshots;
+    }
+
+    public Date getImmutableDataDate()
+    {
+        return immutableDataDate;
+    }
+
+    public void setImmutableDataDate(Date immutableDataDate)
+    {
+        this.immutableDataDate = immutableDataDate;
     }
 
     public T getEntity()

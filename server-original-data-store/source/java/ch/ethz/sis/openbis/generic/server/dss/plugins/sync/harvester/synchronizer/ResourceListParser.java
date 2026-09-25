@@ -574,6 +574,22 @@ public class ResourceListParser
         return frozenFlags;
     }
 
+    private Date extractImmutableDataDate(String permId, Node xdNode)
+    {
+        String immutableDataTimestampAsString = extractAttribute(xdNode, "immutable-data-timestamp", true);
+        if (immutableDataTimestampAsString == null)
+        {
+            return null;
+        }
+        try
+        {
+            return DSPropertyUtils.convertFromW3CDate(immutableDataTimestampAsString);
+        } catch (Exception e)
+        {
+            throw new IllegalArgumentException("Invalid immutable-data-timestamp for '" + permId + "': " + immutableDataTimestampAsString);
+        }
+    }
+
     private ExperimentIdentifier createExperimentIdentifier(String spaceId, String prjCode, String expCode)
     {
         return new ExperimentIdentifier(createProjectIdentifier(prjCode, spaceId), expCode);
@@ -866,6 +882,7 @@ public class ResourceListParser
         incomingExperiment.setTrashedAfsFiles(parseTrashedAfsFiles(xdNode));
         incomingExperiment.setTrashedAfsDirectories(parseTrashedAfsDirectories(xdNode));
         incomingExperiment.setAfsFileSnapshots(parseAfsFileSnapshots(xdNode));
+        incomingExperiment.setImmutableDataDate(extractImmutableDataDate(permId, xdNode));
         setTimestampsAndUsers(xdNode, incomingExperiment);
         newExp.setProperties(parseProperties(xdNode));
     }
@@ -914,6 +931,7 @@ public class ResourceListParser
         incomingSample.setTrashedAfsFiles(parseTrashedAfsFiles(xdNode));
         incomingSample.setTrashedAfsDirectories(parseTrashedAfsDirectories(xdNode));
         incomingSample.setAfsFileSnapshots(parseAfsFileSnapshots(xdNode));
+        incomingSample.setImmutableDataDate(extractImmutableDataDate(permId, xdNode));
         incomingSample.setConnections(parseConnections(xdNode));
         setTimestampsAndUsers(xdNode, incomingSample);
         newSample.setProperties(parseProperties(xdNode));

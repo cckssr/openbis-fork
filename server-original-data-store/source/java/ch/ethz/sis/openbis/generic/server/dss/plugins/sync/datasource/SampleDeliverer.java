@@ -68,6 +68,7 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
             addAttributeIfSet(writer, "frozenForParents", sample.isFrozenForParents());
             addAttributeIfSet(writer, "frozenForComponents", sample.isFrozenForComponents());
             addAttributeIfSet(writer, "frozenForDataSets", sample.isFrozenForDataSets());
+            addImmutableDataDate(writer, sample.getImmutableDataDate());
             addExperiment(writer, sample.getExperiment());
             addKind(writer, EntityKind.SAMPLE);
             addModifier(writer, sample);
