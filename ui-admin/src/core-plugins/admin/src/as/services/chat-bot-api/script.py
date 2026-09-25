@@ -24,8 +24,9 @@ def getAsk(context, parameters):
 
     message = parameters.get("query")
     sessionToken = parameters.get("sessionToken")
+    openBISUrl = parameters.get("openBIS-URL")
     OPERATION_LOG.info("Asking chabot %s question: %s" % (chatBotLlmServerUrl, message))
-    code, response = http_post(chatBotLlmServerUrl, sessionToken, json_data=json.dumps({
+    code, response = http_post(chatBotLlmServerUrl, sessionToken, openBISUrl, json_data=json.dumps({
         "question": message,
         "openbis_version": "7.x"
     }))
@@ -33,7 +34,7 @@ def getAsk(context, parameters):
         "answer" : response,
     }
 
-def http_post(url, sessionToken, json_data):
+def http_post(url, sessionToken, openBISUrl, json_data):
 
     from java.net import URL
     from java.io import BufferedReader, InputStreamReader
@@ -44,6 +45,7 @@ def http_post(url, sessionToken, json_data):
     connection.setRequestProperty("Content-Type", "application/json")
     connection.setRequestProperty("Accept", "application/json")
     connection.setRequestProperty("sessionToken", sessionToken)
+    connection.setRequestProperty("X-openBIS-URL", openBISUrl)
     connection.setConnectTimeout(10000)
     connection.setReadTimeout(130000)
 

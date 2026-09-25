@@ -1304,7 +1304,8 @@ function ServerFacade(openbisServer) {
 		"method" : "ask" ,
 		"query" : message,
 		"session_id" : sessionId,
-        "sessionToken" : mainController.serverFacade.getSession()
+        "sessionToken" : mainController.serverFacade.getSession(),
+        "openBIS-URL" : window.location.host,
 		}, callbackFunction, "chat-bot-api", null, true);
 	}
 

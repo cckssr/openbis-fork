@@ -180,6 +180,8 @@ class App extends React.Component {
     serviceOptions.withParameter('session_id', sessionId)
     const sessionToken = AppController.getInstance().getSessionToken()
     serviceOptions.withParameter('sessionToken', sessionToken)
+    const openBISUrl = window.location.host;
+    serviceOptions.withParameter('openBIS-URL', openBISUrl)
 
     return await openbis.executeService(serviceId, serviceOptions)
   }
