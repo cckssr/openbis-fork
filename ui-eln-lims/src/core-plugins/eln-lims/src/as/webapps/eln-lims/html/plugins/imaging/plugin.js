@@ -24,56 +24,93 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                     title:"Generate imaging config",
                     action : function() {
                         Util.blockUINoMessage();
-                        var _this = this;
-                        require(["imaging/dto/ImagingDataSetConfig",
-                                "imaging/dto/ImagingInitContainer",
-                                "util/Json",
-                                "as/dto/sample/update/SampleUpdate",
-                                "as/dto/sample/id/SamplePermId"],
-                            function (ImagingDataSetConfig,
-                                      ImagingInitContainer,
-                                      utilJson, SampleUpdate, SamplePermId
-                            ) {
-                                let initContainer = new ImagingInitContainer();
-                                initContainer.permId = sample.permId;
-                                initContainer.type = "init";
 
-                                mainController.serverFacade.customASService(initContainer, function(result) {
+                        var component = $("<div>");
+                        component.append($("<legend>", { 'text' : "Generate new imaging config"}))
+                        component.append($('<br>'));
+                        component.append($("<label>", { 'text' : 'Select imaging adapter to use'}))
 
-                                    if(result.error) {
-                                        Util.showError("Failed to generate new config: " + result.error, function() {}, true);
-                                    } else {
-                                        const update = new SampleUpdate();
-                                        update.setSampleId(new SamplePermId(sample.permId));
-                                        update.setProperty('IMAGING_DATA_CONFIG', JSON.stringify(result.config, (key,value) => {
-                                            if (key === "@id") return undefined;
-                                            return value;
-                                        }));
-                                        // update.setProperty('IMAGING_DATA_CONFIG', result.config);
-                                        mainController.openbisV3.updateSamples([update]).done(function(x) {
-                                            Util.showSuccess("Config has been generated", function () { Util.unblockUI(); });
-                                            mainController.refreshView();
-                                        }).fail(function(error) {
-                                            Util.showError(error.message, Util.unblockUI, true);
-                                        });
-                                    }
-                                    // Util.unblockUI();
-                                }, "imaging", null, false);
+                        var adapterVocabulary = profile.getVocabularyByCode("IMAGING_ADAPTOR");
+                        var adapterDropdown = FormUtil.getDropDownForTerms("new-imaging-adaptor", adapterVocabulary.terms, "Select an adaptor", true);
 
-                            });
+                        component.append(adapterDropdown);
+
+                        component.append($('<br>'));
+                        var acceptBtn = $("<a>", { 'class' : 'btn btn-primary', 'id' : 'generateAccept', 'text' : 'Accept' });
+                        var closeBtn = $("<a>", { 'class' : 'btn btn-default', 'id' : 'generateCancel', 'text' : 'Cancel' });
+                        component.append(acceptBtn).append('&nbsp;').append(closeBtn);
+
+                        Util.blockUI(component, FormUtil.getDialogCss());
+
+                        $("#generateAccept").on("click", function(event) {
+                            let selectedTerm = adapterDropdown.val();
+                            if(!selectedTerm) {
+                                Util.showError("Adaptor must be selected! ", function() {}, true);
+                            } else {
+                                var adaptorLabel = adapterVocabulary.terms.filter(x => x.code === selectedTerm)[0].label
+                                var adaptor = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor." + adaptorLabel;
+
+                                require(["imaging/dto/ImagingDataSetConfig",
+                                        "imaging/dto/ImagingInitContainer",
+                                        "util/Json",
+                                        "as/dto/sample/update/SampleUpdate",
+                                        "as/dto/sample/id/SamplePermId"],
+                                    function (ImagingDataSetConfig,
+                                              ImagingInitContainer,
+                                              utilJson, SampleUpdate, SamplePermId
+                                    ) {
+                                        let initContainer = new ImagingInitContainer();
+                                        initContainer.permId = sample.permId;
+                                        initContainer.type = "init";
+                                        initContainer.adaptor = adaptor;
+
+                                        mainController.serverFacade.customASService(initContainer, function(result) {
+
+                                            if(result.error) {
+                                                Util.showError("Failed to generate new config: " + result.error, function() {}, true);
+                                            } else {
+                                                const update = new SampleUpdate();
+                                                update.setSampleId(new SamplePermId(sample.permId));
+                                                update.setProperty('IMAGING_DATA_CONFIG', JSON.stringify(result.config, (key,value) => {
+                                                    if (key === "@id") return undefined;
+                                                    return value;
+                                                }));
+                                                // update.setProperty('IMAGING_DATA_CONFIG', result.config);
+                                                mainController.openbisV3.updateSamples([update]).done(function(x) {
+                                                    Util.showSuccess("Config has been generated", function () { Util.unblockUI(); });
+                                                    mainController.refreshView();
+                                                }).fail(function(error) {
+                                                    Util.showError(error.message, Util.unblockUI, true);
+                                                });
+                                            }
+                                            // Util.unblockUI();
+                                        }, "imaging", null, false);
+
+                                    });
+
+
+                                Util.unblockUI();
+                            }
+                        });
+
+                        $("#generateCancel").on("click", function(event) {
+                            Util.unblockUI();
+                        });
+
+
 
                     }
 
                 },
                     {
-                    label:"Update imaging config",
-                    title:"Update imaging config",
+                    label:"Custom imaging config",
+                    title:"Custom imaging config",
                     action : function() {
                         Util.blockUINoMessage();
                         var _this = this;
 
                         var component = $("<div>");
-                        component.append($("<legend>", { 'text' : "Upload new imaging config"}))
+                        component.append($("<legend>", { 'text' : "Upload custom imaging config"}))
                         component.append($('<br>'));
                         component.append($("<label>", { 'text' : 'Select JSON file that will be used to replace current imaging config'}))
 
@@ -167,54 +204,88 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                     title:"Generate imaging config",
                     action : function() {
                         Util.blockUINoMessage();
-                        var _this = this;
-                        require(["imaging/dto/ImagingDataSetConfig",
-                                "imaging/dto/ImagingInitContainer",
-                                "util/Json",
-                                "as/dto/dataset/update/DataSetUpdate",
-                                "as/dto/dataset/id/DataSetPermId"],
-                            function (ImagingDataSetConfig,
-                                      ImagingInitContainer,
-                                      utilJson, DataSetUpdate, DataSetPermId
-                            ) {
-                                let initContainer = new ImagingInitContainer();
-                                initContainer.permId = dataset.permId.permId;
-                                initContainer.type = "init";
-                                mainController.serverFacade.customASService(initContainer, function(result) {
-                                    if(result.error) {
-                                        Util.showError("Failed to generate new config: " + result.error, function() {}, true);
-                                    } else {
-                                        const update = new DataSetUpdate();
-                                        update.setDataSetId(new DataSetPermId(dataset.permId.permId));
-                                        update.setProperty('IMAGING_DATA_CONFIG', JSON.stringify(result.config, (key,value) => {
-                                            if (key === "@id") return undefined;
-                                            return value;
-                                        }));
-                                        // update.setProperty('IMAGING_DATA_CONFIG', result.config);
-                                        mainController.openbisV3.updateDataSets([update]).done(function(x) {
-                                            Util.showSuccess("Config has been generated", function () { Util.unblockUI(); });
-                                            mainController.refreshView();
-                                        }).fail(function(error) {
-                                            Util.showError(error.message, Util.unblockUI, true);
-                                        });
-                                    }
-                                    // Util.unblockUI();
-                                }, "imaging", null, false);
 
-                            });
+                        var component = $("<div>");
+                        component.append($("<legend>", { 'text' : "Generate new imaging config"}))
+                        component.append($('<br>'));
+                        component.append($("<label>", { 'text' : 'Select imaging adapter to use'}))
+
+                        var adapterVocabulary = profile.getVocabularyByCode("IMAGING_ADAPTOR");
+                        var adapterDropdown = FormUtil.getDropDownForTerms("new-imaging-adaptor", adapterVocabulary.terms, "Select an adaptor", true);
+
+                        component.append(adapterDropdown);
+
+                        component.append($('<br>'));
+                        var acceptBtn = $("<a>", { 'class' : 'btn btn-primary', 'id' : 'generateAccept', 'text' : 'Accept' });
+                        var closeBtn = $("<a>", { 'class' : 'btn btn-default', 'id' : 'generateCancel', 'text' : 'Cancel' });
+                        component.append(acceptBtn).append('&nbsp;').append(closeBtn);
+
+                        Util.blockUI(component, FormUtil.getDialogCss());
+
+                        $("#generateAccept").on("click", function(event) {
+                            let selectedTerm = adapterDropdown.val();
+                            if(!selectedTerm) {
+                                Util.showError("Adaptor must be selected! ", function() {}, true);
+                            } else {
+                                var adaptorLabel = adapterVocabulary.terms.filter(x => x.code === selectedTerm)[0].label
+                                var adaptor = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor." + adaptorLabel;
+
+                                require(["imaging/dto/ImagingDataSetConfig",
+                                        "imaging/dto/ImagingInitContainer",
+                                        "util/Json",
+                                        "as/dto/dataset/update/DataSetUpdate",
+                                        "as/dto/dataset/id/DataSetPermId"],
+                                    function (ImagingDataSetConfig,
+                                              ImagingInitContainer,
+                                              utilJson, DataSetUpdate, DataSetPermId
+                                    ) {
+                                        let initContainer = new ImagingInitContainer();
+                                        initContainer.permId = dataset.permId.permId;
+                                        initContainer.type = "init";
+                                        initContainer.adaptor = adaptor;
+                                        mainController.serverFacade.customASService(initContainer, function(result) {
+                                            if(result.error) {
+                                                Util.showError("Failed to generate new config: " + result.error, function() {}, true);
+                                            } else {
+                                                const update = new DataSetUpdate();
+                                                update.setDataSetId(new DataSetPermId(dataset.permId.permId));
+                                                update.setProperty('IMAGING_DATA_CONFIG', JSON.stringify(result.config, (key,value) => {
+                                                    if (key === "@id") return undefined;
+                                                    return value;
+                                                }));
+                                                mainController.openbisV3.updateDataSets([update]).done(function(x) {
+                                                    Util.showSuccess("Config has been generated", function () { Util.unblockUI(); });
+                                                    mainController.refreshView();
+                                                }).fail(function(error) {
+                                                    Util.showError(error.message, Util.unblockUI, true);
+                                                });
+                                            }
+                                        }, "imaging", null, false);
+
+                                    });
+
+
+                                Util.unblockUI();
+                            }
+                        });
+
+                        $("#generateCancel").on("click", function(event) {
+                            Util.unblockUI();
+                        });
+
+
 
                     }
 
                 },
                     {
-                    label:"Update imaging config",
-                    title:"Update imaging config",
+                    label:"Custom imaging config",
+                    title:"Custom imaging config",
                     action : function() {
                         Util.blockUINoMessage();
-                        var _this = this;
 
                         var component = $("<div>");
-                        component.append($("<legend>", { 'text' : "Upload new imaging config"}))
+                        component.append($("<legend>", { 'text' : "Upload custom imaging config"}))
                         component.append($('<br>'));
                         component.append($("<label>", { 'text' : 'Select JSON file that will be used to replace current imaging config'}))
 
