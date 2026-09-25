@@ -53,6 +53,7 @@ public class GetServerInformationTest extends AbstractTest
         assertEquals(result.get("create-continuous-sample-codes"), "false");
         assertEquals(result.get("openbis-version"), BuildAndEnvironmentInfo.INSTANCE.getVersion());
         assertEquals(result.get("openbis.support.email"), "openbis-support@id.ethz.ch");
+        assertEquals(result.get("admin.sftp-port"), "2222");
 
         v3api.logout(sessionToken);
     }
@@ -66,11 +67,11 @@ public class GetServerInformationTest extends AbstractTest
 
             if (RoleWithHierarchy.INSTANCE_ADMIN.equals(role))
             {
-                assertEquals(result.size(), 14);
+                assertEquals(result.size(), 15);
                 assertTrue(result.containsKey("as-service-properties"));
             } else
             {
-                assertEquals(result.size(), 13);
+                assertEquals(result.size(), 14);
             }
         });
     }
