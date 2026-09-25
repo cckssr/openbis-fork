@@ -1824,7 +1824,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                 if(this.api == null) {
                     this.api = CommonServiceProvider.getApplicationServerApi();
                 }
-                sessionTokenForEntityOperation = api.loginAsUser(userId);
+                sessionTokenForEntityOperation = api.loginAsUser(sessionToken, userId);
                 sessionForEntityOperation = getSession(sessionTokenForEntityOperation);
             }
 

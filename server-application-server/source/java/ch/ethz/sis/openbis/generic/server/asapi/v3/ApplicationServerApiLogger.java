@@ -329,7 +329,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
-    public String loginAsUser(String userId)
+    public String loginAsUser(String sessionToken, String userId)
     {
         return null;
     }

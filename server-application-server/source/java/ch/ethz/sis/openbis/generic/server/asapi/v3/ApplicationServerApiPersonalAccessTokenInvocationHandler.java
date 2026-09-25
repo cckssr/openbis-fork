@@ -308,7 +308,7 @@ public class ApplicationServerApiPersonalAccessTokenInvocationHandler implements
         return invocation.proceedWithOriginalArguments();
     }
 
-    @Override public String loginAsUser(String userId)
+    @Override public String loginAsUser(String sessionToken, String userId)
     {
         return invocation.proceedWithOriginalArguments();
     }

@@ -1132,22 +1132,13 @@ public class ETLServiceTest extends AbstractServerTestCase
             {
                 {
 
-//                    allowing(daoFactory).getPersonDAO
-//
-//
-//                    allowing(personDAO).tryFindPersonByUserId(USER_FOR_ENTITY_OPERATIONS);
-//                    will(returnValue(new PersonPE()));
-                    allowing(api).loginAsUser(with(equal(USER_FOR_ENTITY_OPERATIONS)));
+                    allowing(api).loginAsUser(with(any(String.class)), with(equal(USER_FOR_ENTITY_OPERATIONS)));
                     String sessionToken = "session-token-eo";
                     will(returnValue(sessionToken));
 
                     allowing(sessionManager).getSession(sessionToken);
                     will(returnValue(userSession));
 
-//                    allowing(sessionManager).tryToOpenSession(
-//                            with(equal(USER_FOR_ENTITY_OPERATIONS)), with(any(IPrincipalProvider.class)));
-//
-//                    will(returnValue(sessionToken));
                     one(sessionManager).closeSession(sessionToken);
 
                     one(entityOperationChecker).assertSpaceCreationAllowed(userSession,
