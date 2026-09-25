@@ -62,19 +62,29 @@ const ChatbotContainer = styled(Box)(({ theme }) => ({
   position: 'fixed',
   bottom: 0,
   right: 0,
+
   width: 380,
+  minWidth: 320,
+  maxWidth: 'calc(100vw - 40px)',
+
   height: 550,
+
   display: 'flex',
   flexDirection: 'column',
+
   borderRadius: '12px 12px 0 0',
   boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
   border: '1px solid #e0e0e0',
   borderBottom: 'none',
+
   overflow: 'hidden',
   zIndex: 1300,
   backgroundColor: 'white',
+
   '@media (max-width: 600px)': {
     width: 'calc(100vw - 40px)',
+    minWidth: 0,
+    maxWidth: 'calc(100vw - 40px)',
     height: 'calc(100vh - 140px)',
     left: 20,
     right: 20,
@@ -128,6 +138,7 @@ const MessageContent = styled('div')(({ role, theme }) => ({
   fontSize: 14,
   lineHeight: 1.4,
   wordWrap: 'break-word',
+  userSelect: 'text',
 
   '& .action-link': {
     color: theme.palette.primary.main,
@@ -158,12 +169,29 @@ const Dot = styled('span')(({ theme }) => ({
   margin: '0 2px',
 }));
 
+const ResizeHandle = styled('div')({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: 8,
+  height: '100%',
+  cursor: 'ew-resize',
+  zIndex: 20,
+  touchAction: 'none',
+});
+
 export default function ChatBotAssistant({ open, setOpen, theme, sendMessageCallback, openEntityCallback }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState(() => localStorage.getItem(ChatbotConfig.sessionStorageKey));
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
+
+  const [chatbotWidth, setChatbotWidth] = useState(380);
+
+  const resizingRef = useRef(false);
+  const resizePointerIdRef = useRef(null);
+
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -178,6 +206,98 @@ export default function ChatBotAssistant({ open, setOpen, theme, sendMessageCall
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, open]);
+
+  useEffect(() => {
+    const handlePointerMove = (e) => {
+      if (!resizingRef.current) {
+        return;
+      }
+
+      if (e.pointerId !== resizePointerIdRef.current) {
+        return;
+      }
+
+      const newWidth = window.innerWidth - e.clientX;
+
+      const minWidth = 320;
+      const maxWidth = Math.min(
+          1000,
+          window.innerWidth - 40
+      );
+
+      const width = Math.max(
+          minWidth,
+          Math.min(newWidth, maxWidth)
+      );
+
+      setChatbotWidth(width);
+    };
+
+    const stopResizing = (e) => {
+      if (
+          resizingRef.current &&
+          (e.pointerId === resizePointerIdRef.current ||
+              e.type === 'blur')
+      ) {
+        resizingRef.current = false;
+        resizePointerIdRef.current = null;
+
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', stopResizing);
+    window.addEventListener('pointercancel', stopResizing);
+    window.addEventListener('blur', stopResizing);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', stopResizing);
+      window.removeEventListener('pointercancel', stopResizing);
+      window.removeEventListener('blur', stopResizing);
+    };
+  }, []);
+
+  const stopResizing = () => {
+    resizingRef.current = false;
+    resizePointerIdRef.current = null;
+
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  };
+
+  const handleResizeStart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    resizingRef.current = true;
+    resizePointerIdRef.current = e.pointerId;
+
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  const handleResizeMove = (e) => {
+    if (!resizingRef.current) {
+      return;
+    }
+
+    // Ignore events from a different pointer.
+    if (e.pointerId !== resizePointerIdRef.current) {
+      return;
+    }
+
+    const newWidth = window.innerWidth - e.clientX;
+
+    const minWidth = 320;
+    const maxWidth = Math.min(1000, window.innerWidth - 40);
+
+    setChatbotWidth(
+        Math.min(Math.max(newWidth, minWidth), maxWidth)
+    );
+  };
 
   const handleInputChange = (e) => {
     setInput(e.target.value);
@@ -256,7 +376,13 @@ export default function ChatBotAssistant({ open, setOpen, theme, sendMessageCall
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
+      style={{
+        width: chatbotWidth,
+      }}
     >
+      <ResizeHandle
+          onPointerDown={handleResizeStart}
+      />
       <ChatbotHeader theme={theme}>
         <div style={{ justifyContent: 'start', display: 'flex', alignItems: 'center' }}>
           <SmartToyIcon sx={{ mr: 1 }} />
