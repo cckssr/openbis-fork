@@ -991,7 +991,7 @@ public class RdfToModel
                         ImageExtractor.findImageAndUpdatePaths(value);
                 Map<String, String> collect = Stream.concat(images.entrySet().stream(),
                         imageRes.images().entrySet().stream()).collect(
-                        Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+                        Collectors.toMap(x -> x.getKey(), x -> x.getValue(), (v1, v2) -> v1));
                 images.putAll(collect);
                 writeVal = imageRes.value();
             }

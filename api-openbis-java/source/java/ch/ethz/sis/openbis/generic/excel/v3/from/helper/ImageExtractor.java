@@ -76,7 +76,7 @@ public class ImageExtractor
 
             }
         }
-        List<Path> paths = accum.stream().map(Path::of).collect(Collectors.toList());
+        List<Path> paths = accum.stream().distinct().map(Path::of).collect(Collectors.toList());
 
         return paths;
     }
