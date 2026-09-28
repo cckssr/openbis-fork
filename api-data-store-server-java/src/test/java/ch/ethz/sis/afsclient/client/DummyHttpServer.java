@@ -26,7 +26,6 @@ import java.util.Queue;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import lombok.Getter;
 
 public final class DummyHttpServer
 {
@@ -40,7 +39,6 @@ public final class DummyHttpServer
 
     private Queue<byte[]> nextResponses = new LinkedList<>(List.of(DEFAULT_RESPONSE.getBytes()));
 
-    @Getter
     private byte[] lastRequestBody = null;
 
     private Queue<String> nextResponseTypes = new LinkedList<>(List.of("application/json"));
@@ -49,7 +47,6 @@ public final class DummyHttpServer
 
     private String fixedResponseType = null;
 
-    @Getter
     private HttpExchange httpExchange;
 
     public DummyHttpServer(int httpServerPort, String httpServerPath) throws IOException
@@ -100,6 +97,16 @@ public final class DummyHttpServer
     {
         this.nextResponses = new LinkedList<>(List.of(responses));
         this.nextResponseTypes = new LinkedList<>(List.of(responseTypes));
+    }
+
+    public byte[] getLastRequestBody()
+    {
+        return lastRequestBody;
+    }
+
+    public HttpExchange getHttpExchange()
+    {
+        return httpExchange;
     }
 
     /**
