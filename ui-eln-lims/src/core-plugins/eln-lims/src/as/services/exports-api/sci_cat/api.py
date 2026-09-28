@@ -192,7 +192,7 @@ def exportSciCat_withEmail(context, params, date):
             publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds, groupPrefix)
             OPERATION_LOG.info("Publication creation result: " + str(publicationResult))
             if publicationResult["error"] is not None:
-                errorStr = str(publicationResult["error"])
+                errorStr = unicode(publicationResult["error"])
                 sendMailFailure(mailClient, userEmail, "SciCat export failed during creation of publication with exception:\n" + errorStr)
                 removePublications(sessionToken, v3, publicationPermIds, "During creation of publication samples: " + errorStr)
                 return
@@ -206,7 +206,7 @@ def exportSciCat_withEmail(context, params, date):
         publicationResult = createNewPublication(sessionToken, v3, publicationProps, collectorIds, "")
         OPERATION_LOG.info("Publication creation result: " + str(publicationResult))
         if publicationResult["error"] is not None:
-            errorStr = str(publicationResult["error"])
+            errorStr = unicode(publicationResult["error"])
             sendMailFailure(mailClient, userEmail, "SciCat export failed during creation of publication with exception:\n" + errorStr)
             removePublications(sessionToken, v3, publicationPermIds, "During creation of publication samples: " + errorStr)
             return
@@ -269,23 +269,30 @@ def exportSciCat_withEmail(context, params, date):
         sciCatDetailUrl = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.detail.url') + "/publishedDatasets/"
         sciCatDatasetUrl = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.detail.url') + "/datasets/"
         links = ""
-        for key in body.keys():
+        links += "Publications:\n"
+        i = 0
+        for key in sorted(filter(lambda key: key.startswith("/"), body.keys())):
+            i += 1
             value = str(body[key])
-            if key.startswith("/"):
-                publishedDatasetLink = sciCatDetailUrl + URLEncoder.encode(value, "UTF-8")
-                links += "\t" + key + " -> " + publishedDatasetLink + "\n"
-                if key.startswith('/PUBLICATIONS/PUBLIC_REPOSITORIES'):
-                    OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermIds["GENERAL"]))
-                    updateDOI(sessionToken, v3, publicationPermIds["GENERAL"], value, publishedDatasetLink)
-                else:
-                    space_prefix = key.split("_")[0][1:]
-                    publicationPermId = publicationPermIds[space_prefix]
-                    publicationPrefix = '/' + space_prefix + '_PUBLICATIONS/' + space_prefix + '_PUBLIC_REPOSITORIES/'
-                    if key.startswith(publicationPrefix):
-                        OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermId))
-                        updateDOI(sessionToken, v3, publicationPermId, value, publishedDatasetLink)
+            publishedDatasetLink = sciCatDetailUrl + URLEncoder.encode(value, "UTF-8")
+            links += "\t" + str(i) + ". " + key + " -> " + publishedDatasetLink + "\n"
+            if key.startswith('/PUBLICATIONS/PUBLIC_REPOSITORIES'):
+                OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermIds["GENERAL"]))
+                updateDOI(sessionToken, v3, publicationPermIds["GENERAL"], value, publishedDatasetLink)
             else:
-                links += "\t" + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
+                space_prefix = key.split("_")[0][1:]
+                publicationPermId = publicationPermIds[space_prefix]
+                publicationPrefix = '/' + space_prefix + '_PUBLICATIONS/' + space_prefix + '_PUBLIC_REPOSITORIES/'
+                if key.startswith(publicationPrefix):
+                    OPERATION_LOG.info("Updating DOI(%s) in publication: %s " % (value, publicationPermId))
+                    updateDOI(sessionToken, v3, publicationPermId, value, publishedDatasetLink)
+        links += "Files:\n"
+        i = 0
+        for key in sorted(body.keys()):
+            value = str(body[key])
+            if not key.startswith("/"):
+                i += 1
+                links += "\t" + str(i) + ". " + key + " -> " + sciCatDatasetUrl + URLEncoder.encode(value, "UTF-8") + "\n"
         sendMail(mailClient, userEmail, links, "Your export has been received by SciCat:\n")
     # elif status == 202:
     #     # TODO as of 16.09.2026 SciCat did not implement this path
