@@ -97,10 +97,13 @@ function SciCatExportController(parentController) {
 
         }
 
-        var REQUIRED_PUBLICATION_PROPS = ["NAME", "PUBLICATION.DESCRIPTION", "PUBLICATION.ABSTRACT", "PUBLICATION.CREATOR", "PUBLICATION.PUBLISHER"];
+        if (nodeExportList.length === 0) {
+            Util.showError("Select something to export.");
+            return;
+        }
 
         var failedFields = [];
-        for(let requiredProp of REQUIRED_PUBLICATION_PROPS)
+        for(let requiredProp of this.exportModel.REQUIRED_PUBLICATION_PROPS)
         {
             if(!props[requiredProp]) {
                 failedFields.push(profile.getPropertyType(requiredProp));
@@ -113,26 +116,38 @@ function SciCatExportController(parentController) {
             return;
         }
 
-        var exportModel = {
-            nodeExportList: nodeExportList,
-            withLevelsBelow: $("#LEVELS-BELOW-EXPORT-"+_viewId).is(":checked"),
-            withObjectsAndDataSetsParents: $("#PARENTS-EXPORT-"+_viewId).is(":checked"),
-            withObjectsAndDataSetsChildren: $("#CHILDREN-EXPORT-"+_viewId).is(":checked"),
-            withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT-"+_viewId).is(":checked"),
-            formats: {
-                pdf: $("#PDF-EXPORT-"+_viewId).is(":checked"), //PDF-EXPORT
-                xlsx: $("#XLSX-EXPORT-"+_viewId).is(":checked"), //XLSX-EXPORT
-                data: $("#DATASET-EXPORT-"+_viewId).is(":checked"), //DATA-EXPORT
-                afsData: $("#FILES-EXPORT-"+_viewId).is(":checked") //DATA-EXPORT
-            },
-            publicationProps: props,
-            groups: checkedGroups
-        }
+        props['PUBLICATION.PUBLISHER'].forEach(id => nodeExportList.push({
+            kind: "SAMPLE",
+            permId: id
+        }))
 
-        if (nodeExportList.length === 0) {
-            Util.showError("First select something to export.");
-        } else {
-            Util.blockUI();
+        props['PUBLICATION.CREATOR'].forEach(id => nodeExportList.push({
+            kind: "SAMPLE",
+            permId: id
+        }))
+
+        this.extractAffiliationsAndExport(props['PUBLICATION.CREATOR'], (additionalIds) => {
+            additionalIds.forEach(id => nodeExportList.push({
+                kind: "SAMPLE",
+                permId: id
+            }));
+
+            let exportModel = {
+                nodeExportList: nodeExportList,
+                withLevelsBelow: $("#LEVELS-BELOW-EXPORT-"+_viewId).is(":checked"),
+                withObjectsAndDataSetsParents: $("#PARENTS-EXPORT-"+_viewId).is(":checked"),
+                withObjectsAndDataSetsChildren: $("#CHILDREN-EXPORT-"+_viewId).is(":checked"),
+                withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT-"+_viewId).is(":checked"),
+                formats: {
+                    pdf: $("#PDF-EXPORT-"+_viewId).is(":checked"), //PDF-EXPORT
+                    xlsx: $("#XLSX-EXPORT-"+_viewId).is(":checked"), //XLSX-EXPORT
+                    data: $("#DATASET-EXPORT-"+_viewId).is(":checked"), //DATA-EXPORT
+                    afsData: $("#FILES-EXPORT-"+_viewId).is(":checked") //DATA-EXPORT
+                },
+                publicationProps: props,
+                groups: checkedGroups
+            }
+
             mainController.serverFacade.exportSciCat(exportModel, _this.exportModel.accessToken, function (result) {
                 if (result.error) {
                     if(result.error.message) {
@@ -145,8 +160,34 @@ function SciCatExportController(parentController) {
                     mainController.refreshView();
                 }
             });
-        }
+        });
+    }
 
+    this.extractAffiliationsAndExport = function(creators, finalizeExport) {
+        Util.blockUI();
+        require(["as/dto/sample/id/SamplePermId", "as/dto/sample/fetchoptions/SampleFetchOptions"],
+            function(SamplePermId, SampleFetchOptions) {
+                var sampleIds = creators.map(id => new SamplePermId(id));
+                var fetchOptions = new SampleFetchOptions();
+                fetchOptions.withProperties();
+                mainController.openbisV3.getSamples(sampleIds, fetchOptions).done(function(samples) {
+                    var missingAffiliation = []
+                    for(let id in samples) {
+                        let sample = samples[id];
+                        if(!sample.properties['PERSON.AFFILIATION'] || sample.properties['PERSON.AFFILIATION'].length === 0) {
+                            missingAffiliation.push(Util.getDisplayNameForEntity2(sample));
+                        }
+                    }
+                    if(missingAffiliation.length > 0) {
+                        Util.showError("Following creators do not have affiliation set: " + missingAffiliation);
+                    } else {
+                        var affiliationIds = Object.values(samples).flatMap(x => x.properties['PERSON.AFFILIATION'])
+                        finalizeExport(affiliationIds);
+                    }
+                }).fail(function(result) {
+                    Util.showFailedServerCallError(result);
+                });
+            });
     }
 
     this.getSettingValue = function (key, callback) {

@@ -182,7 +182,7 @@ function SciCatExportView(exportController, exportModel) {
         var $legendRequired = $('<legend>');
         var $legendOptional = $('<legend>');
 
-        var requiredProperties = ["NAME", "PUBLICATION.DESCRIPTION", "PUBLICATION.ABSTRACT", "PUBLICATION.CREATOR", "PUBLICATION.PUBLISHER"];
+        var requiredProperties = this.exportModel.REQUIRED_PUBLICATION_PROPS;
 
         var $legend = null;
         var $fieldset = null;

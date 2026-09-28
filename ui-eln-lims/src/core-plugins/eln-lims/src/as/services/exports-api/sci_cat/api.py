@@ -222,12 +222,6 @@ def exportSciCat_withEmail(context, params, date):
     for group in publicationPermIds.keys():
         nodeExportList.append({'kind': "SAMPLE", 'permId': publicationPermIds[group]})
 
-    for creatorId in publicationProps['PUBLICATION.CREATOR']:
-        nodeExportList.append({'kind': "SAMPLE", 'permId': creatorId})
-
-    for publisherId in publicationProps['PUBLICATION.PUBLISHER']:
-        nodeExportList.append({'kind': "SAMPLE", 'permId': publisherId})
-
     print("nodeExportList", nodeExportList)
 
     roCrateExport = exportRoCrate(context, params, False)

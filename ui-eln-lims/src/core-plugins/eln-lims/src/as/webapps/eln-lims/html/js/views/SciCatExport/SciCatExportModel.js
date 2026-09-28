@@ -17,4 +17,5 @@ function SciCatExportModel(accessToken) {
     this.accessToken = accessToken;
     this.properties = {};
     this.type = null;
+    this.REQUIRED_PUBLICATION_PROPS = ["NAME", "PUBLICATION.DESCRIPTION", "PUBLICATION.ABSTRACT", "PUBLICATION.CREATOR", "PUBLICATION.PUBLISHER"];
 }
