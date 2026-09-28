@@ -5795,7 +5795,8 @@ class Openbis:
         return self._request_archiving(permIds, value=False)
 
     def _request_archiving(self, permIds, value=True):
-
+        if permIds is None or len(permIds) == 0:
+            raise ValueError("You must provide at least one permId")
         updates = [{
             "@type": 'as.dto.dataset.update.DataSetUpdate',
             'dataSetId': {
@@ -5819,6 +5820,12 @@ class Openbis:
         request = {"method": 'updateDataSets', "params": [self.token, updates]}
 
         resp = self._post_request(self.as_v3, request)
+        suffix = 's' if len(permIds) > 1 else ''
+        if value:
+            log_info(f"Archiving has been requested for {len(permIds)} dataset{suffix}.")
+        else:
+            log_info(
+                f"Archiving request for {len(permIds)} dataset{suffix} has been revoked.")
 
         new_dataset_data = self.get_datasets(permIds)
         return new_dataset_data
@@ -5829,16 +5836,18 @@ class Openbis:
             raise ValueError("You must provide at least one permId")
         if not isinstance(permIds, list):
             permIds = [permIds]
-        return self._request_archiving(permIds, value=True)
+        return self._request_unarchiving(permIds, value=True)
 
     def revoke_request_unarchiving(self, permIds):
         if permIds is None:
             raise ValueError("You must provide at least one permId")
         if not isinstance(permIds, list):
             permIds = [permIds]
-        return self._request_archiving(permIds, value=False)
+        return self._request_unarchiving(permIds, value=False)
 
     def _request_unarchiving(self, permIds, value=True):
+        if permIds is None or len(permIds) == 0:
+            raise ValueError("You must provide at least one permId")
         updates = [{
             "@type": 'as.dto.dataset.update.DataSetUpdate',
             'dataSetId': {
@@ -5862,6 +5871,12 @@ class Openbis:
         request = {"method": 'updateDataSets', "params": [self.token, updates]}
 
         resp = self._post_request(self.as_v3, request)
+        suffix = 's' if len(permIds) > 1 else ''
+        if value:
+            log_info(f"Unarchiving has been requested for {len(permIds)} dataset{suffix}. This may take multiple days. You will get notified once data is ready.")
+        else:
+            log_info(
+                f"Unarchiving request for {len(permIds)} dataset{suffix} has been revoked.")
 
         new_dataset_data = self.get_datasets(permIds)
         return new_dataset_data

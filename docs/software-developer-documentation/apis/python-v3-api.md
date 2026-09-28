@@ -4,9 +4,8 @@ pyBIS is a Python module for interacting with openBIS. pyBIS is designed to be m
 
 ## Dependencies and Requirements
 
-- pyBIS relies the openBIS API v3
-- openBIS version 16.05.2 or newer is required
-- 19.06.5 or later is recommended
+- pyBIS relies on the openBIS API v3
+- openBIS version 7.0.0 or newer is required
 - pyBIS uses Python 3.6 or newer and the Pandas module
 
 ## Installation
