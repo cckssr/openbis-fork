@@ -2839,6 +2839,28 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     async _loadNodesExports(params) {
         var results = { nodes: [] }
 
+        let userId = mainController.serverFacade.getUserId();
+        var isObserver = false;
+        let userRolesPromise =  new Promise((resolve) => {
+            // mainController.serverFacade.searchRoleAssignments({ user: userId}, (roleAssignments) => {
+            //     isObserver = roleAssignments.filter(x => x.role !== 'OBSERVER').length === 0;
+            //     resolve(isObserver)
+            // });
+
+        require(["as/dto/person/id/PersonPermId", "as/dto/person/fetchoptions/PersonFetchOptions" ],
+            function(PersonPermId, PersonFetchOptions) {
+                var personFetchOptions = new PersonFetchOptions();
+                personFetchOptions.withRoleAssignments();
+                var personPermId = new PersonPermId(userId);
+                mainController.openbisV3.getPersons([personPermId], personFetchOptions).done(function(personsMap) {
+                    let roleAssignments = personsMap[personPermId].roleAssignments;
+                    isObserver = roleAssignments.filter(x => x.role !== 'OBSERVER').length === 0;
+                    resolve(isObserver);
+                });
+            });
+
+        });
+
         var rcEnabledPromise = new Promise((resolve) => {
             mainController.serverFacade.isResearchCollectionEnabled((isEnabled) => {
                 if(isEnabled && isEnabled === "true") {
@@ -2868,9 +2890,17 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         results.nodes.push(this._createExportToZenodoNode())
         results.nodes.push(this._createExportToRoCrateNode())
 
-        await Promise.all([rcEnabledPromise, sciCatEnabledPromise])
+        await Promise.all([rcEnabledPromise, sciCatEnabledPromise, userRolesPromise])
 
-        results.nodes = results.nodes.filter((node) => !!node).sort((a,b) => a.text.compareToIgnoreCase(b.text))
+        if(isObserver) {
+            results.nodes = [];
+            results.nodes.push(this._createExportToZipNode())
+            results.nodes.push(this._createExportToRoCrateNode())
+        } else {
+            results.nodes = results.nodes
+                .filter((node) => !!node)
+                .sort((a,b) => a.text.compareToIgnoreCase(b.text))
+        }
 
         return results
     }

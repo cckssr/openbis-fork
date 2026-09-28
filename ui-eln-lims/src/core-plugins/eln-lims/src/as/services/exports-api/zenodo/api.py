@@ -51,7 +51,7 @@ import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
 
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonServiceProvider
 
-from util import checkResponseStatus, getDownloadUrlFromASService
+from util import checkResponseStatus, getDownloadUrlFromASService, validateUserIsNotObserver
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
@@ -64,6 +64,11 @@ def exportZenodo(context, params):
 
     exportModel = params.get('entities')
     v3 = context.getApplicationService()
+
+
+    userId = v3.getSessionInformation(sessionToken).getPerson().getUserId()
+    validateUserIsNotObserver(v3, sessionToken, userId)
+
     downloadResultMap = getDownloadUrlFromASService(sessionToken, exportModel, v3)
 
     resultUrl = sendToZenodo(context=context, params=params, tempZipFilePath=downloadResultMap.get('canonicalPath'), entities=exportModel.get('nodeExportList'))

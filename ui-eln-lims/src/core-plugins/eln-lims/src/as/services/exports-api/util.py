@@ -28,9 +28,12 @@ from HTMLParser import HTMLParser
 
 from ch.systemsx.cisd.common.mail import EMailAddress
 
-#V3 API - Files
+#V3 API
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.search import RoleAssignmentSearchCriteria
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.fetchoptions import RoleAssignmentFetchOptions
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment import Role
 
 #Logging
 import ch.ethz.sis.shared.log.classic.core.LogCategory as LogCategory
@@ -39,6 +42,20 @@ from java.lang import Throwable
 
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
+
+def validateUserIsNotObserver(v3, sessionToken, userId):
+    criteria = RoleAssignmentSearchCriteria()
+
+    criteria.withOrOperator()
+    criteria.withUser().withUserId().thatEquals(userId)
+    # criteria.withAuthorizationGroup().withUser().withUserId().thatEquals(userId)
+
+    fetchOptions = RoleAssignmentFetchOptions()
+    roles = v3.searchRoleAssignments(sessionToken, criteria, fetchOptions)
+    result = len(list(filter(lambda x: x.getRole() != Role.OBSERVER, roles.getObjects()))) > 0
+    if not result:
+        raise ValueError("User: '" + unicode(userId) + "' is an OBSERVER and can not perform this operation!")
+    return result
 
 def resultDict(result=None, error=None):
     return {

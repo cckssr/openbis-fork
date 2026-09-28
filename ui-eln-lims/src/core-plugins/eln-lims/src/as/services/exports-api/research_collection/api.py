@@ -59,7 +59,7 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonSe
 
 
 
-from util import addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromASService, isNonEmptyString
+from util import addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromASService, isNonEmptyString, validateUserIsNotObserver
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
@@ -69,6 +69,12 @@ def isResearchCollectionEnabled(context, params):
 
 
 def exportResearchCollection(context, params):
+
+    sessionToken = params.get('sessionToken')
+    v3 = context.getApplicationService()
+    userId = v3.getSessionInformation(sessionToken).getPerson().getUserId()
+    validateUserIsNotObserver(v3, sessionToken, userId)
+
     resultUrl = sendToResearchCollection(context, params)
 
     result = {

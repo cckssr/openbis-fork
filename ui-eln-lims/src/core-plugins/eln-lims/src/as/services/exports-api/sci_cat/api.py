@@ -53,7 +53,7 @@ from java.nio.file import Path
 
 
 from ro_crate.api import exportRoCrate, checkStatues, downloadRoCrate
-from util import sendMail, sendMailFailure, resultDict
+from util import sendMail, sendMailFailure, resultDict, validateUserIsNotObserver
 
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
@@ -70,6 +70,11 @@ def isSciCatEnabled(context, params):
     return is_enabled
 
 def exportSciCat(context, params):
+
+    sessionToken = params.get('sessionToken')
+    v3 = context.getApplicationService()
+    userId = v3.getSessionInformation(sessionToken).getPerson().getUserId()
+    validateUserIsNotObserver(v3, sessionToken, userId)
 
     import threading
     import time
