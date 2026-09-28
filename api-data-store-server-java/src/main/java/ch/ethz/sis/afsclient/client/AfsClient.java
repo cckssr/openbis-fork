@@ -66,6 +66,10 @@ public final class AfsClient implements PublicAPI, ClientAPI
 
     private PublicAPI serverApi;
 
+    private final Object httpClientLock = new Object();
+
+    private volatile HttpClient httpClient;
+
     private static final JsonObjectMapper jsonObjectMapper = new JacksonObjectMapper();
 
     public AfsClient(final URI serverUri)
@@ -527,6 +531,39 @@ public final class AfsClient implements PublicAPI, ClientAPI
         return request(httpMethod, apiMethod, responseType, params, null, true);
     }
 
+    /**
+     * Every HttpClient starts its own threads, which only end once the client is garbage collected. Building one per request made
+     * long request sequences (e.g. openBIS sync listing AFS data of thousands of owners) fail with "unable to create native thread",
+     * therefore one client is created lazily and reused for all requests of this AfsClient.
+     */
+    private HttpClient getHttpClient() throws NoSuchAlgorithmException, KeyManagementException
+    {
+        HttpClient client = httpClient;
+        if (client == null)
+        {
+            synchronized (httpClientLock)
+            {
+                client = httpClient;
+                if (client == null)
+                {
+                    HttpClient.Builder clientBuilder = HttpClient.newBuilder()
+                            .version(HttpClient.Version.HTTP_1_1)
+                            .followRedirects(HttpClient.Redirect.NORMAL)
+                            .connectTimeout(Duration.ofMillis(timeout));
+
+                    if ("true".equalsIgnoreCase(System.getProperty(NO_TLS_CERT_CHECK_SYSTEM_PROPERTY))) {
+                        SSLContext getInsecureSslContext = getInsecureSslContext();
+                        clientBuilder.sslContext(getInsecureSslContext);
+                    }
+
+                    client = clientBuilder.build();
+                    httpClient = client;
+                }
+            }
+        }
+        return client;
+    }
+
     private <T> T request(@NonNull final String httpMethod, @NonNull final String apiMethod,
             Class<T> responseType,
             @NonNull Map<String, String> paramsP, byte[] body, boolean sendParamsInBodyPostAndDelete)
@@ -578,20 +615,9 @@ public final class AfsClient implements PublicAPI, ClientAPI
                 .method(httpMethod, HttpRequest.BodyPublishers.ofByteArray(bodyBytes));
 
         final HttpRequest request = builder.build();
-        HttpClient.Builder clientBuilder = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .connectTimeout(Duration.ofMillis(timeout));
-
-        if ("true".equalsIgnoreCase(System.getProperty(NO_TLS_CERT_CHECK_SYSTEM_PROPERTY))) {
-            SSLContext getInsecureSslContext = getInsecureSslContext();
-            clientBuilder.sslContext(getInsecureSslContext);
-        }
-
-        HttpClient client = clientBuilder.build();
 
         final HttpResponse<byte[]> httpResponse =
-                client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+                getHttpClient().send(request, HttpResponse.BodyHandlers.ofByteArray());
 
         final int statusCode = httpResponse.statusCode();
         if (statusCode >= 200 && statusCode < 300)

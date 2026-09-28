@@ -26,6 +26,7 @@ import java.util.Queue;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import lombok.Getter;
 
 public final class DummyHttpServer
 {
@@ -39,10 +40,16 @@ public final class DummyHttpServer
 
     private Queue<byte[]> nextResponses = new LinkedList<>(List.of(DEFAULT_RESPONSE.getBytes()));
 
+    @Getter
     private byte[] lastRequestBody = null;
 
     private Queue<String> nextResponseTypes = new LinkedList<>(List.of("application/json"));
 
+    private byte[] fixedResponse = null;
+
+    private String fixedResponseType = null;
+
+    @Getter
     private HttpExchange httpExchange;
 
     public DummyHttpServer(int httpServerPort, String httpServerPath) throws IOException
@@ -52,8 +59,8 @@ public final class DummyHttpServer
         httpServer = HttpServer.create(new InetSocketAddress(httpServerPort), 0);
         httpServer.createContext(httpServerPath, exchange ->
         {
-            byte[] response = nextResponses.remove();
-            exchange.getResponseHeaders().set("content-type", nextResponseTypes.remove());
+            byte[] response = fixedResponse != null ? fixedResponse : nextResponses.remove();
+            exchange.getResponseHeaders().set("content-type", fixedResponse != null ? fixedResponseType : nextResponseTypes.remove());
             exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.length);
 
             exchange.getResponseBody().write(response);
@@ -95,14 +102,13 @@ public final class DummyHttpServer
         this.nextResponseTypes = new LinkedList<>(List.of(responseTypes));
     }
 
-    public byte[] getLastRequestBody()
+    /**
+     * Sends the given JSON response to every following request, instead of taking responses one by one from the queue.
+     */
+    public void setFixedResponse(String response)
     {
-        return lastRequestBody;
-    }
-
-    public HttpExchange getHttpExchange()
-    {
-        return httpExchange;
+        this.fixedResponse = response.getBytes();
+        this.fixedResponseType = "application/json";
     }
 
 }
