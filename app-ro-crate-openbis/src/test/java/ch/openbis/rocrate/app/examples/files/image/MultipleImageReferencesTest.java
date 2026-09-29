@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class MultipleImageReferencesTest
 {
     private static final String INPUT =
-            "src/test/resources//examples/regression/bis-3040-file-name-collisions/bis-3040-file-name-collisions.zip";
+            "src/test/resources/examples/regression/bis-3040-file-name-collisions/bis-3040-file-name-collisions.zip";
 
     private static final String OUTPUT = "/tmp/multiple-image-references-crate.zip";
 
