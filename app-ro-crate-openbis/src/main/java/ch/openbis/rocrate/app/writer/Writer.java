@@ -14,11 +14,10 @@ import edu.kit.datamanager.ro_crate.writer.ZipWriter;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 
 import static ch.openbis.rocrate.app.Constants.EQUIVALENCE_PARENT;
 
@@ -59,14 +58,21 @@ public class Writer
     public void write(OpenBisModel openBisModel, Path outPath) throws IOException, Exception
     {
 
+        ZoneId zoneId = ZoneId.systemDefault();
+        TimeZone tz = TimeZone.getTimeZone(zoneId);
+        DateFormat df = new SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+        df.setTimeZone(tz);
+        String nowAsISO = df.format(new Date());
+
         SchemaFacade schemaFacade = new SchemaFacade(
-                "name", "description", "2024-12-04T07:53:11Z", "licenseIdentifier",
+                "name", "description", nowAsISO, "licenseIdentifier",
                 Map.of("openBIS", "https://www.openbis.ch")
 
         );
 
         addSystemSchema(schemaFacade);
-        TimeZone timeZone = TimeZone.getTimeZone(ZoneId.systemDefault());
+        TimeZone timeZone = TimeZone.getTimeZone(zoneId);
         Mapper mapper = new Mapper(timeZone);
         MapResult rdfsRepresentation =
                 mapper.transform(openBisModel);
