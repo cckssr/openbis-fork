@@ -747,7 +747,7 @@ public class ExportExecutor implements IExportExecutor
 
         final ObjectNode propertiesNode = objectMapper.createObjectNode();
         propertiesNode.set("properties", objectMapper.valueToTree(dataSet.getProperties()));
-
+        propertiesNode.set("@code", objectMapper.valueToTree(dataSet.getPermId().getPermId()));
         return objectMapper.writeValueAsString(propertiesNode);
     }
 
