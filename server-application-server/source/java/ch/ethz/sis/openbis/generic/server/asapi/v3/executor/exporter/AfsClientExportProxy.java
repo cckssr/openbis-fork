@@ -12,7 +12,7 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import java.net.URI;
 import java.nio.file.Path;
 
-final class AfsClientExportProxy
+final class AfsClientExportProxy implements AutoCloseable
 {
 
     public static final String AFS_SERVER_URL_PROPERTY_NAME = "api.v3.transaction.participant.afs-server.url";
@@ -91,6 +91,12 @@ final class AfsClientExportProxy
             OPERATION_LOG.warn("Could not check session validity, defaulting to false!", e);
             return false;
         }
+    }
+
+    @Override
+    public void close()
+    {
+        client.close();
     }
 
 

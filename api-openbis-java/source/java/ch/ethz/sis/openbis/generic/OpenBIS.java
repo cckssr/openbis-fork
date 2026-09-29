@@ -324,7 +324,7 @@ import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import org.eclipse.jetty.io.ByteBufferPool;
 
-public class OpenBIS
+public class OpenBIS implements AutoCloseable
 {
 
     private static final int DEFAULT_TIMEOUT_IN_MILLIS = 30000; //30 seconds
@@ -435,6 +435,19 @@ public class OpenBIS
     {
         checkTransactionDoesNotExist();
         asFacadeNoTransactions.logout(sessionToken);
+    }
+
+    /**
+     * Releases the threads and connections of the AFS client.
+     */
+    @Override
+    public void close()
+    {
+        // afsClientWithTransactions only wraps a transactional proxy of afsClientNoTransactions, which does the HTTP requests
+        if (afsClientNoTransactions != null)
+        {
+            afsClientNoTransactions.close();
+        }
     }
 
     public SessionInformation getSessionInformation()

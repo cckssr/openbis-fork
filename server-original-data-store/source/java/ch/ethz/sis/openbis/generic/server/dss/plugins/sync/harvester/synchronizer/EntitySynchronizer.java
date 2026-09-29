@@ -729,18 +729,21 @@ public class EntitySynchronizer
         {
             IApplicationServerApi v3apiDataSource = ServiceUtils.createAsV3Api(config.getDataSourceOpenbisURL());
             String sessionTokenDataSource = v3apiDataSource.login(config.getUser(), config.getPassword());
-            AfsClient sourceAfsClient = new AfsClient(URI.create(dataSourceAfsUrl));
-            sourceAfsClient.setSessionToken(sessionTokenDataSource);
-            AfsClient harvesterAfsClient = new AfsClient(URI.create(harvesterAfsUrl));
-            harvesterAfsClient.setSessionToken(service.getSessionToken());
-            File tempDirBase = new File(storeRoot, config.getHarvesterTempDir());
-            tempDirBase.mkdirs();
 
-            ParallelizedExecutionPreferences preferences = config.getParallelizedExecutionPrefs();
-            List<List<AfsDataSynchronizer.AfsOwner>> ownerChunks = chunkAfsOwners(owners);
-            processAfsOwners(ownerChunks,
-                    new AfsDataSynchronizer(sourceAfsClient, harvesterAfsClient, tempDirBase, syncSummary, config.isDryRun(),
-                            config.isDeletionAllowed()), preferences);
+            try (AfsClient sourceAfsClient = new AfsClient(URI.create(dataSourceAfsUrl));
+                    AfsClient harvesterAfsClient = new AfsClient(URI.create(harvesterAfsUrl)))
+            {
+                sourceAfsClient.setSessionToken(sessionTokenDataSource);
+                harvesterAfsClient.setSessionToken(service.getSessionToken());
+                File tempDirBase = new File(storeRoot, config.getHarvesterTempDir());
+                tempDirBase.mkdirs();
+
+                ParallelizedExecutionPreferences preferences = config.getParallelizedExecutionPrefs();
+                List<List<AfsDataSynchronizer.AfsOwner>> ownerChunks = chunkAfsOwners(owners);
+                processAfsOwners(ownerChunks,
+                        new AfsDataSynchronizer(sourceAfsClient, harvesterAfsClient, tempDirBase, syncSummary, config.isDryRun(),
+                                config.isDeletionAllowed()), preferences);
+            }
         }
         SummaryUtils.printShortSummaryHeader(operationLog);
         SummaryUtils.printShortAddedSummary(operationLog, syncSummary.addedCount.intValue(), "AFS files");

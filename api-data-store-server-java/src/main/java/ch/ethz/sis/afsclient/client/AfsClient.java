@@ -44,7 +44,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-public final class AfsClient implements PublicAPI, ClientAPI
+public final class AfsClient implements PublicAPI, ClientAPI, AutoCloseable
 {
     public static final int DEFAULT_PACKAGE_SIZE_IN_BYTES = 10485760; // 10 Megabytes;
 
@@ -69,6 +69,8 @@ public final class AfsClient implements PublicAPI, ClientAPI
     private final Object httpClientLock = new Object();
 
     private volatile HttpClient httpClient;
+
+    private boolean closed;
 
     private static final JsonObjectMapper jsonObjectMapper = new JacksonObjectMapper();
 
@@ -543,6 +545,10 @@ public final class AfsClient implements PublicAPI, ClientAPI
         {
             synchronized (httpClientLock)
             {
+                if (closed)
+                {
+                    throw new IllegalStateException("AfsClient has been closed");
+                }
                 client = httpClient;
                 if (client == null)
                 {
@@ -562,6 +568,29 @@ public final class AfsClient implements PublicAPI, ClientAPI
             }
         }
         return client;
+    }
+
+    /**
+     * Releases the threads and connections of the underlying HttpClient, waiting for requests in progress to complete. Afterwards
+     * HTTP requests to the server fail with an IllegalStateException; a request started concurrently with closing may fail with an
+     * IOException instead. A server API given in the constructor is not owned by this client and therefore neither closed nor affected.
+     * Calling this method more than once has no effect.
+     */
+    @Override
+    public void close()
+    {
+        HttpClient client;
+        synchronized (httpClientLock)
+        {
+            closed = true;
+            client = httpClient;
+            httpClient = null;
+        }
+        // closing outside the lock, because it blocks until requests in progress are completed
+        if (client != null)
+        {
+            client.close();
+        }
     }
 
     private <T> T request(@NonNull final String httpMethod, @NonNull final String apiMethod,

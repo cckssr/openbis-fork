@@ -317,65 +317,77 @@ public class ExportExecutor implements IExportExecutor
             exportXlsx(api, sessionToken, exportWorkspaceDirectory, exportablePermIds, exportReferredMasterData, exportFields, textFormatting,
                     compatibleWithImport, warnings);
         }
-        List<Consumer<ZipArchiveOutputStream>> consumers = null;
-        if (hasHtmlFormat || hasPdfFormat || hasDataFormat || hasAfsDataFormat)
+        // the AFS data consumers download from AFS while zipping, therefore the client is closed only after zipping
+        AfsClientExportProxy afs = null;
+        try
         {
-            final EntitiesVo entitiesVo = new EntitiesVo(sessionToken, exportablePermIds);
-
-            if (hasPdfFormat || hasHtmlFormat)
+            List<Consumer<ZipArchiveOutputStream>> consumers = null;
+            if (hasHtmlFormat || hasPdfFormat || hasDataFormat || hasAfsDataFormat)
             {
-                final File docDirectory = new File(exportWorkspaceDirectory, PDF_DIRECTORY);
-                mkdirs(docDirectory);
+                final EntitiesVo entitiesVo = new EntitiesVo(sessionToken, exportablePermIds);
 
-                exportSpacesDoc(sessionToken, exportFields, entitiesVo, exportFormats, docDirectory);
-                exportProjectsDoc(sessionToken, docDirectory, entitiesVo, exportFields, exportFormats);
-                exportExperimentsDoc(sessionToken, docDirectory, entitiesVo, exportFields, exportFormats);
-                exportSamplesDoc(sessionToken, docDirectory, entitiesVo, exportFields, exportFormats);
-                exportDataSetsDoc(sessionToken, docDirectory, entitiesVo, exportFields, exportFormats);
+                if (hasPdfFormat || hasHtmlFormat)
+                {
+                    final File docDirectory = new File(exportWorkspaceDirectory, PDF_DIRECTORY);
+                    mkdirs(docDirectory);
+
+                    exportSpacesDoc(sessionToken, exportFields, entitiesVo, exportFormats, docDirectory);
+                    exportProjectsDoc(sessionToken, docDirectory, entitiesVo, exportFields, exportFormats);
+                    exportExperimentsDoc(sessionToken, docDirectory, entitiesVo, exportFields, exportFormats);
+                    exportSamplesDoc(sessionToken, docDirectory, entitiesVo, exportFields, exportFormats);
+                    exportDataSetsDoc(sessionToken, docDirectory, entitiesVo, exportFields, exportFormats);
+                }
+
+                if (hasDataFormat)
+                {
+                    exportData(sessionToken, exportWorkspaceDirectory, entitiesVo, compatibleWithImport);
+                }
+
+                if(hasAfsDataFormat)
+                {
+                    afs = AfsClientExportProxy.getAfsClient(sessionToken);
+                    consumers = exportAfsData(afs, exportWorkspaceDirectory, entitiesVo);
+                }
             }
 
-            if (hasDataFormat)
+            final File file = getSingleFile(exportWorkspaceDirectoryPath);
+            final String exportWorkspaceDirectoryPathString = exportWorkspaceDirectory.getPath();
+            final String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS").format(new Date());
+            final String zipFileName = String.format("%s.%s%s", EXPORT_FILE_PREFIX, timestamp, ZIP_EXTENSION);
+
+            final ExportResult exportResult;
+            if (zipSingleFiles || file == null)
             {
-                exportData(sessionToken, exportWorkspaceDirectory, entitiesVo, compatibleWithImport);
+                final File targetZipFile = new File(sessionWorkspaceDirectory, zipFileName);
+                if (targetZipFile.exists())
+                {
+                    targetZipFile.delete();
+                }
+
+                zipDirectory(exportWorkspaceDirectoryPathString, targetZipFile, consumers);
+                exportResult = new ExportResult(getDownloadPath(sessionToken, zipFileName), warnings);
+            } else
+            {
+                final Path filePath = file.toPath();
+                final String[] nameAndExtension = splitFileName(filePath.getFileName().toString());
+                final Path targetFilePath = Files.move(filePath, Path.of(sessionWorkspaceDirectory.getPath(),
+                                String.format("%s.%s%s", nameAndExtension[0], timestamp, nameAndExtension[1])),
+                        StandardCopyOption.REPLACE_EXISTING);
+                final String fileName = targetFilePath.getFileName().toString();
+
+                exportResult = new ExportResult(getDownloadPath(sessionToken, fileName), warnings);
             }
 
-            if(hasAfsDataFormat)
+            deleteDirectory(exportWorkspaceDirectoryPathString);
+
+            return exportResult;
+        } finally
+        {
+            if (afs != null)
             {
-                consumers = exportAfsData(sessionToken, exportWorkspaceDirectory, entitiesVo);
+                afs.close();
             }
         }
-
-        final File file = getSingleFile(exportWorkspaceDirectoryPath);
-        final String exportWorkspaceDirectoryPathString = exportWorkspaceDirectory.getPath();
-        final String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS").format(new Date());
-        final String zipFileName = String.format("%s.%s%s", EXPORT_FILE_PREFIX, timestamp, ZIP_EXTENSION);
-
-        final ExportResult exportResult;
-        if (zipSingleFiles || file == null)
-        {
-            final File targetZipFile = new File(sessionWorkspaceDirectory, zipFileName);
-            if (targetZipFile.exists())
-            {
-                targetZipFile.delete();
-            }
-
-            zipDirectory(exportWorkspaceDirectoryPathString, targetZipFile, consumers);
-            exportResult = new ExportResult(getDownloadPath(sessionToken, zipFileName), warnings);
-        } else
-        {
-            final Path filePath = file.toPath();
-            final String[] nameAndExtension = splitFileName(filePath.getFileName().toString());
-            final Path targetFilePath = Files.move(filePath, Path.of(sessionWorkspaceDirectory.getPath(),
-                            String.format("%s.%s%s", nameAndExtension[0], timestamp, nameAndExtension[1])),
-                    StandardCopyOption.REPLACE_EXISTING);
-            final String fileName = targetFilePath.getFileName().toString();
-
-            exportResult = new ExportResult(getDownloadPath(sessionToken, fileName), warnings);
-        }
-
-        deleteDirectory(exportWorkspaceDirectoryPathString);
-
-        return exportResult;
     }
 
     private static String[] splitFileName(final String fileName)
@@ -509,10 +521,9 @@ public class ExportExecutor implements IExportExecutor
         return filteredFiles.toArray(new ch.ethz.sis.afsapi.dto.File[0]);
     }
 
-    private List<Consumer<ZipArchiveOutputStream>> exportAfsData(final String sessionToken, final File exportWorkspaceDirectory, final EntitiesVo entitiesVo
-            )
+    private List<Consumer<ZipArchiveOutputStream>> exportAfsData(final AfsClientExportProxy afs, final File exportWorkspaceDirectory,
+            final EntitiesVo entitiesVo)
     {
-        final AfsClientExportProxy afs = AfsClientExportProxy.getAfsClient(sessionToken);
         if(!afs.isSessionValid()) {
             throw new UserFailureException("Could not connect to AFS server!");
         }

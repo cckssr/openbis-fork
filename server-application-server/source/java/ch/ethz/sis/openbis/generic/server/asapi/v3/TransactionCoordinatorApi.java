@@ -257,9 +257,9 @@ public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
         @Override public void beginTransaction(final UUID transactionId, final String sessionToken, final String interactiveSessionKey,
                 final String transactionCoordinatorKey)
         {
-            try
+            try (AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, transactionCoordinatorKey))
             {
-                getAfsClient(sessionToken, interactiveSessionKey, transactionCoordinatorKey).begin(transactionId);
+                afsClient.begin(transactionId);
             } catch (Exception e)
             {
                 throw convertAfsException(e);
@@ -269,9 +269,7 @@ public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
         @Override public <T> T executeOperation(final UUID transactionId, final String sessionToken, final String interactiveSessionKey,
                 final String operationName, final Object[] operationArguments)
         {
-            AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, null);
-
-            try
+            try (AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, null))
             {
                 for (Method method : OperationsAPI.class.getDeclaredMethods())
                 {
@@ -310,9 +308,9 @@ public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
         @Override public void prepareTransaction(final UUID transactionId, final String sessionToken, final String interactiveSessionKey,
                 final String transactionCoordinatorKey)
         {
-            try
+            try (AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, transactionCoordinatorKey))
             {
-                getAfsClient(sessionToken, interactiveSessionKey, transactionCoordinatorKey).prepare();
+                afsClient.prepare();
             } catch (Exception e)
             {
                 throw convertAfsException(e);
@@ -321,9 +319,9 @@ public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
 
         @Override public void commitTransaction(final UUID transactionId, final String sessionToken, final String interactiveSessionKey)
         {
-            try
+            try (AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, null))
             {
-                getAfsClient(sessionToken, interactiveSessionKey, null).commit();
+                afsClient.commit();
             } catch (Exception e)
             {
                 throw convertAfsException(e);
@@ -338,9 +336,11 @@ public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
             try
             {
                 sessionToken = applicationServerApi.loginAsSystem();
-                AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, transactionCoordinatorKey);
-                afsClient.begin(transactionId);
-                afsClient.commit();
+                try (AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, transactionCoordinatorKey))
+                {
+                    afsClient.begin(transactionId);
+                    afsClient.commit();
+                }
             } catch (Exception e)
             {
                 throw convertAfsException(e);
@@ -355,9 +355,9 @@ public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
 
         @Override public void rollbackTransaction(final UUID transactionId, final String sessionToken, final String interactiveSessionKey)
         {
-            try
+            try (AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, null))
             {
-                getAfsClient(sessionToken, interactiveSessionKey, null).rollback();
+                afsClient.rollback();
             } catch (Exception e)
             {
                 throw convertAfsException(e);
@@ -372,9 +372,11 @@ public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
             try
             {
                 sessionToken = applicationServerApi.loginAsSystem();
-                AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, transactionCoordinatorKey);
-                afsClient.begin(transactionId);
-                afsClient.rollback();
+                try (AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, transactionCoordinatorKey))
+                {
+                    afsClient.begin(transactionId);
+                    afsClient.rollback();
+                }
             } catch (Exception e)
             {
                 throw convertAfsException(e);
@@ -394,7 +396,10 @@ public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
             try
             {
                 sessionToken = applicationServerApi.loginAsSystem();
-                return getAfsClient(sessionToken, interactiveSessionKey, transactionCoordinatorKey).recover();
+                try (AfsClient afsClient = getAfsClient(sessionToken, interactiveSessionKey, transactionCoordinatorKey))
+                {
+                    return afsClient.recover();
+                }
             } catch (Exception e)
             {
                 throw convertAfsException(e);
@@ -407,6 +412,9 @@ public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
             }
         }
 
+        /**
+         * Returns a new client, which the caller has to close to release the threads and connections of its HttpClient.
+         */
         private AfsClient getAfsClient(String sessionToken, String interactiveSessionKey, String transactionCoordinatorKey)
         {
             AfsClient afsClient = new AfsClient(URI.create(afsServerUrl), timeoutInSeconds * 1000);

@@ -99,16 +99,18 @@ public class ImportExecutor implements IImportExecutor
                 CommonServiceProvider.getApplicationServerApi(), transactionCoordinatorApi, sessionToken, interactiveSessionKey);
 
         AfsClient afsClient = null;
+        // the client doing the HTTP requests, wrapped by the transactional proxy, therefore closed separately
+        AfsClient httpAfsClient = null;
         if(afsUrl != null && !afsUrl.isEmpty()) {
             final String afsTimeoutProperty = CommonServiceProvider.tryToGetProperty(AFS_SERVER_TIMEOUT_PROPERTY_NAME, DEFAULT_AFS_CLIENT_TIMEOUT);
             final int timeout = Integer.parseInt(afsTimeoutProperty);
 
-            afsClient = new AfsClient(URI.create(afsUrl), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+            httpAfsClient = new AfsClient(URI.create(afsUrl), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
                     timeout);
-            afsClient.setSessionToken(sessionToken);
+            httpAfsClient.setSessionToken(sessionToken);
 
             afsClient = new AfsClient(createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, PublicAPI.class,
-                    afsClient, transactionCoordinatorApi, sessionToken, interactiveSessionKey), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                    httpAfsClient, transactionCoordinatorApi, sessionToken, interactiveSessionKey), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
                     timeout);
             afsClient.setSessionToken(sessionToken);
             afsClient.setInteractiveSessionKey(interactiveSessionKey);
@@ -178,6 +180,12 @@ public class ImportExecutor implements IImportExecutor
         } catch (final Exception e)
         {
             throw UserFailureException.fromTemplate(e,"Exception importing data: %s", e.getMessage());
+        } finally
+        {
+            if (httpAfsClient != null)
+            {
+                httpAfsClient.close();
+            }
         }
     }
 
