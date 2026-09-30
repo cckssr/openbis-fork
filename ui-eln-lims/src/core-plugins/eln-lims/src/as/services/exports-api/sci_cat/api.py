@@ -71,7 +71,7 @@ def isSciCatEnabled(context, params):
 
 def exportSciCat(context, params):
 
-    sessionToken = params.get('sessionToken')
+    sessionToken = context.getSessionToken()
     v3 = context.getApplicationService()
     userId = v3.getSessionInformation(sessionToken).getPerson().getUserId()
     validateUserIsNotObserver(v3, sessionToken, userId)
