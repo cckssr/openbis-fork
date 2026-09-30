@@ -118,6 +118,7 @@ import static ch.ethz.sis.openbis.generic.server.xls.export.FieldType.PROPERTY;
 import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.*;
 import static ch.ethz.sis.openbis.generic.server.xls.export.helper.AbstractXLSExportHelper.FIELD_ID_KEY;
 import static ch.ethz.sis.openbis.generic.server.xls.export.helper.AbstractXLSExportHelper.FIELD_TYPE_KEY;
+import static ch.ethz.sis.openbis.generic.server.xls.export.helper.AbstractXLSExportHelper.findImageFiles;
 import static ch.systemsx.cisd.openbis.generic.shared.Constants.DOWNLOAD_URL;
 
 @SuppressWarnings("SizeReplaceableByIsEmpty")
@@ -707,6 +708,32 @@ public class ExportExecutor implements IExportExecutor
 
             createMetadataJsonFile(parentDataDirectory, prefix, spaceCode, projectCode, containerCode, code,
                     dataSetTypeCode, dataSetCode, dataSetName, dataDirectorySuffix, datasetJson, compatibleWithImport);
+
+            Map<String, Serializable> properties = dataSet.getProperties();
+            final Set<String> imageFiles = new HashSet<>();
+            for (PropertyAssignment assignment : dataSet.getType().getPropertyAssignments()) {
+                PropertyType propertyType = assignment.getPropertyType();
+                if (propertyType.getDataType() == DataType.MULTILINE_VARCHAR && propertyType.getMetaData() != null &&
+                        Objects.equals(propertyType.getMetaData().get("custom_widget"), "Word Processor"))
+                {
+                    final String value = (String) properties.get(propertyType.getCode());
+                    Set<String> images = findImageFiles(value, Set.of());
+                    imageFiles.addAll(images);
+                }
+            }
+
+            if (!imageFiles.isEmpty())
+            {
+                File filesDirectory;
+                if(compatibleWithImport) {
+                    final File dataDirectory = new File(parentDataDirectory, DATA_DIRECTORY + '/');
+                    filesDirectory = new File(dataDirectory, MISCELLANEOUS_DIRECTORY + '/' + FILE_SERVICE_SUBDIRECTORY);
+                } else {
+                    filesDirectory = new File(parentDataDirectory, MISCELLANEOUS_DIRECTORY + '/' + FILE_SERVICE_SUBDIRECTORY);
+                }
+                exportBinaryFiles(imageFiles, filesDirectory, Function.identity());
+            }
+
 
             if (dataSet.getKind() != DataSetKind.LINK)
             {
