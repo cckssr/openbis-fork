@@ -201,7 +201,8 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
         }
 
         // Regular expression to match <img src='/openbis/openbis/file-service/...' or <img src="/openbis/openbis/file-service/..." or <img anything="..." src="..."
-        final String regex = "<img\\b[^>]*\\bsrc=[\"'](http)?.*?(/openbis/openbis/file-service)(/[^\"']*?)[\"']";
+        // Important note src= should use a double quote character `"`, it will work for src="..." but won't work for src='....'
+        final String regex = "<img\\b[^>]*\\bsrc=\"(http)?.*?(/openbis/openbis/file-service)(/[^\"]*)\"";
         final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
         final Matcher matcher = pattern.matcher(input);
         final Set<String> imageFiles = new HashSet<>();
